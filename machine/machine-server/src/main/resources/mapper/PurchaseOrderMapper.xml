@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.PurchaseOrderMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.server.pojo.PurchaseOrder">
+        <id column="id" property="id" />
+        <result column="number" property="number" />
+        <result column="imei" property="imei" />
+        <result column="category_id" property="categoryId" />
+        <result column="type" property="type" />
+        <result column="sku" property="sku" />
+        <result column="rank" property="rank" />
+        <result column="stock_location" property="stockLocation" />
+        <result column="purchasing_channel_id" property="purchasingChannelId" />
+        <result column="enter_batch" property="enterBatch" />
+        <result column="purchase_price" property="purchasePrice" />
+        <result column="bidding_date" property="biddingDate" />
+        <result column="operated_ids" property="operatedIds" />
+        <result column="operating_id" property="operatingId" />
+        <result column="describe" property="describe" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, number, imei, category_id, type, sku, rank, stock_location, purchasing_channel_id, enter_batch, purchase_price, bidding_date, operated_ids, operating_id, describe
+    </sql>
+
+</mapper>
