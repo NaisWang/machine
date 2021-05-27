@@ -1,12 +1,18 @@
 package com.example.server.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * <p>
@@ -21,7 +27,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @TableName("t_employee")
 @ApiModel(value="Employee对象", description="")
-public class Employee implements Serializable {
+public class Employee implements Serializable, UserDetails {
 
     private static final long serialVersionUID = 1L;
 
@@ -30,6 +36,9 @@ public class Employee implements Serializable {
 
     @ApiModelProperty(value = "姓名")
     private String name;
+
+    @ApiModelProperty(value = "用户名")
+    private String username;
 
     @ApiModelProperty(value = "邮箱")
     private String email;
@@ -40,5 +49,32 @@ public class Employee implements Serializable {
     @ApiModelProperty(value = "员工头像id")
     private Integer image;
 
+    @ApiModelProperty(value = "员工角色")
+		@TableField(exist = false)
+    private List<Role> roles;
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
