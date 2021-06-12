@@ -24,17 +24,18 @@ public class CustomUrlDecisionManager implements AccessDecisionManager {
 				if (authentication instanceof AnonymousAuthenticationToken) {
 					throw new AccessDeniedException("尚未登陆，请登陆");
 				} else {
-					return;
+					throw new AccessDeniedException("权限不足，请联系管理员");
 				}
 			}
 			Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+			System.out.println("当前用户的角色" + authorities.toString());
 			for (GrantedAuthority grantedAuthority : authorities) {
 				if (grantedAuthority.getAuthority().equals(needRole)) {
 					return;
 				}
 			}
-			throw new AccessDeniedException("权限不足，请联系管理员");
 		}
+		throw new AccessDeniedException("权限不足，请联系管理员");
 	}
 
 	@Override

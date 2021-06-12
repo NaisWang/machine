@@ -6,7 +6,7 @@ spring:
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/machine?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/machine?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: whz1152957995
     hikari:
@@ -35,13 +35,12 @@ mybatis-plus:
   type-aliases-package: com.example.server.pojo
   configuration:
     # 自动驼峰命名
-    map-underscore-to-camel-case: false
+    map-underscore-to-camel-case: true
 
 # Mybatis SQL打印(方法接口所在的包，不是Mapper.xml所在的包)
 logging:
   level:
     com.example.server.mapper: debug
-
 # JWT配置
 jwt:
   # JWT存储的请求头

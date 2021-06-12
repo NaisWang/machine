@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.RoleUrlMethodMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.RoleUrlMethod">
+    <id column="id" property="id"/>
+    <result column="role_id" property="roleId"/>
+    <result column="url_id" property="urlId"/>
+    <result column="method_ids" property="methodIds"/>
+  </resultMap>
+
+  <resultMap id="RoleUrlMethodInfo" type="com.example.server.pojo.RoleUrlMethod" extends="BaseResultMap">
+    <result column="role_en_name" property="roleEnName"/>
+    <result column="url" property="url"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, role_id, url_id, method_ids
+  </sql>
+
+  <!-- 获取RoleUrlMethod所有字段数据-->
+  <select id="getRoleUrlMethodList" resultMap="RoleUrlMethodInfo">
+    select a.id    id,
+           role_id,
+           en_name role_en_name,
+           url_id,
+           url,
+           method_ids
+    from t_role_url_method a
+           join t_role as b on a.role_id = b.id
+           join t_url as c on a.url_id = c.id
+  </select>
+
+
+</mapper>

@@ -3,6 +3,8 @@ package com.example.server.mapper;
 import com.example.server.pojo.Employee;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
  * <p>
  *  Mapper 接口
@@ -13,4 +15,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface EmployeeMapper extends BaseMapper<Employee> {
 
+	/**
+	 * 获取所有员工
+	 * @return
+	 */
+	List<Employee> getAllEmployee();
 }

@@ -23,9 +23,6 @@ public class LoginController {
 	@ApiOperation(value = "登陆之后返回token")
 	@PostMapping("/login")
 	public RespBean login(@RequestBody LoginParam loginParam) {
-		System.out.println("a");
-		System.out.println(loginService);
-		System.out.println("a");
 		return loginService.login(loginParam);
 	}
 }

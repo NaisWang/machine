@@ -6,12 +6,13 @@ import com.example.server.mapper.EmployeeMapper;
 import com.example.server.service.IEmployeeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoProperties;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author whz
@@ -26,8 +27,27 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
 	/**
 	 * 通过用户名获取employee
 	 */
-	public Employee getEmployeeByUsername(String username){
+	public Employee getEmployeeByUsername(String username) {
 		return employeeMapper.selectOne(new QueryWrapper<Employee>().eq("username", username));
 	}
 
+	/**
+	 * 获取所有员工
+	 *
+	 * @return
+	 */
+	@Override
+	public List<Employee> getAllEmployee() {
+		return employeeMapper.getAllEmployee();
+	}
+
+
+	/**
+	 * 获取员工Corr
+	 * @return
+	 */
+	@Override
+	public List<Employee> getEmpCorr() {
+		return employeeMapper.selectList(new QueryWrapper<Employee>().select("id", "name"));
+	}
 }

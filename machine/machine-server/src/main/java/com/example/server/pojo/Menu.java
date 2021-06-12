@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableField;
 
 import java.io.Serializable;
+import java.util.List;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -31,11 +32,14 @@ public class Menu implements Serializable {
 	@ApiModelProperty(value = "id")
 	private Integer id;
 
-	@ApiModelProperty(value = "组件路径")
+	@ApiModelProperty(value = "path")
+	private String path;
+
+	@ApiModelProperty(value = "组件文件名")
 	private String component;
 
 	@ApiModelProperty(value = "组件名称")
-	private byte[] name;
+	private String name;
 
 	@ApiModelProperty(value = "菜单图标")
 	private String iconcls;
@@ -43,5 +47,13 @@ public class Menu implements Serializable {
 	@ApiModelProperty(value = "父组件id")
 	@TableField("parent_id")
 	private Integer parentId;
+
+	@ApiModelProperty(value = "能访问该菜单的角色id")
+	@TableField("role_ids")
+	private String roleIds;
+
+	@ApiModelProperty(value = "子组件")
+	@TableField(exist = false)
+	private List<Menu> children;
 
 }

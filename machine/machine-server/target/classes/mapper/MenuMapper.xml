@@ -6,14 +6,32 @@
   <resultMap id="BaseResultMap" type="com.example.server.pojo.Menu">
     <id column="id" property="id"/>
     <result column="component" property="component"/>
+    <result column="path" property="path"/>
     <result column="name" property="name"/>
     <result column="iconcls" property="iconcls"/>
     <result column="parent_id" property="parentId"/>
   </resultMap>
 
+  <resultMap id="MenuWithChild" type="com.example.server.pojo.Menu" extends="BaseResultMap">
+    <collection property="children" ofType="com.example.server.pojo.Menu"
+                select="com.example.server.mapper.MenuMapper.getAllMenuWithChildren"
+                column="{parentId=id, roleIds=roleIds}"/>
+  </resultMap>
+
   <!-- 通用查询结果列 -->
   <sql id="Base_Column_List">
-    id, component, name, iconcls, parent_id
+    id, component,path, name, iconcls, parent_id, role_ids
   </sql>
+
+  <!--  获取菜单id值为实参值的所有子菜单-->
+  <select id="getAllMenuWithChildren" resultMap="MenuWithChild">
+    select #{roleIds} as roleIds,
+    <include refid="Base_Column_List"/>
+    from t_menu as a
+    where parent_id = #{parentId}
+    <foreach collection="roleIds.split(',')" item="roleId" separator=" ">
+      and a.role_ids like concat('%', #{roleId}, '%')
+    </foreach>
+  </select>
 
 </mapper>

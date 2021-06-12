@@ -23,9 +23,9 @@
 
   <!-- 根据用户id查角色  -->
   <select id="getRolesByEmployeeId" resultType="com.example.server.pojo.Role">
-    select a.id id,
-           en_name,
-           zh_name
+    select a.id    id,
+           en_name enName,
+           zh_name zhName
     from t_role as a
            join t_employee_role as b
                 on a.id = b.role_id
@@ -40,9 +40,8 @@
            zh_name,
            url
     from t_role as a
-           left join t_role_url as b on a.id = b.role_id
+           left join t_role_url_method as b on a.id = b.role_id
            left join t_url as c on c.id = b.url_id
   </select>
-
 
 </mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.PurchaseOrderModifyMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.PurchaseOrderModify">
+    <id column="id" property="id"/>
+    <result column="role_id" property="roleId"/>
+    <result column="number" property="number"/>
+    <result column="imei" property="imei"/>
+    <result column="category" property="category"/>
+    <result column="type" property="type"/>
+    <result column="brand" property="brand"/>
+    <result column="sku" property="sku"/>
+    <result column="rank" property="rank"/>
+    <result column="stock_location" property="stockLocation"/>
+    <result column="purchasing_channel" property="purchasingChannel"/>
+    <result column="enter_batch" property="enterBatch"/>
+    <result column="purchase_price" property="purchasePrice"/>
+    <result column="bidding_date" property="biddingDate"/>
+    <result column="operatedName" property="operatedName"/>
+    <result column="operatingName" property="operatingName"/>
+    <result column="describe" property="describe"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, role_id, number, imei, category, type, brand, sku, rank, stock_location, purchasing_channel, enter_batch, purchase_price, bidding_date, operatedName, operatingName,
+    describe
+  </sql>
+
+  <!-- 判断当前用户能修改采购单中哪些字段-->
+  <select id="isModifyFiled" resultType="com.example.server.pojo.PurchaseOrderModify">
+    select sum(number) as number,
+    sum(imei) as imei,
+    sum(category) as category,
+    sum(sku) as sku,
+    sum(type) as type,
+    sum(brand) as brand,
+    sum(`rank`) as `rank`,
+    sum(stock_location) as stock_location,
+    sum(purchasing_channel) as purchasing_channel,
+    sum(enter_batch) as enter_batch,
+    sum(purchase_price) as purchase_price,
+    sum(purchasing_channel) as purchasing_channel,
+    sum(bidding_date) as bidding_date,
+    sum(operatedName) as operatedName,
+    sum(operatingName) as operatingName,
+    sum(`describe`) as `describe`
+    from t_purchase_order_modify
+    where id in (
+    <foreach collection="roleIds.split(',')" separator="," item="roleId">
+      #{roleId}
+    </foreach>
+    );
+  </select>
+
+</mapper>

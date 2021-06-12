@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.Arrays;
+
 /**
  * @author : whz
  */
@@ -52,7 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 						"/login.html",
 						"/logout",
 						"/css/**",
-						"/js/**",
+						"/empImg/**",
 						"/index.html",
 						"favicon.ico",
 						"/doc.html",
@@ -66,7 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf()
+		http.cors().and().csrf()
 				////使用JWT时，不需要csrf
 				.disable()
 				//基于token, 不需要session

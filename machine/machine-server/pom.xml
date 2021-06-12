@@ -72,6 +72,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.12</version>
       <scope>runtime</scope>
     </dependency>
 
@@ -100,6 +101,12 @@
       <version>2.3.2</version>
     </dependency>
 
+    <!--  easy poi依赖  -->
+    <dependency>
+      <groupId>cn.afterturn</groupId>
+      <artifactId>easypoi-spring-boot-starter</artifactId>
+      <version>4.1.3</version>
+    </dependency>
   </dependencies>
 
 </project>

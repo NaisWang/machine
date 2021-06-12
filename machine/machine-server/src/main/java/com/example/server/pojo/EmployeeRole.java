@@ -2,7 +2,9 @@ package com.example.server.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableField;
+
 import java.io.Serializable;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -11,7 +13,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author whz
@@ -21,21 +23,20 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("t_employee_role")
-@ApiModel(value="EmployeeRole对象", description="")
+@ApiModel(value = "EmployeeRole对象", description = "")
 public class EmployeeRole implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "id")
-    private Integer id;
+	@ApiModelProperty(value = "id")
+	private Integer id;
 
-    @ApiModelProperty(value = "员工id")
-    @TableField("employee_id")
-    private Integer employeeId;
+	@ApiModelProperty(value = "员工id")
+	@TableField("employee_id")
+	private Integer employeeId;
 
-    @ApiModelProperty(value = "角色id")
-    @TableField("role_id")
-    private Integer roleId;
-
+	@ApiModelProperty(value = "角色id")
+	@TableField("role_id")
+	private Integer roleId;
 
 }

@@ -1,10 +1,9 @@
 package com.example.server.service;
 
-import com.example.server.mapper.EmployeeMapper;
 import com.example.server.pojo.Employee;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * <p>
@@ -21,4 +20,16 @@ public interface IEmployeeService extends IService<Employee> {
 	 */
 	public Employee getEmployeeByUsername(String username);
 
+
+	/**
+	 * 获取所有员工
+	 * @return
+	 */
+	List<Employee> getAllEmployee();
+
+	/**
+	 * 获取员工Corr
+	 * @return
+	 */
+	List<Employee> getEmpCorr();
 }

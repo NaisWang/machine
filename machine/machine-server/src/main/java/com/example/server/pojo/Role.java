@@ -33,11 +33,9 @@ public class Role implements Serializable {
 	private Integer id;
 
 	@ApiModelProperty(value = "角色英文名")
-	@TableField("en_name")
 	private String enName;
 
 	@ApiModelProperty(value = "角色中文名")
-	@TableField("zh_name")
 	private String zhName;
 
 }
