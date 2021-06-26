@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class RequestMethodUtil {
 
-	private static final Map<String, Integer> requestMethodMap = new HashMap<>();
+	public static final Map<String, Integer> requestMethodMap = new HashMap<>();
 
 	static {
 		requestMethodMap.put("get", 1);

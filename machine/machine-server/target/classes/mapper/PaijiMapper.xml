@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.PaijiMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.Paiji">
+    <id column="id" property="id"/>
+    <result column="value" property="value"/>
+    <result column="name" property="name"/>
+    <result column="xd_checkout" property="xdCheckout"/>
+    <result column="ahs_checkout" property="ahsCheckout"/>
+    <result column="status" property="status"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, value, name, xd_checkout, ahs_checkout, status
+  </sql>
+
+</mapper>

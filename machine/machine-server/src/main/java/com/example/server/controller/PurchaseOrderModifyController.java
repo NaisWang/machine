@@ -41,9 +41,6 @@ public class PurchaseOrderModifyController {
 		for (Role role : roleList) {
 			sb.append(role.getId() + ",");
 		}
-		System.out.println("a");
-		System.out.println(sb);
-		System.out.println("a");
 		return RespBean.success("操作成功", purchaseOrderModifyService.isModifyFiled(sb.substring(0, sb.length() - 1)));
 	}
 

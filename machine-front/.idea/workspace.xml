@@ -11,8 +11,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="HTML File" />
-        <option value="Vue Single File Component" />
         <option value="JavaScript File" />
+        <option value="Vue Single File Component" />
       </list>
     </option>
   </component>
@@ -59,10 +59,18 @@
       <workItem from="1622167892005" duration="86553000" />
       <workItem from="1622368394849" duration="26114000" />
       <workItem from="1622554339524" duration="878000" />
+      <workItem from="1623822265437" duration="70000" />
+      <workItem from="1623822585525" duration="89000" />
+      <workItem from="1623822731100" duration="29610000" />
+      <workItem from="1624022605500" duration="65701000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

@@ -8,12 +8,17 @@
         <outputRelativeToContentRoot value="true" />
         <module name="machine-generator" />
         <module name="machine-server" />
+        <module name="machine-price" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="machine-price" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="machine-generator" options="-parameters" />
+      <module name="machine-price" options="-parameters" />
       <module name="machine-server" options="-parameters" />
     </option>
   </component>

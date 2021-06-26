@@ -20,4 +20,9 @@ public interface IUrlService extends IService<Url> {
 	 * 获取所有角色以及对应的url
 	 */
 	public List<Url> getUrlsWithRole();
+
+	/**
+	 * 根据url获取Role
+	 */
+	public List<Role> getRolesByUrl(String url, Integer method);
 }

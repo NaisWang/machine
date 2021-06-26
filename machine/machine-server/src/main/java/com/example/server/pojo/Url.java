@@ -35,6 +35,12 @@ public class Url implements Serializable {
 	@ApiModelProperty(value = "请求url")
 	private String url;
 
+	@ApiModelProperty(value = "请求方式")
+	private Integer method;
+
+	@ApiModelProperty(value = "url描述")
+	private String desc;
+
 	@ApiModelProperty(value = "角色英文名")
 	@TableField(exist = false)
 	private List<String> roleName;

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.ModelGuaranteeBatteryMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.ModelGuaranteeBattery">
+    <id column="id" property="id"/>
+    <result column="model" property="model"/>
+    <result column="excel_guarantee" property="excelGuarantee"/>
+    <result column="paiji_guarantee_id" property="paijiGuaranteeId"/>
+    <result column="battery_id" property="batteryId"/>
+    <result column="guarantee_default_id" property="guaranteeDefaultId"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, model, excel_guarantee, paiji_guarantee_id, battery_id, guarantee_default_id, guarantee_default_enable
+  </sql>
+
+</mapper>

@@ -18,17 +18,23 @@
 
   <!-- 通用查询结果列 -->
   <sql id="Base_Column_List">
-    id, url
+    id, url,method,descr
   </sql>
 
-  <!--获取所有Url以及对应的角色英文名-->
-  <select id="getUrlsWithRole" resultMap="UrlWithRole">
-    select c.id      id,
-           c.url     url,
-           a.en_name name
-    from t_role as a
-           left join t_role_url_method as b on a.id = b.role_id
-           left join t_url as c on c.id = b.url_id
+  <!-- 根据url获取用户角色-->
+  <select id="getRolesByUrl" resultType="com.example.server.pojo.Role">
+    select e.id id, e.en_name en_name, e.zh_name zh_name
+    from t_operation_url b
+           left join t_url a on a.id = b.url_id
+           left join t_operation c
+                     on b.operation_id = c.id
+           left join t_role_operation d
+                     on c.id = d.operation_id
+           left join t_role e
+                     on d.role_id = e.id
+    where a.method = #{method}
+      and (locate(#{url}, a.url) or locate(a.url, #{url}))
+    order by a.url
   </select>
 
 </mapper>

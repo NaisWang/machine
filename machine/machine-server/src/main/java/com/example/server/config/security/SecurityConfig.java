@@ -62,7 +62,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 						"/swagger-resources/**",
 						"/v2/api-docs/**",
 						"/captcha",
-						"ws/**"
+						"ws/**",
+						"/machine/price/model-guarantee-battery/",
+						"/machine/price/model-contrast/",
+						"/machine/price/field"
 				);
 	}
 

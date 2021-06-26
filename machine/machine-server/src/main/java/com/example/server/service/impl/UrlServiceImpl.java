@@ -26,10 +26,20 @@ public class UrlServiceImpl extends ServiceImpl<UrlMapper, Url> implements IUrlS
 
 	/**
 	 * 获取所有Url以及对应的角色英文名
+	 *
 	 * @return
 	 */
 	@Override
 	public List<Url> getUrlsWithRole() {
 		return urlMapper.getUrlsWithRole();
 	}
+
+	/**
+	 * 根据url获取Role
+	 */
+	@Override
+	public List<Role> getRolesByUrl(String url, Integer method) {
+		return urlMapper.getRolesByUrl(url, method);
+	}
+
 }

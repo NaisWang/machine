@@ -41,7 +41,9 @@ function getComponent(component) {
 export function receiveMenu(router, store) {
   return getAllMenuWithChildren().then(resp => {
     let data = resp.data.obj;
+    console.log(data)
     let rou = resolveMenu(data);
+    console.log(rou)
     store.commit("initMenuRoutes", rou);
     router.addRoutes(rou);
   })
