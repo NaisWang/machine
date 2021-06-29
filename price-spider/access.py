@@ -14,7 +14,7 @@ user = []
 
 
 def get_user():
-	url = "http://127.0.0.1:8085/machine/price/paiji-user/"
+	url = "http://127.0.0.1:3001/machine/price/paiji-user/"
 	resp = json.loads(requests.get(url).text)
 	for item in resp['obj']:
 		user.append({"userName": item['username'], "passWord": item['password'], "token": "", "login_times": 0})

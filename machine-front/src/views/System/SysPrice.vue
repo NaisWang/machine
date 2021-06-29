@@ -7,7 +7,8 @@
         :on-change="handleChange1"
         :file-list="fileList1"
         accept="application/vnd.ms-excel"
-        limit=1
+        action=""
+        :limit="1"
         :auto-upload="false">
       <template #trigger>
         <el-button size="small" type="primary">选取文件</el-button>
@@ -26,6 +27,7 @@
         accept="application/vnd.ms-excel"
         :on-remove="handleRemove2"
         :on-change="handleChange2"
+        action=""
         :file-list="fileList2"
         :auto-upload="false">
       <template #trigger>
@@ -58,6 +60,13 @@
         </el-button>
       </el-col>
     </el-row>
+
+    <div style="margin-top: 15px; font-size: 8px">
+      <div>- 单元格背景色为黄色, 表示表格中缺少必须要有的字段描述, 或该字段搭配没有价格</div>
+      <div>- 单元格背景色为红色, 表示机型搜索不出来</div>
+      <div>- 单元格背景色为蓝色, 表示没有对应的保修或电池效率</div>
+      <div>- 单元格背景色为绿色, 表示excel表的机况描述字段在对照表中没有</div>
+    </div>
 
     <el-row>
       <el-col :span="12">
@@ -160,7 +169,6 @@ export default {
             document.body.appendChild(downloadElement);
             downloadElement.click();
             document.body.removeChild(downloadElement);
-            window.url.revokeObjectURL(href);
             this.onSuccess()
           }, () => {
             this.onError()

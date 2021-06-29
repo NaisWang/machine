@@ -36,14 +36,18 @@
             label="拍机堂中的保修"
             width="200">
           <template slot-scope="scope">
-            <el-select v-model="scope.row.paijiGuaranteeId" placeholder="请选择">
-              <el-option
-                  v-for="id in Object.keys(guaranteeCorr).map(Number)"
-                  :key="id"
-                  :label="guaranteeCorr[id]"
-                  :value="id">
-              </el-option>
-            </el-select>
+            <el-form-item :prop="'modelGuaranteeBattery[' + scope.$index +'].paijiGuaranteeId'"
+                          style="margin: 0;"
+                          :rules="{ required: true, message: '不能为空', trigger: 'change' }">
+              <el-select v-model="scope.row.paijiGuaranteeId" placeholder="请选择">
+                <el-option
+                    v-for="id in Object.keys(guaranteeCorr).map(Number)"
+                    :key="id"
+                    :label="guaranteeCorr[id]"
+                    :value="id">
+                </el-option>
+              </el-select>
+            </el-form-item>
           </template>
         </el-table-column>
 
@@ -52,14 +56,18 @@
             label="拍机堂中的电池效率"
             width="200">
           <template slot-scope="scope">
-            <el-select v-model="scope.row.batteryId" placeholder="请选择">
-              <el-option
-                  v-for="id in Object.keys(batteryCorr).map(Number)"
-                  :key="id"
-                  :label="batteryCorr[id]"
-                  :value="id">
-              </el-option>
-            </el-select>
+            <el-form-item :prop="'modelGuaranteeBattery[' + scope.$index +'].batteryId'"
+                          style="margin: 0;"
+                          :rules="{ required: true, message: '不能为空', trigger: 'change' }">
+              <el-select v-model="scope.row.batteryId" placeholder="请选择">
+                <el-option
+                    v-for="id in Object.keys(batteryCorr).map(Number)"
+                    :key="id"
+                    :label="batteryCorr[id]"
+                    :value="id">
+                </el-option>
+              </el-select>
+            </el-form-item>
           </template>
         </el-table-column>
 
@@ -68,14 +76,18 @@
             label="默认拍机堂中的保修"
             width="200">
           <template slot-scope="scope">
-            <el-select v-model="scope.row.guaranteeDefaultId" placeholder="请选择">
-              <el-option
-                  v-for="id in Object.keys(guaranteeCorr).map(Number)"
-                  :key="id"
-                  :label="guaranteeCorr[id]"
-                  :value="id">
-              </el-option>
-            </el-select>
+            <el-form-item :prop="'modelGuaranteeBattery[' + scope.$index +'].guaranteeDefaultId'"
+                          style="margin: 0;"
+                          :rules="{ required: true, message: '不能为空', trigger: 'change' }">
+              <el-select v-model="scope.row.guaranteeDefaultId" placeholder="请选择">
+                <el-option
+                    v-for="id in Object.keys(guaranteeCorr).map(Number)"
+                    :key="id"
+                    :label="guaranteeCorr[id]"
+                    :value="id">
+                </el-option>
+              </el-select>
+            </el-form-item>
           </template>
         </el-table-column>
 

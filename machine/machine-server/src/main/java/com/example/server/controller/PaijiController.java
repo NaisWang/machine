@@ -54,7 +54,7 @@ public class PaijiController {
 	@GetMapping("/machine/price/getCategoryCorrByField")
 	public RespBean getCategoryCorrByField(String field) {
 		System.out.println("aaa" + field);
-		List<Paiji> paijiList = paijiService.list(new QueryWrapper<Paiji>().eq("value", field));
+		List<Paiji> paijiList = paijiService.list(new QueryWrapper<Paiji>().like("value", field));
 		System.out.println(paijiList);
 		String categoryName = paijiList.get(0).getName();
 		List<Paiji> paijiList1 = paijiService.list(new QueryWrapper<Paiji>().eq("name", categoryName));

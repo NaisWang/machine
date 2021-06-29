@@ -5,8 +5,14 @@
   <!-- 通用查询映射结果 -->
   <resultMap id="BaseResultMap" type="com.example.server.pojo.PriceCombination">
     <id column="id" property="id"/>
+
+    <result column="name" property="name"/>
     <result column="grade" property="grade"/>
-    <result column="desc" property="desc"/>
+
+    <result column="screen_appearance" property="screenAppearance"/>
+    <result column="iframe_back" property="iframeBack"/>
+    <result column="screen_display" property="screenDisplay"/>
+
     <result column="price1" property="price1"/>
     <result column="price2" property="price2"/>
     <result column="price3" property="price3"/>
@@ -14,8 +20,8 @@
 
   <!-- 通用查询结果列 -->
   <sql id="Base_Column_List">
-    id, grade,
-    excel_desc, price1, price2, price3
+    id, name, grade,
+    screen_appearance, iframe_back, screen_display,price1, price2, price3
   </sql>
 
 </mapper>

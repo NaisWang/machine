@@ -67,9 +67,16 @@ export function updateModelGuaranteeBattery(modelGuaranteeBattery) {
   })
 }
 
-export function getXdField() {
+export function getXdCombinationPriceField() {
   return myAxios({
-    url: "http://127.0.0.1:5000/xd-field",
+    url: "http://127.0.0.1:5000/xd_combination_price_field",
+    method: 'get'
+  })
+}
+
+export function get_paiji_combination_price_field() {
+  return myAxios({
+    url: "http://127.0.0.1:5000/paiji_combination_price_field",
     method: 'get'
   })
 }

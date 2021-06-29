@@ -47,6 +47,7 @@ public class ModelGuaranteeBatteryController {
 			modelGuaranteeBatteryService.saveBatch(modelGuaranteeBatteryList);
 			return RespBean.success("更新成功");
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException("更新失败");
 		}
 	}

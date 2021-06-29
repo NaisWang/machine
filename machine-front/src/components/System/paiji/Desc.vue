@@ -79,7 +79,7 @@
 import * as paijiApi from "../../../api/paijiApi"
 
 export default {
-  name: "Desc",
+  name: "Describe",
   data() {
     return {
       paiji: [],

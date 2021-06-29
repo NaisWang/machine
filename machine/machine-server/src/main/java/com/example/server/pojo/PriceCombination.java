@@ -35,12 +35,20 @@ public class PriceCombination implements Serializable {
 	@TableId(value = "id", type = IdType.AUTO)
 	private Integer id;
 
+	@ApiModelProperty(value = "名称")
+	private String name;
+
 	@ApiModelProperty(value = "几成新")
 	private String grade;
 
-	@ApiModelProperty(value = "excel描述")
-	private String excelDesc;
+	@ApiModelProperty(value = "屏幕外观描述")
+	private String screenAppearance;
 
+	@ApiModelProperty(value = "边框背板")
+	private String iframeBack;
+
+	@ApiModelProperty(value = "屏幕显示")
+	private String screenDisplay;
 
 	@ApiModelProperty(value = "价格一组合")
 	private String price1;

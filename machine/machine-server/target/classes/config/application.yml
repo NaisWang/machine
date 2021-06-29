@@ -1,6 +1,6 @@
 server:
   # 端口
-  port: 8085
+  port: 3001
 
 spring:
   # 数据源配置

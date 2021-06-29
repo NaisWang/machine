@@ -19,12 +19,54 @@ common_header = {
 product_log = []
 
 
-def generate_product_lod(userName, methodName, arguments, errorInfo):
+def generate_product_log(userName, methodName, arguments, errorInfo):
 	global product_log
 	try:
 		product_log.append(userName + "用户, 使用" + str(methodName) + "方法,参数为" + str(arguments) + "时，出现该信息：" + str(errorInfo))
 	except Exception as e:
 		print(e)
+
+
+def keyword_5g(keyword, userIndex):
+	if "(5g版)" in keyword or "（5g版）" in keyword or "(5g)" in keyword or "（5g）" in keyword:
+		tempKeyWord = keyword
+		keyword = keyword.replace('(5g版)', '').replace('（5g版）', '').replace('(5g)', '').replace('（5g）', '')
+		res = product_select(keyword, userIndex)
+		if res == -2:
+			return -2
+		if res != -1:
+			return res
+		keyword = tempKeyWord
+		keyword = keyword.replace('(5g版)', '(5g)').replace('（5g版）', '（5g）')
+		res = product_select(keyword, userIndex)
+		if res == -2:
+			return -2
+		if res != -1:
+			return res
+		keyword = tempKeyWord
+		keyword = keyword.replace('(5g)', '(5g版)').replace('（5g）', '（5g版）')
+		res = product_select(keyword, userIndex)
+		if res == -2:
+			return -2
+		if res != -1:
+			return res
+		return -1
+	return -1
+
+
+def keyword_repalce(keyword, origin, target, userIndex):
+	keyword = keyword.replace(origin, target)
+	res = product_select(keyword, userIndex)
+	if res == -2:
+		return -2
+	if res != -1:
+		return res
+	resp = keyword_5g(keyword, userIndex)
+	if resp == -2:
+		return -2
+	if resp != -1:
+		return resp
+	return -1
 
 
 def get_product_id(keyword, userIndex):
@@ -34,6 +76,88 @@ def get_product_id(keyword, userIndex):
 		return -2
 	if res != -1:
 		return res
+
+	resp = keyword_5g(keyword, userIndex)
+	if resp == -2:
+		return -2
+	if resp != -1:
+		return resp
+
+	resp = keyword_repalce(keyword, "iphone", "苹果 iphone", userIndex)
+	if resp == -2:
+		return -2
+	if resp != -1:
+		return resp
+
+	if "iphone" in keyword and "苹果" not in keyword:
+		resp = keyword_repalce(keyword, "iphone", "苹果 iphone", userIndex)
+		if resp == -2:
+			return -2
+		if resp != -1:
+			return resp
+
+	if 'realme' in keyword and '真我' in keyword:
+		resp = keyword_repalce(keyword, "真我", "", userIndex)
+		if resp == -2:
+			return -2
+		if resp != -1:
+			return resp
+
+	if 'vivo' in keyword and 'iqoo' in keyword:
+		resp = keyword_repalce(keyword, "vivo", "", userIndex)
+		if resp == -2:
+			return -2
+		if resp != -1:
+			return resp
+
+	if '红米' in keyword:
+		resp = keyword_repalce(keyword, "红米", "redmi", userIndex)
+		if resp == -2:
+			return -2
+		if resp != -1:
+			return resp
+
+	if "小米手机" in keyword:
+		resp = keyword_repalce(keyword, "小米手机", "小米", userIndex)
+		if resp == -2:
+			return -2
+		if resp != -1:
+			return resp
+
+	if "小米" in keyword and "手机" not in keyword:
+		resp = keyword_repalce(keyword, "小米", "小米手机", userIndex)
+		if resp == -2:
+			return -2
+		if resp != -1:
+			return resp
+
+	if "坚果" in keyword and "锤子" not in keyword:
+		resp = keyword_repalce(keyword, "坚果", "锤子 坚果", userIndex)
+		if resp == -2:
+			return -2
+		if resp != -1:
+			return resp
+
+	if "魅蓝" in keyword and "魅族" not in keyword:
+		resp = keyword_repalce(keyword, "魅蓝", "魅族 魅蓝", userIndex)
+		if resp == -2:
+			return -2
+		if resp != -1:
+			return resp
+
+	if "galaxy" in keyword and "三星" not in keyword:
+		resp = keyword_repalce(keyword, "galaxy", "三星 galaxy", userIndex)
+		if resp == -2:
+			return -2
+		if resp != -1:
+			return resp
+
+	if "三星" in keyword and "galaxy" not in keyword:
+		resp = keyword_repalce(keyword, "三星", "三星 galaxy", userIndex)
+		if resp == -2:
+			return -2
+		if resp != -1:
+			return resp
 
 	if keyword in paijiContrast.model_contrast.keys():
 		res = product_select(paijiContrast.model_contrast[keyword], userIndex)
@@ -70,10 +194,10 @@ def product_select(keyword, userIndex):
 			if 'data' in resp and len(resp['data']) != 0:
 				for item in resp['data']:
 					if simplify(keyword) == simplify(item["productName"]):
-						generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+						generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 																 str(item["productId"]))
 						return item["productId"]
-			generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 													 str(resp))
 			return -1
 		except Exception as e:
@@ -109,10 +233,10 @@ def get_report_no(productId, pricePropertyValueIds, userIndex):
 			if res != 1:
 				return get_report_no(productId, pricePropertyValueIds, 0)
 			if 'data' in resp:
-				generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(resp['data']['reportNo']))
 				return resp['data']['reportNo']
-			generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 													 str(resp))
 			return -1
 		except Exception as e:
@@ -153,10 +277,10 @@ def get_price(reportNo, userIndex):
 				return get_price(reportNo, 0)
 			if 'data' in resp:
 				price = resp['data']['p2Price']
-				generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(price))
 				return price
-			generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 													 str(resp))
 			return -1
 		except Exception as e:
@@ -184,11 +308,11 @@ def get_category_id():
 				categories = resp['data']
 				for item in categories:
 					if item["categoryName"] == "手机":
-						generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+						generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 																 str(item["categoryId"]))
 						return item["categoryId"]
 					return -1
-			generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 													 str(resp))
 			return -1
 		except Exception as e:
@@ -218,10 +342,10 @@ def get_brand(category):
 				requests.post(url, headers=headers, data=json.dumps(data), proxies={"http": "http://{}".format(proxy)}).text)
 			if 'data' in resp:
 				brands = resp['data']
-				generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(brands))
 				return brands
-			generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 													 str(resp))
 			return -1
 		except Exception as e:
@@ -250,10 +374,10 @@ def get_all_machine(categoryId, brandId, num):
 				requests.post(url, headers=headers, data=json.dumps(data), proxies={"http": "http://{}".format(proxy)}).text)
 			if 'data' in resp:
 				res = resp['data'][0:num]
-				generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(res))
 				return res
-			generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 													 str(resp))
 			return -1
 		except Exception as e:
@@ -331,10 +455,10 @@ def get_desc(productId, userIndex):
 			if res != 1:
 				return get_desc(productId, 0)
 			if 'data' in resp:
-				generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(resp['data']))
 				return resp['data']
-			generate_product_lod(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 													 str(resp))
 			return -1
 		except Exception as e:
@@ -345,8 +469,12 @@ def get_desc(productId, userIndex):
 
 @app.route('/update')
 def update_desc():
+	access.init_user()
 	categoryId = get_category_id()
 	brands = get_brand(categoryId)
+
+	print(brands)
+
 	desc = {}
 	count = 0
 	for brand in brands:
@@ -362,7 +490,7 @@ def update_desc():
 		if count != 0:
 			if products != -1:
 				for product in products:
-					productDesc = get_desc(str(product['productId']))
+					productDesc = get_desc(str(product['productId']), 0)
 					for key in productDesc.keys():
 						for item in productDesc[key]:
 							for pricePropertyValue in item['pricePropertyValueVos']:
