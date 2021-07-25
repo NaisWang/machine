@@ -1,0 +1,319 @@
+<template>
+  <div>
+    <div style="border: 1px solid #409eff; border-radius: 5px; box-sizing: border-box; padding: 5px; margin: 10px 0px">
+      <el-row>
+        <el-col :span="8" style="margin-right: 10px;">
+          转交单号：
+          <el-input v-model="searchOrder.deliverReceiptId"
+                    size="mini"
+                    prefix-icon="el-icon-search"
+                    placeholder="请输入转交单号进行搜索..."
+                    clearable></el-input>
+        </el-col>
+      </el-row>
+      <el-button type="primary" icon="el-icon-search" @click="doSearch()">搜索
+      </el-button>
+    </div>
+
+    <el-button type="primary" icon="el-icon-plus" @click="addReceipt">添加转交单</el-button>
+
+    <div>
+      <el-table
+          :data="allOrderInfo"
+          style="width: 100%">
+        <el-table-column
+            type="selection"
+            width="55">
+        </el-table-column>
+
+        <el-table-column
+            prop="deliverReceiptId"
+            label="转交订单单号"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="deliverIntentionId"
+            label="转交单类别"
+            width="170">
+          <template #default="scope">
+              <span>{{
+                  $store.state.deliverIntentionCorr[scope.row.deliverIntentionId]
+                }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            prop="deliverDate"
+            label="转交订单日期"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="sum"
+            label="转交机器总数"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="notReceiveSum"
+            label="转交未接收机器总数"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="operateEmpId"
+            label="发起人"
+            width="170">
+          <template #default="scope">
+            <span>{{ $store.state.employeeNameCorr[scope.row.operateEmpId] }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            prop="receiveEmpIds"
+            label="接收人(组)"
+            width="170">
+          <template #default="scope">
+              <span v-for="item in (scope.row.receiveEmpIds === null ? '' : scope.row.receiveEmpIds.split(','))"
+                    :key="item">{{
+                  $store.state.employeeNameCorr[item] + '、'
+                }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            prop="comment"
+            label="备注"
+            width="120">
+          <template #default="scope">
+            <el-popover
+                placement="top-start"
+                :width="200"
+                trigger="hover"
+                :content="scope.row.comment">
+              <template #reference>
+                <el-button style="width: 80px; text-overflow: ellipsis; overflow: hidden;" v-show="scope.row.comment">
+                  {{
+                    scope.row.comment
+                  }}
+                </el-button>
+                <el-button style="width: 80px" v-show="!scope.row.comment">无</el-button>
+              </template>
+              <el-input
+                  type="textarea"
+                  autosize
+                  @change="initUpdateMachine(scope.row, 'describe')"
+                  :disabled="!isEdit"
+                  :value="scope.row.comment"
+                  v-model="scope.row.comment">
+              </el-input>
+            </el-popover>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="操作" fixed="right">
+          <template #default="scope">
+            <el-button
+                size="mini"
+                type="success"
+                @click="orderDetail(scope.row)">详情
+            </el-button>
+
+            <span v-if="scope.row.enableEdit === 0">
+              <el-button
+                  size="mini"
+                  type="primary"
+                  @click="release(scope.row)">发布
+              </el-button>
+
+              <el-button
+                  size="mini"
+                  type="danger"
+                  v-if=""
+                  @click="handleDelete(scope.row)">删除
+              </el-button>
+            </span>
+
+            <el-button
+                v-else
+                size="mini"
+                type="primary"
+                disabled>已发布
+            </el-button>
+
+          </template>
+        </el-table-column>
+
+      </el-table>
+
+    </div>
+
+    <div style="display: flex; justify-content: flex-end">
+      <el-pagination
+          background
+          :current-page="currentPage"
+          layout="sizes, prev, pager, next, ->, total"
+          @current-change="currentChange"
+          @size-change="sizeChange"
+          :total="total">
+      </el-pagination>
+    </div>
+
+    <el-dialog
+        title="转交单信息"
+        :visible.sync="addReceiptDialogVisible">
+
+      <el-form ref="form" :model="newDeliverReceiptInfo" label-width="80px">
+
+        <el-form-item label="类别">
+          <el-select clearable v-model="newDeliverReceiptInfo.deliverIntentionId" size="mini" placeholder="类别">
+            <el-option
+                v-for="id in Object.keys($store.state.deliverIntentionCorr).map(Number)"
+                :label="$store.state.deliverIntentionCorr[id]"
+                :value="id"
+                :key="id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="接收人">
+          <el-select v-model="newDeliverReceiptInfo.receiveEmpIds" multiple placeholder="请选择">
+            <el-option
+                v-for="item in Object.keys($store.state.employeeNameCorr).map(Number)"
+                :key="item"
+                :label="$store.state.employeeNameCorr[item]"
+                :value="item">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="备注">
+          <el-input type="text" v-model="newDeliverReceiptInfo.comment" size="mini"></el-input>
+        </el-form-item>
+
+      </el-form>
+
+      <span slot="footer" class="dialog-footer">
+                              <el-button @click="dialogVisible = false">取 消</el-button>
+                              <el-button type="primary" @click="addReceiptInfo">添 加</el-button>
+                            </span>
+    </el-dialog>
+
+  </div>
+</template>
+
+<script>
+import {getDeliverReceipt} from "../../../api/deliverReceiptApi";
+import {createDeliverReceipt} from "../../../api/deliverReceiptApi";
+import {deleteDeliverReceipt} from "../../../api/deliverReceiptApi";
+import {releaseDeliverReceipt} from "../../../api/deliverReceiptApi";
+
+export default {
+  name: "MachineDeliverShow",
+  data() {
+    return {
+      searchOrder: {},
+      allOrderInfo: [],
+      currentPage: 1,
+      size: 10,
+      total: null,
+      newDeliverReceiptInfo: {},
+      addReceiptDialogVisible: false
+    }
+  },
+  mounted() {
+    this.initAllOrderInfo();
+  },
+  methods: {
+    initAllOrderInfo() {
+      getDeliverReceipt(this.currentPage, this.size, this.searchOrder, 0).then(resp => {
+        if (resp.data.obj) {
+          this.allOrderInfo = resp.data.obj.data
+          this.total = resp.data.obj.total
+        }
+      })
+    },
+    doSearch() {
+      this.currentPage = 1
+      this.initAllOrderInfo()
+    },
+    currentChange(currentPage) {
+      this.currentPage = currentPage;
+      this.initAllOrderInfo();
+    },
+    sizeChange(size) {
+      this.size = size;
+      this.initAllOrderInfo();
+    },
+    orderDetail(row) {
+      this.$emit('func', 1, row.deliverReceiptId, row.enableEdit)
+    },
+    addReceipt() {
+      this.addReceiptDialogVisible = true
+    },
+    addReceiptInfo() {
+      this.$confirm('是否确定要添加', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        createDeliverReceipt(this.newDeliverReceiptInfo).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("创建成功");
+            this.initAllOrderInfo();
+            this.addReceiptDialogVisible = false;
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消添加'
+        });
+      });
+    },
+    handleDelete(row) {
+      this.$confirm(row.sum !== 0 ? '该转交单中添加了机器，是否还要删除转交单' : '是否要删除转交单', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteDeliverReceipt(row.deliverReceiptId).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("删除成功");
+            this.initAllOrderInfo();
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+    },
+    release(row) {
+      this.$confirm('是否确定要发布该转交单', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        releaseDeliverReceipt(row.deliverReceiptId).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("发布成功");
+            this.initAllOrderInfo();
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消发布'
+        });
+      });
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>

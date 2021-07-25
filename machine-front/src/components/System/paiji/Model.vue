@@ -82,10 +82,21 @@ export default {
     update() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
-          paijiApi.updateModelContrast(this.form.modelContrast).then(resp => {
-            this.$message.success("更新成功")
-            this.initModelContrast()
-          })
+          this.$confirm('是否确定要更新', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            paijiApi.updateModelContrast(this.form.modelContrast).then(resp => {
+              this.$message.success("更新成功")
+              this.initModelContrast()
+            })
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消更新'
+            });
+          });
         } else {
           this.$message.error("某个字段为空")
           return false;

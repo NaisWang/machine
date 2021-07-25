@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.UpShelfReceiptMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.server.pojo.UpShelfReceipt">
+        <id column="up_shelf_order" property="upShelfOrder" />
+        <result column="up_shelf_date" property="upShelfDate" />
+        <result column="comment" property="comment" />
+        <result column="operate_emp_id" property="operateEmpId" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        up_shelf_order, up_shelf_date, comment, operate_emp_id
+    </sql>
+
+</mapper>

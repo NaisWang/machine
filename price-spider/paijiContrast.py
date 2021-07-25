@@ -84,7 +84,7 @@ def init_model_contrast():
 	url = "http://127.0.0.1:3001/machine/price/model-contrast/"
 	resp = json.loads(requests.get(url).text)
 	for item in resp['obj']:
-		model_contrast[str(item['excelModel']).replace(' ', '').lower()] = item['paijiModel']
+		model_contrast[str(item['excelModel']).replace(' ', '').replace('(', '').replace(')', '').replace('（', '').replace('）', '').lower()] = item['paijiModel']
 
 
 def init_model_guarantee_battery():

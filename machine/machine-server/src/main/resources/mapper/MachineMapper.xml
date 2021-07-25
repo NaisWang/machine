@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.MachineMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.Machine">
+    <id column="id" property="id"/>
+    <result column="purchase_order_id" property="purchaseOrderId"/>
+    <result column="number" property="number"/>
+    <result column="imei" property="imei"/>
+    <result column="category_id" property="categoryId"/>
+    <result column="brand_id" property="brandId"/>
+    <result column="type" property="type"/>
+    <result column="sku" property="sku"/>
+    <result column="rank" property="rank"/>
+    <result column="purchase_price" property="purchasePrice"/>
+    <result column="sale_price" property="salePrice"/>
+    <result column="describe" property="describe"/>
+    <result column="stock_location" property="stockLocation"/>
+    <result column="status_id" property="statusId"/>
+    <result column="sale_channel_id" property="saleChannelId"/>
+    <result column="operate_emp_id" property="operateEmpId"/>
+    <result column="quality_inspector" property="qualityInspector"/>
+    <result column="purchase_emp_id" property="purchaseEmpId"/>
+    <result column="enter_storage_emp_id" property="enterStorageEmpId"/>
+    <result column="bidding_date" property="biddingDate"/>
+    <result column="enter_storage_date" property="enterStorageDate"/>
+    <result column="out_storage_date" property="outStorageDate"/>
+    <result column="out_storage_batch" property="outStorageBatch"/>
+    <result column="comment" property="comment"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, purchase_order_id, enter_storage_receipt_id, `number`, imei, category_id, brand_id, type, sku, `rank`, purchase_price, sale_price, `describe`, stock_location, status_id, sale_channel_id, operate_emp_id, quality_inspector, purchase_emp_id, enter_storage_emp_id, bidding_date, enter_storage_date, out_storage_date, out_storage_batch, `comment`
+  </sql>
+
+  <update id="updateEnterStorageReceiptForOneKey">
+    update t_machine as a
+    set a.enter_storage_receipt_id = #{enterStorageReceipt.enterStorageOrder},
+        a.status_id                = 2,
+        a.enter_storage_date       = #{nowDateTime},
+        a.enter_storage_emp_id     = #{empId}
+    where a.purchase_order_id = #{purchaseOrderId}
+  </update>
+
+  <!--  获取采购单信息-->
+  <select id="getPurchaseOrder" resultType="com.example.server.pojo.PurchaseOrderReceipt">
+    select *
+    from (
+    select b.purchase_order, b.purchase_date, count(a.id is not null or null) as "sum", b.purchase_channel_id,
+    sum(a.purchase_price) as
+    sumPrice, count(a.status_id != 1 or a.status_id = 21 or null) as "enter_purchase_count", count(a.status_id = 1 or
+    a.status_id = 21 or
+    null) as
+    "not_enter_purchase_count", case when count((a.status_id != 1 and a.status_id != 21) or null) = 0 then 0 when
+    count(a.status_id = 1 or a.status_id = 21 or null)
+    = 0 then 1 else 2 end as "purchase_order_status", b.`comment`, b.operate_emp_id,
+    sum(if(a.status_id = 1 or a.status_id = 21 or null, a.purchase_price, 0)) as not_enter_purchase_price, is_release
+    from t_machine as a
+    right join t_purchase_order_receipt as b
+    on a.purchase_order_id = b.purchase_order
+    GROUP BY purchase_order
+    having 1 = 1
+    <if test="purchase.purchaseChannelId != null and purchase.purchaseChannelId != ''">
+      and b.purchase_channel_id = #{purchase.purchaseChannelId}
+    </if>
+    <if test="purchase.purchaseOrder != null and purchase.purchaseOrder != ''">
+      and b.purchase_order = #{purchase.purchaseOrder}
+    </if>
+    ) as c
+    <if test="purchase.purchaseOrderStatus != null and purchase.purchaseOrderStatus != ''">
+      where c.purchase_order_status = #{purchase.purchaseOrderStatus} - 1
+    </if>
+    order by purchase_order desc
+  </select>
+
+  <!--  获取入库单信息-->
+  <select id="getEnterStorageReceipt" resultType="com.example.server.pojo.EnterStorageReceipt">
+    select enter_storage_order, enter_storage_date, comment, count(a.enter_storage_receipt_id is not null or null) as
+    sum,sum(a.purchase_price) as sumPrice,
+    is_release
+    from (
+    select enter_storage_receipt_id, purchase_price
+    from t_machine as a
+    where a.enter_storage_receipt_id != ''
+    and a.enter_storage_receipt_id is not null
+    <if test="enterStorageReceipt.enterStorageOrder != null and enterStorageReceipt.enterStorageOrder != ''">
+      and a.enter_storage_receipt_id = #{enterStorageReceipt.enterStorageOrder}
+    </if>
+    ) as a
+    right join t_enter_storage_receipt as b
+    on a.enter_storage_receipt_id = b.enter_storage_order
+    group by b.enter_storage_order
+    order by b.enter_storage_order Desc
+  </select>
+
+  <!--  获取采购退货单信息-->
+  <select id="getPurchaseReturnReceipt" resultType="com.example.server.pojo.PurchaseReturnReceipt">
+    select purchase_return_order,
+    purchase_return_date,
+    count(b.purchase_return_receipt_id is not null or null) as 'sum',
+    count(b.status_id = 12 or null) as 'return_and_not_send',
+    count(b.status_id = 10 or null) as 'return_and_send',
+    count(b.status_id = 11 or null) as 'return_and_proceeds',
+    comment, is_release
+    from (
+    select a.purchase_return_receipt_id, a.status_id
+    from t_machine as a
+    where a.purchase_return_receipt_id != ''
+    and a.purchase_return_receipt_id is not null
+    <if test="purchaseReturnReceipt.purchaseReturnOrder != null and purchaseReturnReceipt.purchaseReturnOrder != ''">
+      and a.purchase_return_receipt_id = #{purchaseReturnReceipt.purchaseReturnOrder}
+    </if>
+    ) as b
+    right join t_purchase_return_receipt as c
+    on b.purchase_return_receipt_id = c.purchase_return_order
+    group by c.purchase_return_order
+    order by c.purchase_return_order desc
+  </select>
+
+
+  <!--  获取销售订单信息-->
+  <select id="getMarketOrderReceipt" resultType="com.example.server.pojo.MarketOrderReceipt">
+    select c.market_order,
+    c.market_order_date,
+    count(b.purchase_return_receipt_id is not null or null) as 'sum',
+    sum(b.sale_price) as sale_sum_price,
+    sum(b.purchase_price) as purchase_sum_price, is_release, c.comment as 'comment'
+    from (
+    select *
+    from t_machine as a
+    where a.market_order_id != ''
+    and a.market_order_id is not null
+    <if test="marketOrderReceipt.marketOrder != null and marketOrderReceipt.marketOrder != ''">
+      and a.market_order_id = #{marketOrderReceipt.marketOrder}
+    </if>
+    ) as b
+    right join t_market_order_receipt as c
+    on b.market_order_id = c.market_order
+    group by c.market_order
+    order by c.market_order desc
+  </select>
+
+  <!--  获取销售退货订单信息-->
+  <select id="getMarketReturnReceipt" resultType="com.example.server.pojo.MarketReturnReceipt">
+    select c.market_return_order, c.market_return_date, count(*) as sum, sum(b.sale_price) as sale_sum_price
+    from (
+    select market_return_receipt_id, sale_price
+    from t_machine as a
+    where a.market_return_receipt_id != ''
+    and a.market_return_receipt_id is not null
+    <if test="marketReturnReceipt.marketReturnOrder != null and marketReturnReceipt.marketReturnOrder != ''">
+      and a.market_return_receipt_id = #{marketReturnReceipt.marketReturnOrder}
+    </if>
+    ) as b
+    join t_market_return_receipt as c
+    on b.market_return_receipt_id = c.market_return_order
+    group by c.market_return_order
+    order by c.market_return_order desc
+  </select>
+
+  <!-- 获取上架单据 -->
+  <select id="getUpShelfReceipt" resultType="com.example.server.pojo.UpShelfReceipt">
+    select up_shelf_order, up_shelf_date, comment, operate_emp_id, count(*) as sum
+    from (
+    select up_shelf_receipt_id
+    from t_machine as a
+    where a.up_shelf_receipt_id != ''
+    and a.up_shelf_receipt_id is not null
+    <if test="upShelfReceipt.upShelfOrder != null and upShelfReceipt.upShelfOrder != ''">
+      and a.up_shelf_receipt_id = #{upShelfReceipt.upShelfOrder}
+    </if>
+    <if test="localDateScope != null and localDateScope.length === 2">
+      and a. = #{upShelfReceipt.upShelfOrder}
+    </if>
+    ) as a
+    join t_up_shelf_receipt as b
+    on a.up_shelf_receipt_id = b.up_shelf_order
+    group by b.up_shelf_order
+    order by b.up_shelf_order desc
+  </select>
+
+  <select id="getMachine" resultType="com.example.server.pojo.Machine">
+    select * from t_machine as a
+    where 1 = 1
+    <if test="machine.purchaseOrderId != null and machine.purchaseOrderId != ''">
+      and a.purchase_order_id = #{machine.purchaseOrderId}
+    </if>
+    <if test="machine.enterStorageReceiptId != null and machine.enterStorageReceiptId != ''">
+      and a.enter_storage_receipt_id = #{machine.enterStorageReceiptId}
+    </if>
+    <if test="machine.purchaseReturnReceiptId != null and machine.purchaseReturnReceiptId != ''">
+      and a.purchase_return_receipt_id = #{machine.purchaseReturnReceiptId}
+    </if>
+    <if test="machine.marketOrderId != null and machine.marketOrderId != ''">
+      and a.market_order_id = #{machine.marketOrderId}
+    </if>
+    <if test="machine.marketReturnReceiptId != null and machine.marketReturnReceiptId != ''">
+      and a.market_return_receipt_id = #{machine.marketReturnReceiptId}
+    </if>
+    <if test="machine.number != null and machine.number != ''">
+      and a.number = #{machine.number}
+    </if>
+    <if test="machine.imei != null and machine.imei != ''">
+      and a.imei like concat('%', #{machine.imei}, '%')
+    </if>
+    <if test="machine.categoryId != null and machine.categoryId != ''">
+      and a.category_id = #{machine.categoryId}
+    </if>
+    <if test="machine.brandId != null and machine.brandId != ''">
+      and a.brand_id = #{machine.brandId}
+    </if>
+    <if test="machine.type != null and machine.type != ''">
+      and a.type like concat('%', #{machine.type}, '%')
+    </if>
+    <if test="machine.sku != null and machine.sku != ''">
+      and a.sku like concat('%', #{machine.sku}, '%')
+    </if>
+    <if test="machine.rank != null and machine.rank != ''">
+      and a.rank like concat('%', #{machine.rank}, '%')
+    </if>
+    <if test="machine.describe != null and machine.describe != ''">
+      and a.describe = #{machine.describe}
+    </if>
+    <if test="bidDateScope != null and bidDateScope.length == 2">
+      and a.bidding_date between #{bidDateScope[0]} and #{bidDateScope[1]}
+    </if>
+  </select>
+
+</mapper>

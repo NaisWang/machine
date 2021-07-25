@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.DeliverMachineMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.DeliverMachine">
+    <id column="id" property="id"/>
+    <result column="deliver_receipt_id" property="deliverReceiptId"/>
+    <result column="machine_id" property="machineId"/>
+    <result column="status" property="status"/>
+    <result column="comment" property="comment"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, deliver_receipt_id, machine_id, status, comment
+  </sql>
+
+  <!-- 分页获取转交单中的详情   -->
+  <select id="getDeliverMachine" resultType="com.example.server.pojo.DeliverMachine">
+    select *
+    from t_deliver_machine
+    where deliver_receipt_id = #{deliverMachine.deliverReceiptId}
+  </select>
+
+</mapper>

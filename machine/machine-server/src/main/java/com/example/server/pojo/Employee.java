@@ -56,6 +56,9 @@ public class Employee implements Serializable, UserDetails {
 	@ApiModelProperty(value = "员工头像id")
 	private Integer image;
 
+	@ApiModelProperty(value = "员工库位")
+	private Integer storageLocationId;
+
 	@ApiModelProperty(value = "员工角色")
 	@TableField(exist = false)
 	private List<Role> roles;

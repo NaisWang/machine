@@ -38,9 +38,10 @@
 
         <el-main>
 
-          <el-tabs v-model="editableTabsValue" type="card" closable @tab-click='chooseTab' @tab-remove="removeTab">
+          <el-tabs v-model="$store.state.editableTabsValue" type="card" closable @tab-click='chooseTab'
+                   @tab-remove="removeTab">
             <el-tab-pane
-                v-for="(item, index) in editableTabs"
+                v-for="(item, index) in $store.state.editableTabs"
                 :key="item.name"
                 :label="item.title"
                 :name="item.name"
@@ -50,8 +51,8 @@
 
           <div class="homeWelcome" v-if="this.$route.path === '/home'">欢迎来到网上办公系统</div>
 
-          <keep-alive :include="includeList">
-            <router-view class="homeRouterView"></router-view>
+          <keep-alive :include="$store.state.includeList">
+            <router-view class="homeRouterView" @func="addTab"></router-view>
           </keep-alive>
 
         </el-main>
@@ -64,15 +65,23 @@
 </template>
 
 <script>
+import * as tab from "../utils/tab"
+
 export default {
   name: "Home",
   data() {
     return {
       user: JSON.parse(window.sessionStorage.getItem("user")),
-      editableTabsValue: null,
-      editableTabs: [],
-      includeList: [],
+      isCollapse: true
     };
+  },
+  mounted() {
+    let tabItem = {
+      title: this.$route.name,
+      name: this.$route.name,
+      path: this.$route.path,
+    }
+    this.addTab(tabItem);
   },
   methods: {
     menuClick(index) {
@@ -109,43 +118,15 @@ export default {
         });
       }
     },
-    removeTab(targetName) {  // 关闭当前页签，并将缓存数组中缓存当前页签的项去除
-      let tabs = this.editableTabs;
-      let activeName = this.editableTabsValue;
-      let componentName;
 
-      if (activeName === targetName) {  // 删除的是当前选中的页签
-        tabs.forEach((tab, index) => {
-          if (tab.name === targetName) {
-            // 关闭当前页签后，如果有下一个页签则显示下一个，否则显示前一个
-            let nextTab = tabs[index + 1] || tabs[index - 1];
-            if (nextTab) {
-              activeName = nextTab.name;
-              this.$router.push(nextTab.path)
-            } else {
-              this.$router.push("/home")
-            }
-          }
-        });
-      }
-      this.editableTabsValue = activeName;
-      this.editableTabs = tabs.filter(tab => tab.name !== targetName)
-      this.includeList = this.includeList.filter(item => item !== targetName);
+    removeTab(targetName) {  // 关闭当前页签，并将缓存数组中缓存当前页签的项去除
+      tab.removeTab(targetName, this.$router, this.$store)
     },
     addTab(item) {
-      // 当前新增的页签是否存在页签数组中的判断
-      let hasSame = this.editableTabs.filter(item1 => item1.name === item.name)
-      if (!hasSame.length) {
-        this.editableTabs.push(item);
-        this.includeList.push(item.name)
-        this.editableTabsValue = item.name;
-        this.$router.push(item.path)
-      }
-      this.editableTabsValue = item.name;
-      this.$router.push(item.path)
+      tab.addTab(item, this.$router, this.$store)
     },
-    chooseTab(tab) {
-      this.$router.push(this.editableTabs[tab.index].path)
+    chooseTab(tab1) {
+      tab.chooseTab(tab1, this.$router, this.$route, this.$store)
     },
   },
   computed: {
@@ -192,5 +173,9 @@ export default {
 
 .homeRouterView {
   margin-top: 10px;
+}
+
+.el-aside li {
+  min-width: 120px !important;
 }
 </style>

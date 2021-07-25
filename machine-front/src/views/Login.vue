@@ -32,7 +32,7 @@
 import * as loginApi from '../api/loginApi'
 import {receiveMenu} from "../utils/menu";
 import {getIndividualInfo} from "../api/IndividualApi";
-import initMachineCorr from "../utils/initMachineCorr";
+import initMachineCorr from "../utils/machineCorr";
 
 
 export default {
@@ -51,10 +51,6 @@ export default {
         password: [{required: true, message: "请输入密码", trigger: "blur"}],
       },
     }
-  },
-  mounted() {
-    console.log("aa")
-    console.log(test.tes)
   },
   methods: {
     submitForm() {

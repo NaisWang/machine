@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.DeliverReceiptMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.DeliverReceipt">
+    <id column="deliver_receipt_id" property="deliverReceiptId"/>
+    <result column="deliver_date" property="deliverDate"/>
+    <result column="receive_emp_id" property="receiveEmpId"/>
+    <result column="comment" property="comment"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    deliver_receipt_id, deliver_date, receive_emp_id, comment
+  </sql>
+
+  <!--  获取转交表数据  -->
+  <select id="getDeliverReceipt" resultType="com.example.server.pojo.DeliverReceipt">
+    select a.deliver_receipt_id,
+    deliver_date,
+    deliver_intention_id,
+    receive_emp_ids,
+    a.comment,
+    operate_emp_id,
+    enable_edit,
+    count(b.deliver_receipt_id is not null or null) as "sum",
+    count(b.status != 2 or null) as "not_receive_sum"
+    from t_deliver_receipt as a
+    left join t_deliver_machine as b
+    on a.deliver_receipt_id = b.deliver_receipt_id
+    where operate_emp_id = #{deliverReceipt.operateEmpId}
+    <if test="empId != 0">
+      and (receive_emp_ids LIKE concat(#{empId}, ',%')
+      OR receive_emp_ids LIKE concat('%,', #{empId})
+      OR receive_emp_ids LIKE concat(concat('%,', #{empId}), ',%')
+      OR receive_emp_ids = #{empId})
+    </if>
+    group by a.deliver_receipt_id
+  </select>
+
+</mapper>

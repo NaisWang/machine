@@ -5,32 +5,6 @@
       </el-button>
       <el-button type="primary" icon="el-icon-search" @click="updatePaijiField()">更新拍机堂字段数据
       </el-button>
-
-      <!--      <div>-->
-      <!--        <el-row>-->
-      <!--          <el-col :span="8" style="margin-right: 10px;">-->
-      <!--            拍机堂字段：-->
-      <!--            <el-input style="width: 300px; margin-right: 10px;" v-model="searchMachine.number"-->
-      <!--                      prefix-icon="el-icon-search"-->
-      <!--                      placeholder=""-->
-      <!--                      clearable-->
-      <!--                      @clear="initMachine"></el-input>-->
-      <!--          </el-col>-->
-      <!--          <el-col :span="8" style="margin-right: 10px;">-->
-      <!--            对应描述字段：-->
-      <!--            <el-input style="width: 300px; margin-right: 10px;" v-model="searchMachine.number"-->
-      <!--                      prefix-icon="el-icon-search"-->
-      <!--                      placeholder=""-->
-      <!--                      :disabled="showAdvanceSearchVisible"-->
-      <!--                      clearable-->
-      <!--                      @clear="initMachine"></el-input>-->
-      <!--          </el-col>-->
-      <!--          <el-col :span="8" style="margin-right: 10px;">-->
-      <!--            <el-button type="primary" icon="el-icon-search" @click="doSearch()" :disabled="showAdvanceSearchVisible">搜索-->
-      <!--            </el-button>-->
-      <!--          </el-col>-->
-      <!--        </el-row>-->
-      <!--      </div>-->
     </div>
     <template>
       <el-table
@@ -164,12 +138,23 @@ export default {
       }
     },
     updatePaijiField() {
-      this.loading = true
-      paijiApi.updatePaijiField().then(resp => {
-        this.loading = false;
-        this.$message.success("拍机堂字段给更新完成")
-        this.initPaiji()
-      })
+      this.$confirm('是否确定要更新', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.loading = true
+        paijiApi.updatePaijiField().then(resp => {
+          this.loading = false;
+          this.$message.success("拍机堂字段更新完成")
+          this.initPaiji()
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消更新'
+        });
+      });
     },
     updatePaijiTable() {
       paijiApi.updatePaijiTable(this.paiji).then(resp => {

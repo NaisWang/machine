@@ -8,6 +8,13 @@ export function getPaiji() {
   })
 }
 
+export function getPaijiBackup() {
+  return myAxios({
+    url: "/machine/price/fieldBackup",
+    method: 'get',
+  })
+}
+
 export function getModelContrast() {
   return myAxios({
     url: "/machine/price/model-contrast/",
@@ -121,6 +128,13 @@ export function updatePaijiUser(paijiUser) {
 export function testLogin(username, password) {
   return myAxios({
     url: "http://127.0.0.1:5000/testLogin?username=" + username + "&password=" + password,
+    method: 'get'
+  })
+}
+
+export function stopSearchPrice() {
+  return myAxios({
+    url: 'http://127.0.0.1:5000/stop-search-price',
     method: 'get'
   })
 }

@@ -24,8 +24,11 @@ function getComponent(component) {
   if (component.startsWith("Client")) {
     return () => import("../views/Client/" + component + ".vue")
   }
-  if (component.startsWith("Mach")) {
-    return () => import("../views/Machine/" + component + ".vue")
+  if (component.startsWith("Storage")) {
+    return () => import("../views/Storage/" + component + ".vue")
+  }
+  if (component.startsWith("Purchase")) {
+    return () => import("../views/Purchase/" + component + ".vue")
   }
   if (component.startsWith("Per")) {
     return () => import("../views/Personnel/" + component + ".vue")
@@ -35,6 +38,15 @@ function getComponent(component) {
   }
   if (component.startsWith("Sys")) {
     return () => import("../views/System/" + component + ".vue")
+  }
+  if (component.startsWith("Market")) {
+    return () => import("../views/Market/" + component + ".vue")
+  }
+  if (component.startsWith("Routine")) {
+    return () => import("../views/Routine/" + component + ".vue")
+  }
+  if (component.startsWith("Machine")) {
+    return () => import("../views/Machine/" + component + ".vue")
   }
 }
 

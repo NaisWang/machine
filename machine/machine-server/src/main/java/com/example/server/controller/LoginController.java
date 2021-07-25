@@ -1,7 +1,9 @@
 package com.example.server.controller;
 
+import com.example.server.pojo.Log;
 import com.example.server.pojo.LoginParam;
 import com.example.server.service.LoginService;
+import com.example.server.service.impl.LogServiceImpl;
 import com.example.server.service.impl.LoginServiceImpl;
 import com.example.server.utils.RespBean;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +21,9 @@ public class LoginController {
 
 	@Autowired
 	LoginServiceImpl loginService;
+
+	@Autowired
+	LogServiceImpl logService;
 
 	@ApiOperation(value = "登陆之后返回token")
 	@PostMapping("/login")

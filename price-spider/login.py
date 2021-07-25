@@ -8,13 +8,12 @@ from flask import request
 
 @app.route("/testLogin")
 def testLogin():
-	print(request.args["username"])
-	print(request.args["password"])
 	resp = login(request.args["username"], request.args["password"])
 
 	if resp == -1:
 		return "-1"
 	return "1"
+
 
 
 def login(username, password):
@@ -29,7 +28,7 @@ def login(username, password):
 									'+qQsw9XtTGRQxDuBKQIAOoUEfGp0cXBoCOSmS9RAiMFWHlHTYpyPJEvvsvoSFfN3RrbfAaB|HwF6mQZkHckCzM61dTq4t'
 									'/zopjkDojWE5H9y9ZPpLPA=|iOS|1.1$32$238F9E41CD06BA75$213',
 		'App-Id': 'pjt432865',
-		'Version': '2.17.0',
+		'Version': '2.19.1',
 		'Accept': 'application/json',
 		'App-Channel': '598302',
 		'Device-Id': '1FA6E5EC-4EC7-456D-AFB0-0F09516B36B8',
@@ -50,6 +49,10 @@ def login(username, password):
 			resp = json.loads(
 				requests.post(loginURL, headers=headers, data=json.dumps(data),
 											proxies={"http": "http://{}".format(proxy)}).text)
+
+			print("aaa")
+			print(resp)
+			print("aaa")
 			if 'data' in resp and "accessToken" in resp["data"]:
 				return resp["data"]["accessToken"]
 			else:

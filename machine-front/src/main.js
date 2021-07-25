@@ -10,6 +10,7 @@ import router from './utils/router'
 import store from './utils/store'
 import {receiveMenu} from "./utils/menu";
 import {getIndividualInfo} from "./api/IndividualApi";
+import * as initialStoreInformation from "./utils/initialStoreInformation";
 
 Vue.use(VueRouter)
 Vue.use(ElementUI, {size: 'small'})
@@ -18,19 +19,24 @@ router.beforeEach((to, from, next) => {
   if (to.fullPath.startsWith("/login")) {
     next();
   } else if (window.sessionStorage.getItem('tokenStr')) {
-    receiveMenu(router, store).then(() => {
-      if (!window.sessionStorage.getItem("user")) {
-        //判断用户是否存在
-        getIndividualInfo().then(resp => {
-          let data = resp.data.obj;
-          if (data) {
-            //存入用户信息
-            window.sessionStorage.setItem("user", JSON.stringify(data))
-            next();
-          }
-        })
-      }
-    });
+    if (initialStoreInformation.judgeIsUpdate(store)) {
+      initialStoreInformation.initialStoreInformation(store);
+    }
+    if (store.state.menuRoutes.length === 0) {
+      receiveMenu(router, store).then(() => {
+        if (!window.sessionStorage.getItem("user")) {
+          //判断用户是否存在
+          getIndividualInfo().then(resp => {
+            let data = resp.data.obj;
+            if (data) {
+              //存入用户信息
+              window.sessionStorage.setItem("user", JSON.stringify(data))
+              next();
+            }
+          })
+        }
+      });
+    }
     next();
   } else {
     next("/login/?redirect=" + to.path);

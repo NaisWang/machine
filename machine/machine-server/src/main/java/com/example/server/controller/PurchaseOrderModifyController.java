@@ -4,15 +4,12 @@ package com.example.server.controller;
 import com.example.server.pojo.Employee;
 import com.example.server.pojo.Role;
 import com.example.server.service.impl.PurchaseOrderModifyServiceImpl;
-import com.example.server.service.impl.PurchaseOrderServiceImpl;
 import com.example.server.utils.RespBean;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;

@@ -81,6 +81,7 @@
           </template>
         </el-table-column>
 
+
         <el-table-column
             prop="screenDisplay"
             label="屏幕显示"
@@ -235,20 +236,31 @@ export default {
     update() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
-          this.form.priceCombination.forEach(item => {
-            item["grade"] = this.arrayToString(item["grade"])
-            item['screenAppearance'] = this.arrayToString(item["screenAppearance"])
-            item['iframeBack'] = this.arrayToString(item["iframeBack"])
-            item['screenDisplay'] = this.arrayToString(item["screenDisplay"])
-            item['price1'] = this.arrayToString(item["price1"])
-            item['price2'] = this.arrayToString(item["price2"])
-            item['price3'] = this.arrayToString(item["price3"])
-          })
-          console.log(this.form.priceCombination)
-          paijiApi.updatePriceCombination(this.form.priceCombination).then(resp => {
-            this.initPriceCombination()
-            this.$message.success("更新成功")
-          })
+          this.$confirm('是否确定要更新', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.form.priceCombination.forEach(item => {
+              item["grade"] = this.arrayToString(item["grade"])
+              item['screenAppearance'] = this.arrayToString(item["screenAppearance"])
+              item['iframeBack'] = this.arrayToString(item["iframeBack"])
+              item['screenDisplay'] = this.arrayToString(item["screenDisplay"])
+              item['price1'] = this.arrayToString(item["price1"])
+              item['price2'] = this.arrayToString(item["price2"])
+              item['price3'] = this.arrayToString(item["price3"])
+            })
+            console.log(this.form.priceCombination)
+            paijiApi.updatePriceCombination(this.form.priceCombination).then(resp => {
+              this.initPriceCombination()
+              this.$message.success("更新成功")
+            })
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消更新'
+            });
+          });
         } else {
           this.$message.error("某个字段为空")
           return false;

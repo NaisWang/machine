@@ -4,6 +4,9 @@
       <el-tab-pane label="描述对照表" name="Describe">
         <Describe></Describe>
       </el-tab-pane>
+      <el-tab-pane label="描述对照表(备份)" name="DescBackup">
+        <DescBackup></DescBackup>
+      </el-tab-pane>
       <el-tab-pane label="机型对照表" name="Model">
         <Model></Model>
       </el-tab-pane>
@@ -23,6 +26,7 @@
 
 <script>
 import Describe from "../../components/System/paiji/Desc.vue"
+import DescBackup from "../../components/System/paiji/DescBackup.vue";
 import Model from "../../components/System/paiji/Model.vue"
 import Guarantee from "../../components/System/paiji/Guarantee.vue";
 import PriceCombination from "../../components/System/paiji/PriceCombination.vue";
@@ -37,6 +41,7 @@ export default {
   },
   components: {
     Describe,
+    DescBackup,
     Model,
     Guarantee,
     PriceCombination,
@@ -48,3 +53,4 @@ export default {
 <style scoped>
 
 </style>
+

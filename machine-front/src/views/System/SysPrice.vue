@@ -8,7 +8,6 @@
         :file-list="fileList1"
         accept="application/vnd.ms-excel"
         action=""
-        :limit="1"
         :auto-upload="false">
       <template #trigger>
         <el-button size="small" type="primary">选取文件</el-button>
@@ -21,6 +20,7 @@
     </el-upload>
 
     <el-upload
+        :multiple="true"
         style="margin-top: 20px;"
         class="upload-demo"
         ref="upload"
@@ -58,6 +58,9 @@
         <el-button size="small" type="success" @click="update" :disabled="importDataDisabled"
                    :icon="importDataBtnIcon">{{ importDataBtnText }}
         </el-button>
+        <el-button size="small" v-if="importDataDisabled" type="success" @click="stopSearchPrice"
+                   icon="el-icon-video-pause">停止
+        </el-button>
       </el-col>
     </el-row>
 
@@ -66,6 +69,7 @@
       <div>- 单元格背景色为红色, 表示机型搜索不出来</div>
       <div>- 单元格背景色为蓝色, 表示没有对应的保修或电池效率</div>
       <div>- 单元格背景色为绿色, 表示excel表的机况描述字段在对照表中没有</div>
+      <div>- 单元格背景色为灰色, 表示缺少拍机堂中的某个字段描述</div>
     </div>
 
     <el-row>
@@ -89,6 +93,7 @@
 
 <script>
 import $http from "axios"
+import * as paijiApi from "../../api/paijiApi"
 
 export default {
   name: "自动报价",
@@ -123,7 +128,7 @@ export default {
       this.$message.error("导入失败")
     },
     handleChange1(e, fileList) {
-      this.fileList1 = fileList;
+      this.fileList1 = [fileList[fileList.length - 1]]
     },
     handleRemove1(file, fileList) {
       this.fileList1 = fileList;
@@ -158,7 +163,6 @@ export default {
       this.get_log()
       $http.post('http://127.0.0.1:5000/price_excel/import', param, config)
           .then(resp => {
-            this.stopTimer = false;
             this.onSuccess()
             let data = resp.data;
             let blob = new Blob([data], {type: 'application/vnd.ms-excel'});
@@ -170,8 +174,14 @@ export default {
             downloadElement.click();
             document.body.removeChild(downloadElement);
             this.onSuccess()
+            new Promise(resolve =>
+                setTimeout(resolve, 3000)
+            ).then(() => {
+              this.stopTimer = false;
+            })
           }, () => {
             this.onError()
+            this.stopTimer = false;
           })
     },
     get_log() {
@@ -188,6 +198,11 @@ export default {
           })
         }
       }, 1000)
+    },
+    stopSearchPrice() {
+      paijiApi.stopSearchPrice().then(resp => {
+        this.$message.success("暂停成功")
+      })
     }
   }
 }

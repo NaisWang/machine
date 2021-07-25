@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.PurchaseOrderReceiptMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.server.pojo.PurchaseOrderReceipt">
+        <id column="id" property="id" />
+        <result column="purchase_date" property="purchaseDate" />
+        <result column="purchase_channel_id" property="purchaseChannelId" />
+        <result column="comment" property="comment" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, purchase_date, purchase_channel_id, comment
+    </sql>
+
+</mapper>

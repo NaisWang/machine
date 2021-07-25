@@ -12,6 +12,24 @@ export default new Vuex.Store({
     machineBrandCorr: {},
     employeeNameCorr: {},
     imageUrlCorr: {},
+
+    // 标签栏设置
+    editableTabs: [],
+    includeList: [],
+    editableTabsValue: null,
+
+    // 机器以及扫码添加时详细页面所要展示的数据
+    machineTableField: {},
+
+    // 获取拍机堂字段（包含分类）
+    machineDesc: {},
+
+    //机器描述id-value对照
+    machineIdToDesc: {},
+
+    //机器转交类别对应表
+    deliverIntentionCorr: {}
+
   },
   mutations: {
     initMenuRoutes(state, data) {
@@ -35,5 +53,43 @@ export default new Vuex.Store({
     initImageUrlCorr(state, data) {
       state.imageUrlCorr = data;
     },
+    initOneKeyEnterStorageMachine(state, data) {
+      state.oneKeyEnterStorageMachine = data;
+    },
+
+    initEditableTabs(state, data) {
+      state.editableTabs = data
+    },
+    editableTabsPush(state, item) {
+      state.editableTabs.push(item);
+    },
+
+    includeListPush(state, item) {
+      state.includeList.push(item)
+    },
+    initIncludeList(state, data) {
+      state.includeList = data
+    },
+
+    initEditableTabsValue(state, data) {
+      state.editableTabsValue = data
+    },
+
+    initMachineTableField(state, data) {
+      state.machineTableField = data;
+    },
+
+    initMachineDesc(state, data) {
+      state.machineDesc = data
+    },
+
+    initMachineIdToDesc(state, data) {
+      state.machineIdToDesc = data
+    },
+
+    initDeliverIntentionCorr(state, data) {
+      state.deliverIntentionCorr = data;
+    }
+
   },
 })

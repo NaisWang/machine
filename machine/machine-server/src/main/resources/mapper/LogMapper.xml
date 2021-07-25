@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.LogMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.Log">
+    <id column="id" property="id"/>
+    <result column="empId" property="empId"/>
+    <result column="urlId" property="urlId"/>
+    <result column="parameter" property="parameter"/>
+    <result column="time" property="time"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, empId, urlId, parameter, time
+  </sql>
+
+  <!-- 获取操作日志 -->
+  <select id="getLog" resultType="com.example.server.pojo.Log">
+    select a.*, b.name as emp_name
+    from t_log as a
+    join t_employee as b
+    on a.emp_id = b.id
+    where 1 = 1
+    <if test="log.empId != null and log.empId != ''">
+      and a.emp_id = #{log.empId}
+    </if>
+    <if test="localDateTimes != null and localDateTimes.length == 2">
+      and a.time between #{localDateTimes[0]} and #{localDateTimes[1]}
+    </if>
+    order by a.time desc
+  </select>
+
+</mapper>

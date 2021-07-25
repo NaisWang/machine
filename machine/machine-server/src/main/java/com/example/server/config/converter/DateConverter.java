@@ -13,8 +13,10 @@ import java.time.format.DateTimeFormatter;
 public class DateConverter implements Converter<String, LocalDate> {
 	@Override
 	public LocalDate convert(String s) {
-		//s = s.substring(0, 10);
-		//System.out.println(s);
+		s = s.substring(0, 10);
+		System.out.println("ffff");
+		System.out.println(s);
+		System.out.println("ffff");
 		try {
 			if (s.equals("")) return null;
 			return LocalDate.parse(s, DateTimeFormatter.ofPattern("yyyy-MM-dd"));

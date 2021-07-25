@@ -30,27 +30,32 @@ def generate_product_log(userName, methodName, arguments, errorInfo):
 def keyword_5g(keyword, userIndex):
 	if "(5g版)" in keyword or "（5g版）" in keyword or "(5g)" in keyword or "（5g）" in keyword:
 		tempKeyWord = keyword
-		keyword = keyword.replace('(5g版)', '').replace('（5g版）', '').replace('(5g)', '').replace('（5g）', '')
-		res = product_select(keyword, userIndex)
-		if res == -2:
-			return -2
-		if res != -1:
-			return res
-		keyword = tempKeyWord
 		keyword = keyword.replace('(5g版)', '(5g)').replace('（5g版）', '（5g）')
 		res = product_select(keyword, userIndex)
 		if res == -2:
 			return -2
 		if res != -1:
+			print("aa" + str(keyword))
 			return res
+
 		keyword = tempKeyWord
 		keyword = keyword.replace('(5g)', '(5g版)').replace('（5g）', '（5g版）')
 		res = product_select(keyword, userIndex)
 		if res == -2:
 			return -2
 		if res != -1:
+			print("bb" + str(keyword))
 			return res
-		return -1
+
+		keyword = tempKeyWord
+		keyword = keyword.replace('(5g版)', '').replace('（5g版）', '').replace('(5g)', '').replace('（5g）', '')
+		res = product_select(keyword, userIndex)
+		if res == -2:
+			return -2
+		if res != -1:
+			print("cc" + str(keyword))
+			return res
+
 	return -1
 
 
@@ -159,6 +164,7 @@ def get_product_id(keyword, userIndex):
 		if resp != -1:
 			return resp
 
+	keyword = keyword.replace(' ', '').replace('(', '').replace(')', '').replace('（', '').replace('）', '').lower()
 	if keyword in paijiContrast.model_contrast.keys():
 		res = product_select(paijiContrast.model_contrast[keyword], userIndex)
 		if res == -2:
@@ -197,10 +203,13 @@ def product_select(keyword, userIndex):
 						generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 																 str(item["productId"]))
 						return item["productId"]
-			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-													 str(resp))
-			return -1
+				return -1
+			else:
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+														 str(resp))
+				return -1
 		except Exception as e:
+			print(e)
 			retry_count -= 1
 			access.delete_proxy(proxy)
 	return -1
@@ -236,9 +245,10 @@ def get_report_no(productId, pricePropertyValueIds, userIndex):
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(resp['data']['reportNo']))
 				return resp['data']['reportNo']
-			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-													 str(resp))
-			return -1
+			else:
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+														 str(resp))
+				return -1
 		except Exception as e:
 			retry_count -= 1
 	access.delete_proxy(proxy)
@@ -263,7 +273,7 @@ def get_price(reportNo, userIndex):
 							'&IMHW_i0013dd481f50c8890660573867c246dd7daee549cb36',
 		'App-ID': 'pjt432865',
 		'Platform': 'ios',
-		'Version': '2.17.0'
+		'Version': '2.19.1'
 	}
 	proxy = access.get_proxy().get("proxy")
 	retry_count = 5
@@ -279,14 +289,15 @@ def get_price(reportNo, userIndex):
 				price = resp['data']['p2Price']
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(price))
-				return price
-			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-													 str(resp))
-			return -1
+				return {"price": price, "skuId": resp['data']['skuId']}
+			else:
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+														 str(resp))
+				return {"price": -1, "skuId": -1}
 		except Exception as e:
 			retry_count -= 1
 	access.delete_proxy(proxy)
-	return -1
+	return {"price": -1, "skuId": -1}
 
 
 # 获取手机对应的类别编号
@@ -312,9 +323,12 @@ def get_category_id():
 																 str(item["categoryId"]))
 						return item["categoryId"]
 					return -1
-			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-													 str(resp))
-			return -1
+				return -1
+			else:
+				print(str(resp))
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+														 str(resp))
+				return -1
 		except Exception as e:
 			retry_count -= 1
 	access.delete_proxy(proxy)
@@ -345,9 +359,10 @@ def get_brand(category):
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(brands))
 				return brands
-			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-													 str(resp))
-			return -1
+			else:
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+														 str(resp))
+				return -1
 		except Exception as e:
 			retry_count -= 1
 	access.delete_proxy(proxy)
@@ -377,9 +392,10 @@ def get_all_machine(categoryId, brandId, num):
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(res))
 				return res
-			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-													 str(resp))
-			return -1
+			else:
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+														 str(resp))
+				return -1
 		except Exception as e:
 			retry_count -= 1
 	access.delete_proxy(proxy)
@@ -439,7 +455,7 @@ def get_desc(productId, userIndex):
 	headers = {
 		'Access-Token': access.user[userIndex]['token'],
 		'User-Agent': access.userAgents[userAgentIndex - 1],
-		'Version': '2.17.0',
+		'Version': '2.19.1',
 		'App-ID': 'pit432865'
 	}
 	headers.update(common_header)
@@ -458,9 +474,10 @@ def get_desc(productId, userIndex):
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(resp['data']))
 				return resp['data']
-			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-													 str(resp))
-			return -1
+			else:
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+														 str(resp))
+				return -1
 		except Exception as e:
 			retry_count -= 1
 	access.delete_proxy(proxy)
@@ -470,15 +487,19 @@ def get_desc(productId, userIndex):
 @app.route('/update')
 def update_desc():
 	access.init_user()
-	categoryId = get_category_id()
-	brands = get_brand(categoryId)
+	times = 1
 
-	print(brands)
+	categoryId = -1
+	while categoryId == -1 and times < 5:
+		categoryId = get_category_id()
+		times += 1
+
+	brands = get_brand(categoryId)
 
 	desc = {}
 	count = 0
 	for brand in brands:
-		if count == 2:
+		if count == 3:
 			break
 		products = []
 		if str(brand['brandName']).strip() == '苹果':
@@ -487,6 +508,10 @@ def update_desc():
 		if str(brand['brandName']).strip() == '华为':
 			count += 1
 			products = get_all_machine(categoryId, brand["brandId"], 50)
+		if str(brand['brandName']).strip() == '三星':
+			count += 1
+			products = get_all_machine(categoryId, brand["brandId"], 50)
+			print(products)
 		if count != 0:
 			if products != -1:
 				for product in products:
@@ -506,6 +531,7 @@ def update_desc():
 									if descKey != "小型号" or (descKey == "小型号" and '其他' not in pricePropertyValue['value']):
 										desc[descKey].append({
 											"id": pricePropertyValue['id'],
+											"parentValue": key,
 											"value": str(pricePropertyValue['value']).strip() if isinstance(pricePropertyValue['value'],
 																																											str) else pricePropertyValue[
 												'value'],
@@ -514,4 +540,5 @@ def update_desc():
 	res = []
 	for key in desc.keys():
 		res.extend(desc[key])
+	print(res)
 	return jsonify(res)

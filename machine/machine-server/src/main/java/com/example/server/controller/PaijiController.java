@@ -3,28 +3,22 @@ package com.example.server.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.server.pojo.Paiji;
+import com.example.server.pojo.PaijiBackup;
 import com.example.server.service.impl.PaijiServiceImpl;
 import com.example.server.utils.RequestUtil;
 import com.example.server.utils.RespBean;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.connector.InputBuffer;
+import org.apache.xmlbeans.impl.xb.xmlschema.impl.SpaceAttributeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.*;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -39,6 +33,8 @@ public class PaijiController {
 
 	@Autowired
 	private PaijiServiceImpl paijiService;
+	@Autowired
+	private PaijiBackupController paijiBackupController;
 
 	@ApiOperation("获取paiji对照表数据")
 	@GetMapping("/machine/price/field")
@@ -91,43 +87,53 @@ public class PaijiController {
 
 	@ApiOperation("更新拍机堂字段")
 	@GetMapping("/system/paiji/updateField")
-	public RespBean updatePaijiField() throws Exception {
-		String result = RequestUtil.getRequest("http://127.0.0.1:5000/update");
-		if (result != null) {
-			System.out.println(result);
-			ObjectMapper objectMapper = new ObjectMapper();
-			List<Paiji> paijiList = objectMapper.readValue(result, new TypeReference<List<Paiji>>() {
-			});
-			HashMap<Integer, List<Paiji>> paijiMap = new HashMap<>();
-			System.out.println(paijiList);
-			for (Paiji paiji : paijiList) {
-				Integer status = judgeFieldStatus(paiji);
-				if (paijiMap.containsKey(status)) {
-					List<Paiji> paijiList1 = paijiMap.get(status);
-					paiji.setStatus(status);
-					paijiList1.add(paiji);
-				} else {
-					paiji.setStatus(status);
-					List<Paiji> paijiList1 = new LinkedList<>();
-					paijiList1.add(paiji);
-					paijiMap.put(status, paijiList1);
+	@Transactional
+	public RespBean updatePaijiField() {
+		try {
+			List<Integer> ids = new LinkedList<>();
+			String result = RequestUtil.getRequest("http://127.0.0.1:5000/update");
+			if (result != null) {
+				System.out.println(result);
+				ObjectMapper objectMapper = new ObjectMapper();
+				List<Paiji> paijiList = objectMapper.readValue(result, new TypeReference<List<Paiji>>() {
+				});
+				if (paijiList.size() == 0) {
+					return RespBean.error("更新失败, 请稍候在尝试");
 				}
+				List<PaijiBackup> paijiBackups = objectMapper.readValue(result, new TypeReference<List<PaijiBackup>>() {
+				});
+				HashMap<Integer, List<Paiji>> paijiMap = new HashMap<>();
+				for (Paiji paiji : paijiList) {
+					Integer status = judgeFieldStatus(paiji);
+					ids.add(paiji.getId());
+					if (paijiMap.containsKey(status)) {
+						List<Paiji> paijiList1 = paijiMap.get(status);
+						paiji.setStatus(status);
+						paijiList1.add(paiji);
+					} else {
+						paiji.setStatus(status);
+						List<Paiji> paijiList1 = new LinkedList<>();
+						paijiList1.add(paiji);
+						paijiMap.put(status, paijiList1);
+					}
+				}
+				if (paijiMap.get(0) != null) {
+					paijiService.updateBatchById(paijiMap.get(0));
+				}
+				if (paijiMap.get(1) != null) {
+					paijiService.updateBatchById(paijiMap.get(1));
+				}
+				if (paijiMap.get(2) != null) {
+					paijiService.saveBatch(paijiMap.get(2));
+				}
+				paijiBackupController.updatePaijiField(paijiBackups);
+				paijiService.remove(new QueryWrapper<Paiji>().notIn("id", ids));
 			}
-			for (Integer key : paijiMap.keySet()) {
-				System.out.println("status: " + key);
-				System.out.println(paijiMap.get(key));
-			}
-			if (paijiMap.get(0) != null) {
-				paijiService.updateBatchById(paijiMap.get(0));
-			}
-			if (paijiMap.get(1) != null) {
-				paijiService.updateBatchById(paijiMap.get(1));
-			}
-			if (paijiMap.get(2) != null) {
-				paijiService.saveBatch(paijiMap.get(2));
-			}
+			return RespBean.success("更新成功");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("更新失败");
 		}
-		return RespBean.success("更新成功");
 	}
 
 	/**

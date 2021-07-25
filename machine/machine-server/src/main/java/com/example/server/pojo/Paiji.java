@@ -37,6 +37,9 @@ public class Paiji implements Serializable {
 	@ApiModelProperty(value = "描述")
 	private String value;
 
+	@ApiModelProperty(value = "父描述")
+	private String parentValue;
+
 	@ApiModelProperty(value = "字段")
 	private String name;
 
@@ -48,5 +51,6 @@ public class Paiji implements Serializable {
 
 	@ApiModelProperty(value = "与上一个版本的区别")
 	private Integer status;
+
 
 }
