@@ -103,8 +103,8 @@
         </el-table-column>
 
         <el-table-column
-            prop="machineId"
-            label="机器id"
+            prop="machineNumber"
+            label="物品编码"
             width="170">
         </el-table-column>
 
@@ -163,7 +163,7 @@
             <el-button
                 size="mini"
                 type="success"
-                @click="orderDetail(scope.row)">详情
+                @click="detail(scope.row)">详情
             </el-button>
           </template>
         </el-table-column>
@@ -181,6 +181,8 @@
       </el-pagination>
     </div>
 
+    <MachineShowDetailVertical v-if="showDetail.value" :table-name="tableName" :machine="showDetailMachine"
+                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
   </div>
 </template>
 
@@ -190,11 +192,16 @@ import {getDeliverMachine} from "../../../api/deliverMachineApi";
 import {getMachine} from "../../../api/machineApi";
 import {addDeliverMachine} from "../../../api/deliverMachineApi";
 import {deleteDeliverMachine} from "../../../api/deliverMachineApi";
+import {getMachineTrace} from "../../../api/machineTraceApi";
+import MachineShowDetailVertical from "../MachineShowDetailVertical.vue";
 
 export default {
   name: "MachineReceiveDetail",
   data() {
     return {
+      showDetail: {"value": false},
+      showDetailMachine: {},
+      showMachineTrace: {},
       searchMachine: {},
       machines: [],
       currentPage: 1,
@@ -203,6 +210,9 @@ export default {
     }
   },
   props: ['receiptDetailNumber'],
+  components: {
+    MachineShowDetailVertical
+  },
   mounted() {
     this.searchMachine.deliverReceiptId = this.receiptDetailNumber;
     this.initDeliverMachines();
@@ -225,6 +235,15 @@ export default {
       this.size = size;
       this.initDeliverMachines();
     },
+    detail(row) {
+      getMachine(1, 10, {"number": row.machineNumber}).then(resp => {
+        this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
+        getMachineTrace({"number": row.machineNumber}).then(resp => {
+          this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
+          this.showDetail.value = true
+        })
+      })
+    }
   },
 }
 </script>
@@ -232,5 +251,9 @@ export default {
 <style>
 .el-dialog {
   margin-top: 0 !important;
+}
+
+.el-table--small td, .el-table--small td {
+  padding: 0 !important;
 }
 </style>

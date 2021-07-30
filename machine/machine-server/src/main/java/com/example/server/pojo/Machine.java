@@ -53,6 +53,14 @@ public class Machine implements Serializable {
 	@TableField("enter_storage_receipt_id")
 	private Integer enterStorageReceiptId;
 
+	@ApiModelProperty(value = "销退入库单据id")
+	@TableField("market_return_enter_storage_receipt_id")
+	private Integer marketReturnEnterStorageReceiptId;
+
+	@ApiModelProperty(value = "上架入库单据id")
+	@TableField("up_shelf_enter_storage_id")
+	private Integer upShelfEnterStorageId;
+
 	@ApiModelProperty(value = "采购退货单据id")
 	@TableField("purchase_return_receipt_id")
 	private Integer purchaseReturnReceiptId;
@@ -125,9 +133,9 @@ public class Machine implements Serializable {
 	@TableField("`describe`")
 	private String describe;
 
-	@ApiModelProperty(value = "库位")
-	@TableField("stock_location")
-	private String stockLocation;
+	@ApiModelProperty(value = "库位Id")
+	@TableField("storage_location_id")
+	private Integer storageLocationId;
 
 	@ApiModelProperty(value = "上一个机器状态id")
 	@TableField("previous_status_id")
@@ -141,6 +149,10 @@ public class Machine implements Serializable {
 	@TableField("sale_channel_id")
 	private Integer saleChannelId;
 
+	@ApiModelProperty(value = "采购渠道id")
+	@TableField(exist = false)
+	private Integer purchaseChannelId;
+
 	@ApiModelProperty(value = "处理人id")
 	@TableField("operate_emp_id")
 	private Integer operateEmpId;
@@ -148,6 +160,10 @@ public class Machine implements Serializable {
 	@ApiModelProperty(value = "处理时间")
 	@TableField("operate_date")
 	private LocalDateTime operateDate;
+
+	@ApiModelProperty(value = "采购时间")
+	@TableField(exist = false)
+	private LocalDateTime purchaseTime;
 
 	@ApiModelProperty(value = "采购人员id")
 	@TableField("purchase_emp_id")
@@ -160,11 +176,6 @@ public class Machine implements Serializable {
 	@ApiModelProperty(value = "入库人员id")
 	@TableField("enter_storage_emp_id")
 	private Integer enterStorageEmpId;
-
-	@ApiModelProperty(value = "采购日期")
-	@TableField("bidding_date")
-	@JsonDeserialize(using = DateDeserializer.class)
-	private LocalDateTime biddingDate;
 
 	@ApiModelProperty(value = "入库日期")
 	@TableField("enter_storage_date")
@@ -209,6 +220,10 @@ public class Machine implements Serializable {
 	@ApiModelProperty(value = "对应转机机器表中的id")
 	@TableField("deliver_receipt_id")
 	private Integer deliverReceiptId;
+
+	@ApiModelProperty(value = "是否能上架")
+	@TableField("is_up_shelf")
+	private Integer isUpShelf;
 
 	@ApiModelProperty(value = "备注")
 	@TableField("comment")

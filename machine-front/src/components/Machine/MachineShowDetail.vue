@@ -32,7 +32,6 @@
         <!--            type="selection"-->
         <!--            width="55">-->
         <!--        </el-table-column>-->
-
         <el-table-column
             v-if="fieldIsShow['purchaseOrderId']"
             prop="purchaseOrderId"
@@ -405,23 +404,23 @@
         </el-table-column>
 
         <el-table-column
-            v-if="fieldIsShow['statusId']"
+            v-if="fieldIsShow['statusId'] && extraNotShow.indexOf('statusId') === -1"
             prop="statusId"
             label="机器状态"
             width="70">
           <template #default="scope">
             <div>
-              <el-select size="mini"
-                         v-model="scope.row.statusId"
-                         v-if="$store.state.machineTableField[tableName]['statusId']['edit'] === 1 && tableOperate === 'add'">
-                <el-option
-                    v-for="index in Object.keys($store.state.machineStatusCorr).map(Number)"
-                    :key="index"
-                    :label="$store.state.machineStatusCorr[index]"
-                    :value="index">
-                </el-option>
-              </el-select>
-              <span v-else>{{
+              <!--              <el-select size="mini"-->
+              <!--                         v-model="scope.row.statusId"-->
+              <!--                         v-if="$store.state.machineTableField[tableName]['statusId']['edit'] === 1 && tableOperate === 'add'">-->
+              <!--                <el-option-->
+              <!--                    v-for="index in Object.keys($store.state.machineStatusCorr).map(Number)"-->
+              <!--                    :key="index"-->
+              <!--                    :label="$store.state.machineStatusCorr[index]"-->
+              <!--                    :value="index">-->
+              <!--                </el-option>-->
+              <!--              </el-select>-->
+              <span>{{
                   $store.state.machineStatusCorr[scope.row.statusId]
                 }}</span>
             </div>
@@ -429,7 +428,7 @@
         </el-table-column>
 
         <el-table-column
-            v-if="fieldIsShow['purchaseChannelId']"
+            v-if="fieldIsShow['purchaseChannelId'] && extraNotShow.indexOf('purchaseChannelId') === -1"
             prop="purchaseChannelId"
             label="购买渠道"
             width="110">
@@ -446,7 +445,7 @@
                 </el-option>
               </el-select>
               <span v-else>{{
-                  $store.state.machineChannelCorr[scope.row.purchasingChannelId]
+                  $store.state.machineChannelCorr[scope.row.purchaseChannelId]
                 }}</span>
             </div>
           </template>
@@ -507,23 +506,23 @@
         </el-table-column>
 
         <el-table-column
-            v-if="fieldIsShow['biddingDate']"
-            prop="biddingDate"
-            label="采购日期"
+            v-if="fieldIsShow['purchaseTime'] && extraNotShow.indexOf('purchaseTime') === -1"
+            prop="purchaseTime"
+            label="采购时间"
             width="160">
           <template #default="scope">
             <div>
               <el-date-picker
                   :clearable="false"
                   v-show="isEdit"
-                  v-model="scope.row.biddingDate"
+                  v-model="scope.row.purchaseTime"
                   type="date"
-                  @change="initUpdateMachine(scope.row, 'biddingDate')"
-                  :disabled="!($store.state.machineTableField[tableName]['biddingDate']['edit'] === 1 && tableOperate === 'add')"
+                  @change="initUpdateMachine(scope.row, 'purchaseTime')"
+                  :disabled="!($store.state.machineTableField[tableName]['purchaseTime']['edit'] === 1 && tableOperate === 'add')"
                   value-format="yyyy-MM-dd"
-                  :placeholder="scope.row.biddingDate" style="width: 130px">
+                  :placeholder="scope.row.purchaseTime" style="width: 130px">
               </el-date-picker>
-              <span v-show="!isEdit">{{ scope.row.biddingDate }}</span>
+              <span v-show="!isEdit">{{ scope.row.purchaseTime }}</span>
             </div>
           </template>
         </el-table-column>
@@ -596,11 +595,10 @@
             width="200px">
           <template #default="scope">
             <div>
-                <span v-for="item in (scope.row.qualityDesc === null ? '' : scope.row.qualityDesc.split(','))"
-                      :key="item" v-if="item !== ''"
-                      style="border: 1px solid black; margin: 1px">
-                  {{ $store.state.machineIdToDesc[item] }}
-                </span>
+              <el-tag v-for="item in (scope.row.qualityDesc === null ? '' : scope.row.qualityDesc.split(','))"
+                      :key="item" v-if="item !== ''">
+                {{ $store.state.machineIdToDesc[item] }}
+              </el-tag>
             </div>
 
             <!--            <el-form-item :prop="'priceCombination[' + scope.$index +'].iframeBack'"-->
@@ -635,11 +633,11 @@
             width="200px">
           <template #default="scope">
             <div>
-              <span v-for="item in (scope.row.featureDesc === null ? '' : scope.row.featureDesc.split(','))" :key="item"
-                    v-if="item !== ''"
-                    style="border: 1px solid black">
+              <el-tag v-for="item in (scope.row.featureDesc === null ? '' : scope.row.featureDesc.split(','))"
+                      :key="item"
+                      v-if="item !== ''">
                 {{ $store.state.machineIdToDesc[item] }}
-              </span>
+              </el-tag>
             </div>
             <!--            <el-select v-model="scope.row.featureDesc" multiple filterable-->
             <!--                       :disabled="!($store.state.machineTableField[tableName]['featureDesc']['edit'] === 1 && tableOperate === 'add')"-->
@@ -686,11 +684,11 @@
             width="110">
           <template #default="scope">
             <div>
-              <span v-for="item in (scope.row.needFix === null ? '' : scope.row.needFix.split(','))" :key="item"
-                    v-if="item !== ''"
-                    style="border: 1px solid black">
+              <el-tag type="warning" v-for="item in (scope.row.needFix === null ? '' : scope.row.needFix.split(','))"
+                      :key="item"
+                      v-if="item !== ''">
                 {{ $store.state.machineIdToDesc[item] }}
-              </span>
+              </el-tag>
             </div>
             <!--            <el-select v-model="scope.row.needFix" multiple filterable-->
             <!--                       :disabled="!($store.state.machineTableField[tableName]['needFix']['edit'] === 1 && tableOperate === 'add')"-->
@@ -719,11 +717,11 @@
             width="110">
           <template #default="scope">
             <div>
-              <span v-for="item in (scope.row.fixed === null ? '' : scope.row.fixed.split(','))" :key="item"
-                    v-if="item !== ''"
-                    style="border: 1px solid black">
+              <el-tag type="success" v-for="item in (scope.row.fixed === null ? '' : scope.row.fixed.split(','))"
+                      :key="item"
+                      v-if="item !== ''">
                 {{ $store.state.machineIdToDesc[item] }}
-              </span>
+              </el-tag>
             </div>
             <!--            <el-select v-model="scope.row.fixed" multiple filterable-->
             <!--                       :disabled="!($store.state.machineTableField[tableName]['fixed']['edit'] === 1 && tableOperate === 'add')"-->
@@ -752,11 +750,11 @@
             width="110">
           <template #default="scope">
             <div>
-              <span v-for="item in (scope.row.notFixed === null ? '' : scope.row.notFixed.split(','))" :key="item"
-                    v-if="item !== ''"
-                    style="border: 1px solid black">
+              <el-tag type="danger" v-for="item in (scope.row.notFixed === null ? '' : scope.row.notFixed.split(','))"
+                      :key="item"
+                      v-if="item !== ''">
                 {{ $store.state.machineIdToDesc[item] }}
-              </span>
+              </el-tag>
             </div>
             <!--            <el-select v-model="scope.row.notFixed" multiple filterable-->
             <!--                       :disabled="!($store.state.machineTableField[tableName]['notFixed']['edit'] === 1 && tableOperate === 'add')"-->
@@ -785,11 +783,11 @@
             width="110">
           <template #default="scope">
             <div>
-              <span v-for="item in (scope.row.fixToBad === null ? '' : scope.row.fixToBad.split(','))" :key="item"
-                    v-if="item !== ''"
-                    style="border: 1px solid black">
+              <el-tag type="danger" v-for="item in (scope.row.fixToBad === null ? '' : scope.row.fixToBad.split(','))"
+                      :key="item"
+                      v-if="item !== ''">
                 {{ $store.state.machineIdToDesc[item] }}
-              </span>
+              </el-tag>
             </div>
             <!--            <el-select v-model="scope.row.fixToBad" multiple filterable-->
             <!--                       :disabled="!($store.state.machineTableField[tableName]['fixToBad']['edit'] === 1 && tableOperate === 'add')"-->
@@ -842,19 +840,20 @@
         </el-table-column>
 
 
-        <el-table-column label="操作" fixed="right" width="80px">
+        <el-table-column label="操作" fixed="right" :width="tableOperate === 'add' ? '80px' : '250px'"
+                         v-if="tableOperate === undefined || tableOperate !== 'excel'">
           <template #default="scope">
             <el-button
                 size="mini"
-                type="primary"
-                @click="detail(scope.$index, scope.row)">详情
+                type="success"
+                @click="detail(scope.row)">详情
             </el-button>
 
             <el-button
-                v-if="isRelease === 0"
+                v-if="isRelease === 0 || tableNameToMachineStatus[tableName] === scope.row.statusId || tableOperate === 'add'"
                 size="mini"
                 type="danger"
-                @click="handleDelete(scope.row)">删除
+                @click="handleDelete(scope.row, scope.$index)">删除
             </el-button>
 
             <el-button
@@ -876,28 +875,26 @@
             <el-button
                 v-if="isRelease === 0 && tableName === 'purchaseOrder'"
                 size="mini"
-                type="primary"
+                type="info"
                 @click="edit(scope.row)">修改
             </el-button>
-            <!--            <el-button-->
-            <!--                v-if="scope.row.operate.notSubmitted === 1"-->
-            <!--                disabled-->
-            <!--                size="mini"-->
-            <!--                @click="handleDelete(scope.$index, scope.row)">未提交-->
-            <!--            </el-button>-->
-            <!--            <el-button-->
-            <!--                v-if="scope.row.operate.submitted === 1"-->
-            <!--                disabled-->
-            <!--                size="mini"-->
-            <!--                @click="handleDelete(scope.$index, scope.row)">已提交-->
-            <!--            </el-button>-->
+            <el-button
+                v-if="scope.row.operate !== undefined && scope.row.operate.notSubmitted === 1"
+                disabled
+                size="mini">未提交
+            </el-button>
+            <el-button
+                v-if="scope.row.operate !== undefined && scope.row.operate.submitted === 1"
+                disabled
+                size="mini">已提交
+            </el-button>
 
-            <!--            <el-button-->
-            <!--                v-if="scope.row.operate.edit === 1"-->
-            <!--                size="mini"-->
-            <!--                type="primary"-->
-            <!--                @click="$emit('func', scope.row)">修改-->
-            <!--            </el-button>-->
+            <el-button
+                v-if="scope.row.operate !== undefined && scope.row.operate.edit === 1"
+                size="mini"
+                type="info"
+                @click="$emit('func', scope.row)">修改
+            </el-button>
 
           </template>
         </el-table-column>
@@ -920,6 +917,9 @@
     <MachineEdit :machine="editMachine" :editShow="editShow" :table-name="tableName"
                  @initShow="initMachinesByApi"></MachineEdit>
 
+    <MachineShowDetailVertical v-if="showDetail.value" :table-name="tableName" :machine="showDetailMachine"
+                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+
   </div>
 </template>
 
@@ -934,12 +934,21 @@ import {
   purchaseReturnError,
   purchaseReturnSuccess
 } from "../../api/purchaseReturnApi";
+import {deleteMachineForMarketOrderReceipt} from "../../api/marketOrderApi";
+import {deleteMachineForMarketReturnReceipt} from "../../api/marketReturnReceiptApi";
+import {deleteMachineForMarketReturnEnterStorageReceipt} from "../../api/marketReturnEnterStorageApi";
+import {deleteMachineForUpShelfEnterStorage} from "../../api/upShelfEnterStorageApi";
+import {getMachineTrace} from "../../api/machineTraceApi";
+import MachineShowDetailVertical from "./MachineShowDetailVertical.vue";
 
 export default {
   name: "MachineShowDetail",
-  components: {MachineEdit},
+  components: {MachineShowDetailVertical, MachineEdit},
   data() {
     return {
+      showDetail: {"value": false},
+      showDetailMachine: {},
+      showMachineTrace: {},
       editShow: {"value": false},
       editMachine: {},
       searchMachine: {},
@@ -974,7 +983,7 @@ export default {
         "operateEmpId": false,
         "purchaseEmpId": false,
         "enterStorageEmpId": false,
-        "biddingDate": false,
+        "purchaseTime": false,
         "enterStorageDate": false,
         "qualityDesc": false,
         "featureDesc": false,
@@ -986,11 +995,21 @@ export default {
         "comment": false
       },
       tableField: [],
-      currentPage: 0,
+      currentPage: 1,
       size: 10,
       total: null,
       isEdit: false,
-      category: {1: 'phone', 2: 'tablet', 8: '手表'}
+      category: {1: 'phone', 2: 'tablet', 3: '手表'},
+      operateColumnWidth: null,
+      tableNameToMachineStatus: {
+        "purchaseOrder": 1,
+        "purchaseReturn": 3,
+        "storageEnter": 2,
+        "marketOrder": 13,
+        "marketReturn": 14,
+        "marketReturnEnterStorage": 2,
+        "upShelfEnterStorage": 2,
+      }
     }
   },
   props: ['machines', 'tableType', 'paging', 'tableName', 'tableOperate', 'extraNotShow', 'isRelease'],
@@ -1013,6 +1032,7 @@ export default {
     //  })
     //}
   },
+
   methods: {
     initTableField() {
       Object.values(this.$store.state.machineTableField[this.tableName]).forEach(item => {
@@ -1113,7 +1133,12 @@ export default {
     //  this.editMachines = [];
     //  this.originalValue = {};
     //},
-    handleDelete(row) {
+    handleDelete(row, index) {
+      if (index !== undefined) {
+        this.machines.splice(index, 1);
+        return
+      }
+
       this.$confirm('是否确定删除物品编号为' + row.number + '的机器', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -1140,6 +1165,34 @@ export default {
               this.initMachinesByApi(this.searchMachine);
             }
           })
+        } else if (this.tableName === 'marketOrder') {
+          deleteMachineForMarketOrderReceipt(row.id).then(resp => {
+            if (resp.data.code === 200) {
+              this.$message.success("删除成功");
+              this.initMachinesByApi(this.searchMachine);
+            }
+          })
+        } else if (this.tableName === 'marketReturn') {
+          deleteMachineForMarketReturnReceipt(row.id).then(resp => {
+            if (resp.data.code === 200) {
+              this.$message.success("删除成功");
+              this.initMachinesByApi(this.searchMachine);
+            }
+          })
+        } else if (this.tableName === 'marketReturnEnterStorage') {
+          deleteMachineForMarketReturnEnterStorageReceipt(row.id).then(resp => {
+            if (resp.data.code === 200) {
+              this.$message.success("删除成功");
+              this.initMachinesByApi(this.searchMachine);
+            }
+          })
+        } else if (this.tableName === 'upShelfEnterStorage') {
+          deleteMachineForUpShelfEnterStorage(row.id).then(resp => {
+            if (resp.data.code === 200) {
+              this.$message.success("删除成功");
+              this.initMachinesByApi(this.searchMachine);
+            }
+          })
         }
       }).catch(() => {
         this.$message({
@@ -1158,7 +1211,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        purchaseReturnSuccess(row.id).then(resp => {
+        purchaseReturnSuccess(row.number).then(resp => {
           if (resp.data.code === 200) {
             this.$message.success("操作成功");
             this.initMachinesByApi(this.searchMachine);
@@ -1177,7 +1230,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        purchaseReturnError(row.id).then(resp => {
+        purchaseReturnError(row.number).then(resp => {
           if (resp.data.code === 200) {
             this.$message.success("操作成功");
             this.initMachinesByApi(this.searchMachine);
@@ -1189,7 +1242,14 @@ export default {
           message: '已取消删除'
         });
       });
-    }
+    },
+    detail(row) {
+      this.showDetailMachine = JSON.parse(JSON.stringify(row));
+      getMachineTrace({"number": row.number}).then(resp => {
+        this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
+      })
+      this.showDetail.value = true
+    },
   }
 }
 </script>

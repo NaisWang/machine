@@ -25,6 +25,7 @@ public interface UrlMapper extends BaseMapper<Url> {
 	/**
 	 * 根据url获取用户角色
 	 */
-	List<Role> getRolesByUrl(@Param("url") String url, @Param("method") Integer method);
+//	List<Role> getRolesByUrl(@Param("url") String url, @Param("method") Integer method);
+	String getRolesByUrl(@Param("url") String url, @Param("method") Integer method);
 
 }

@@ -16,6 +16,7 @@
     </div>
 
     <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加入库单</el-button>
+    <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
 
     <div>
       <el-table
@@ -33,8 +34,14 @@
         </el-table-column>
 
         <el-table-column
-            prop="enterStorageDate"
-            label="入库日期"
+            prop="createTime"
+            label="创建日期"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="releaseTime"
+            label="发布日期"
             width="170">
         </el-table-column>
 
@@ -48,6 +55,28 @@
             prop="sumPrice"
             label="总价格"
             width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="storageLocationId"
+            label="库位"
+            width="170">
+          <template #default="scope">
+            {{
+              scope.row.storageLocationId === null ? "" : $store.state.subStorageLocationIdToNameCorr[scope.row.storageLocationId]
+            }}
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            prop="operateEmpId"
+            label="操作人"
+            width="80">
+          <template #default="scope">
+              <span>{{
+                  $store.state.employeeNameCorr[scope.row.operateEmpId]
+                }}</span>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -86,35 +115,25 @@
                 @click="orderDetail(scope.row)">详情
             </el-button>
 
-            <span v-if="scope.row.isRelease === 0">
-              <el-button
-                  size="mini"
-                  type="primary"
-                  @click="release(scope.row)">发布
-              </el-button>
-
-              <el-button
-                  size="mini"
-                  type="danger"
-                  v-if=""
-                  @click="eidt(scope.row)">修改
-              </el-button>
-
-              <el-button
-                  size="mini"
-                  type="danger"
-                  v-if=""
-                  @click="handleDelete(scope.row)">删除
-              </el-button>
-            </span>
-
             <el-button
-                v-else
+                v-if="scope.row.isRelease === 0"
                 size="mini"
                 type="primary"
-                :disabled="scope.row.purchaseOrderStatus !== 0"
-                @click="dialogVisible = true; purchaseOrderForOneKey = scope.row.purchaseOrder">
-              一键入库
+                @click="release(scope.row)">发布
+            </el-button>
+
+            <el-button
+                v-if="scope.row.isRelease === 0"
+                size="mini"
+                type="danger"
+                @click="eidt(scope.row)">修改
+            </el-button>
+
+            <el-button
+                v-if="scope.row.isDelete === 0"
+                size="mini"
+                type="danger"
+                @click="handleDelete(scope.row)">删除
             </el-button>
           </template>
         </el-table-column>
@@ -142,6 +161,18 @@
         :visible.sync="addReceiptDialogVisible">
 
       <el-form ref="form" :model="newReceiptInfo" label-width="80px">
+
+        <el-form-item label="库位">
+          <el-select clearable v-model="newReceiptInfo.storageLocationId"
+                     size="mini" placeholder="库位">
+            <el-option
+                v-for="id in $store.state.empIdToStorageLocationIdsForGateCorr[$store.state.userId]"
+                :label="$store.state.subStorageLocationIdToNameCorr[id]"
+                :value="id + ''"
+                :key="id">
+            </el-option>
+          </el-select>
+        </el-form-item>
 
         <el-form-item label="备注">
           <el-input type="text" v-model="newReceiptInfo.comment" size="mini"></el-input>
@@ -182,12 +213,19 @@ export default {
     }
   },
   mounted() {
-    this.initAllOrderInfo();
+    this.refresh()
+    console.log("fff")
   },
   components: {
     MachineEdit
   },
   methods: {
+    refresh(type) {
+      this.initAllOrderInfo();
+      if (type === 1) {
+        this.$message.success("更新成功");
+      }
+    },
     initAllOrderInfo() {
       enterStorageApi.getEnterStorageReceipt(this.currentPage, this.size, this.searchOrder).then(resp => {
         if (resp.data.obj) {
@@ -215,6 +253,10 @@ export default {
     //  this.$emit('func', 2)
     //},
     addReceiptInfo() {
+      if (this.newReceiptInfo.storageLocationId === "" || this.newReceiptInfo.storageLocationId === undefined) {
+        this.$message.error("需要选择库位!!");
+        return
+      }
       this.$confirm('是否确定要添加', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -235,6 +277,10 @@ export default {
       });
     },
     release(row) {
+      if (row.sum === 0) {
+        this.$message.error("该采购单为空，不能发布");
+        return
+      }
       this.$confirm('是否确定要发布该转交单', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',

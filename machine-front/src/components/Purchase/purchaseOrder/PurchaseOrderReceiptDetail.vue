@@ -76,15 +76,19 @@
     </div>
 
     <MachineShowDetail ref="child" :machines="machines" :paging="true" :tableName="'purchaseOrder'"
-                       :is-release="isRelease"></MachineShowDetail>
+                       :is-release="isRelease" :extra-not-show="[]"></MachineShowDetail>
 
 
     <el-dialog
         title="excel表格中的机器，是否确定要添加 ?"
         :visible.sync="excelDialogVisible"
         width="90%">
-      <MachineShowDetail :machines="needAddMachine" :paging="true"
-                         :tableName="'purchaseOrder'"></MachineShowDetail>
+      <span>当前机器总数：</span>
+      <el-tag>{{ needAddMachine.length }}</el-tag>
+      <MachineShowDetail :machines="needAddMachine" :paging="false"
+                         :tableName="'purchaseOrder'"
+                         :extraNotShow="['statusId', 'purchaseChannelId','purchaseTime']"
+                         table-operate="excel"></MachineShowDetail>
 
       <span slot="footer" class="dialog-footer">
                   <el-button @click="dialogVisible = false">取 消</el-button>
@@ -359,26 +363,50 @@ export default {
       reader.readAsBinaryString(f);
     },
     addMachines(type) {
-      let addMachine = []
-      if (type === 'excel') {
-        addMachine = this.needAddMachine
-      } else if (type === 'manual') {
-        addMachine = [this.needAddMachineByManual]
-      }
-      addMachineToPurchaseReceipt(addMachine, this.receiptDetailNumber).then(resp => {
-        if (resp.data.code === 200) {
-          this.$message.success("添加成功");
-          if (type === 'excel') {
-            this.needAddMachine = []
-          } else if (type === 'manual') {
-            this.needAddMachineByManual = {}
+      let canAdd = true;
+      if (type === 'manual') {
+        this.$refs['form'].validate((valid) => {
+          if (valid) {
+          } else {
+            canAdd = false
+            this.$message.error("输入有误");
+            return false;
           }
-          this.needAddMachine = []
-          this.$refs.child.initMachinesByApi(this.searchMachine)
-          this.excelDialogVisible = false;
-          this.manualDialogVisible = false;
+        });
+      }
+      this.$confirm('是否确定要提交', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if (canAdd) {
+          let addMachine = []
+          if (type === 'excel') {
+            addMachine = this.needAddMachine
+          } else if (type === 'manual') {
+            addMachine = [this.needAddMachineByManual]
+          }
+          addMachineToPurchaseReceipt(addMachine, this.receiptDetailNumber).then(resp => {
+            if (resp.data.code === 200) {
+              this.$message.success("添加成功");
+              if (type === 'excel') {
+                this.needAddMachine = []
+              } else if (type === 'manual') {
+                this.needAddMachineByManual = {}
+              }
+              this.needAddMachine = []
+              this.$refs.child.initMachinesByApi(this.searchMachine)
+              this.excelDialogVisible = false;
+              this.manualDialogVisible = false;
+            }
+          })
         }
-      })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消'
+        });
+      });
     },
   },
   components: {

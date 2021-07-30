@@ -17,6 +17,13 @@
     </div>
 
     <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加采购退货单</el-button>
+    <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
+
+    <div>
+      退货失败:
+      <el-input clearable placeholder="请输入物品编号" @keydown.enter.native="returnFail"
+                v-model="numberInput"></el-input>
+    </div>
 
     <div>
       <el-table
@@ -34,8 +41,14 @@
         </el-table-column>
 
         <el-table-column
-            prop="purchaseReturnDate"
-            label="退货日期"
+            prop="createTime"
+            label="创建日期"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="releaseTime"
+            label="发布日期"
             width="170">
         </el-table-column>
 
@@ -61,6 +74,17 @@
             prop="returnAndProceeds"
             label="退货已收款"
             width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="operateEmpId"
+            label="操作人"
+            width="80">
+          <template #default="scope">
+              <span>{{
+                  $store.state.employeeNameCorr[scope.row.operateEmpId]
+                }}</span>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -93,7 +117,7 @@
         </el-table-column>
 
 
-        <el-table-column label="操作" fixed="right">
+        <el-table-column label="操作" fixed="right" width="300px">
           <template #default="scope">
             <el-button
                 size="mini"
@@ -101,26 +125,26 @@
                 @click="orderDetail(scope.row)">详情
             </el-button>
 
-            <span v-if="scope.row.isRelease === 0">
-              <el-button
-                  size="mini"
-                  type="primary"
-                  @click="release(scope.row)">发布
-              </el-button>
+            <el-button
+                v-if="scope.row.isRelease === 0"
+                size="mini"
+                type="primary"
+                @click="release(scope.row)">发布
+            </el-button>
 
-              <el-button
-                  size="mini"
-                  type="danger"
-                  @click="eidt(scope.row)">修改
-              </el-button>
+            <el-button
+                v-if="scope.row.isRelease === 0"
+                size="mini"
+                type="info"
+                @click="eidt(scope.row)">修改
+            </el-button>
 
-              <el-button
-                  size="mini"
-                  type="danger"
-                  @click="handleDelete(scope.row)">删除
-              </el-button>
-            </span>
-
+            <el-button
+                v-if="scope.row.isRelease === 0"
+                size="mini"
+                type="danger"
+                @click="handleDelete(scope.row)">删除
+            </el-button>
           </template>
         </el-table-column>
 
@@ -166,7 +190,7 @@
 import {
   createPurchaseReturnReceipt,
   deletePurchaseReturnReceipt,
-  getPurchaseReturnReceipt, releasePurchaseReturnReceipt
+  getPurchaseReturnReceipt, purchaseReturnError, releasePurchaseReturnReceipt
 } from "../../../api/purchaseReturnApi";
 import MachineEdit from "../../Machine/MachineEdit.vue";
 
@@ -183,15 +207,22 @@ export default {
       currentPage: 1,
       size: 10,
       total: null,
+      numberInput: ""
     }
   },
   components: {
     MachineEdit
   },
   mounted() {
-    this.initAllOrderInfo();
+    this.refresh()
   },
   methods: {
+    refresh(type) {
+      this.initAllOrderInfo();
+      if (type === 1) {
+        this.$message.success("刷新成功");
+      }
+    },
     initAllOrderInfo() {
       getPurchaseReturnReceipt(this.currentPage, this.size, this.searchOrder).then(resp => {
         if (resp.data.obj) {
@@ -239,6 +270,10 @@ export default {
       });
     },
     release(row) {
+      if (row.sum === 0) {
+        this.$message.error("该采购单为空，不能发布");
+        return
+      }
       this.$confirm('是否确定要发布该退货转交单', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -280,6 +315,14 @@ export default {
         });
       });
 
+    },
+    returnFail() {
+      purchaseReturnError(this.numberInput).then(resp => {
+        if (resp.data.code === 200) {
+          this.$message.success("操作成功");
+          this.initAllOrderInfo();
+        }
+      })
     }
   }
 }

@@ -4,15 +4,13 @@ package com.example.server.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.server.pojo.*;
-import com.example.server.service.impl.DeliverMachineServiceImpl;
-import com.example.server.service.impl.DeliverReceiptServiceImpl;
-import com.example.server.service.impl.LogServiceImpl;
-import com.example.server.service.impl.MachineServiceImpl;
+import com.example.server.service.impl.*;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.ibatis.annotations.Update;
+import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
 import org.springframework.security.core.Authentication;
@@ -45,6 +43,8 @@ public class DeliverMachineController {
 	private LogServiceImpl logService;
 	@Autowired
 	private DeliverReceiptServiceImpl deliverReceiptService;
+	@Autowired
+	private MachineTraceServiceImpl machineTraceService;
 
 
 	@ApiOperation("分页获取转交单中的详情")
@@ -100,12 +100,17 @@ public class DeliverMachineController {
 				return RespBean.error("该转交单已经发布了");
 			}
 
+			if (!empId.equals(deliverReceipt.getOperateEmpId())) {
+				return RespBean.error("你没有权限操作该单据");
+			}
+
 			LocalDateTime now = LocalDateTime.now();
 
 			List<DeliverMachine> deliverMachines = new ArrayList<>();
 			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("id", Arrays.asList(ids)));
 			System.out.println(machines);
 			List<Integer> idLists = new ArrayList<>();
+			List<MachineTrace> machineTraces = new ArrayList<>();
 			for (Machine machine : machines) {
 				if (machine.getDeliverReceiptId() == null || machine.getDeliverReceiptId() == 0) {
 					DeliverMachine deliverMachine = new DeliverMachine();
@@ -115,12 +120,20 @@ public class DeliverMachineController {
 					deliverMachine.setReceiveDate(now);
 					deliverMachine.setMachineNumber(machine.getNumber());
 					deliverMachines.add(deliverMachine);
+
+					MachineTrace machineTrace = new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId());
+					machineTrace.setDeliverStatusId(0);
+					machineTrace.setDeliverIntentionId(deliverReceipt.getDeliverIntentionId());
+					machineTraces.add(machineTrace);
+
 					idLists.add(machine.getId());
 				}
 			}
 			if (deliverMachineService.saveBatch(deliverMachines)) {
 				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().in("id", idLists).set("deliver_receipt_id", receiptId))) {
-					return RespBean.success("添加成功");
+					if (machineTraceService.saveBatch(machineTraces)) {
+						return RespBean.success("添加成功");
+					}
 				}
 			}
 			throw new RuntimeException("添加失败");
@@ -133,17 +146,28 @@ public class DeliverMachineController {
 	@ApiOperation("删除转交单中的机器")
 	@DeleteMapping("/")
 	@Transactional
-	public RespBean deleteDeliverMachine(Integer machineId, Integer receiptId) {
-		if (deliverReceiptService.getById(receiptId).getEnableEdit() == 1) {
-			return RespBean.error("该单据不能再进行编辑");
+	public RespBean deleteDeliverMachine(String machineNumber, Integer receiptId, Authentication authentication) {
+		Integer empId = ((Employee) (authentication.getPrincipal())).getId();
+		LocalDateTime now = LocalDateTime.now();
+
+		DeliverReceipt deliverReceipt = deliverReceiptService.getById(receiptId);
+		if (!empId.equals(deliverReceipt.getOperateEmpId())) {
+			return RespBean.error("你没有权限操作该单据");
 		}
+
+		//if (deliverReceipt.getEnableEdit() == 1) {
+		//	return RespBean.error("该转交单已经发布了");
+		//}
+
+
 		try {
-			Map<String, Integer> queryMap = new HashMap<>();
-			queryMap.put("machine_id", machineId);
-			queryMap.put("deliver_receipt_id", receiptId);
-			if (deliverMachineService.remove(new QueryWrapper<DeliverMachine>().allEq(queryMap))) {
-				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("id", machineId).set("deliver_receipt_id", 0))) {
-					return RespBean.success("删除成功");
+			if (deliverMachineService.remove(new QueryWrapper<DeliverMachine>().eq("machine_number", machineNumber).eq("deliver_receipt_id", receiptId))) {
+				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("number", machineNumber).set("deliver_receipt_id", 0))) {
+					Machine machine = machineService.getOne(new QueryWrapper<Machine>().eq("number", machineNumber));
+					MachineTrace machineTrace = new MachineTrace(machineNumber, machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId());
+					if (machineTraceService.save(machineTrace)) {
+						return RespBean.success("删除成功");
+					}
 				}
 			}
 			throw new RuntimeException("删除失败");
@@ -171,7 +195,9 @@ public class DeliverMachineController {
 	@Transactional
 	public RespBean receiveMachine(Integer machineId, Authentication authentication) {
 		try {
-			Integer empId = ((Employee) authentication.getPrincipal()).getId();
+			Employee employee = (Employee) authentication.getPrincipal();
+			Integer empId = employee.getId();
+
 			Machine machine = machineService.getById(machineId);
 			Integer deliverReceiptId = machine.getDeliverReceiptId();
 			DeliverReceipt deliverReceipt = deliverReceiptService.getById(deliverReceiptId);
@@ -193,10 +219,15 @@ public class DeliverMachineController {
 			deliverMachine.setStatus(2);
 			deliverMachine.setReceiveDate(now);
 
-			if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("id", machineId).set("deliver_receipt_id", 0))) {
+			if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("id", machineId).set("deliver_receipt_id", 0).set("operate_emp_id", empId))) {
 				if (deliverMachineService.update(deliverMachine, new QueryWrapper<DeliverMachine>().allEq(queryMap))) {
-					logService.save(new Log(empId, "接收机器", "机器id为" + machineId, now, 0));
-					return RespBean.success("接收成功");
+					MachineTrace machineTrace = new MachineTrace(machine.getNumber(), machine.getStatusId(), deliverMachine.getDeliverReceiptId(), now, empId, machine.getComment(), machine.getStorageLocationId());
+					machineTrace.setDeliverStatusId(2);
+					machineTrace.setDeliverIntentionId(deliverReceipt.getDeliverIntentionId());
+					if (machineTraceService.save(machineTrace)) {
+						logService.save(new Log(empId, "接收机器", "机器id为" + machineId, now, 0));
+						return RespBean.success("接收成功");
+					}
 				}
 			}
 			throw new RuntimeException("接收失败");

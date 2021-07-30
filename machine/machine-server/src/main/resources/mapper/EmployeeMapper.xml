@@ -7,9 +7,8 @@
     <id column="id" property="id"/>
     <result column="name" property="name"/>
     <result column="username" property="username"/>
-    <result column="email" property="email"/>
     <result column="password" property="password"/>
-    <result column="image" property="image"/>
+    <result column="storage_location_id" property="storageLocationId"/>
   </resultMap>
 
   <resultMap id="EmpInfo" type="com.example.server.pojo.Employee" extends="BaseResultMap">
@@ -36,6 +35,8 @@
                 on a.id = b.employee_id
            join t_role as c
                 on c.id = b.role_id
+    where 1 = 1
+    ORDER BY a.id
   </select>
 
 </mapper>

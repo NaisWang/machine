@@ -152,7 +152,7 @@
         </el-form-item>
 
         <el-form-item :prop="'comment'"
-                      v-if="['purchaseOrder', 'purchaseReturn','purchaseOrderReceipt', 'enterStorageReceipt', 'marketOrder'].indexOf(tableName) !== -1"
+                      v-if="['purchaseOrder', 'purchaseReturn','purchaseOrderReceipt', 'enterStorageReceipt', 'marketOrder', 'marketReturn', 'marketReturnEnterStorage', 'fixSend', 'upShelfEnterStorage'].indexOf(tableName) !== -1"
                       label="备注"
                       :show-message="false"
                       style="margin: 0;"
@@ -174,7 +174,11 @@
 import {modifyMachineForPurchaseOrder, modifyPurchaseOrderReceipt} from "../../api/purchaseOrderReceipt";
 import {modifyEnterStorageReceipt} from "../../api/enterStorageApi";
 import {modifyPurchaseReturnReceipt} from "../../api/purchaseReturnApi";
-import {modifyMarketReturnReceipt} from "../../api/marketOrderApi";
+import {modifyMarketOrderReceipt} from "../../api/marketOrderApi";
+import {modifyMarketReturnReceipt} from "../../api/marketReturnReceiptApi";
+import {modifyMarketReturnEnterStorageReceipt} from "../../api/marketReturnEnterStorageApi";
+import {modifyFixSendReceipt} from "../../api/fixSendReceiptApi";
+import {modifyUpShelfEnterStorage} from "../../api/upShelfEnterStorageApi";
 
 export default {
   name: "MachineEdit",
@@ -214,7 +218,31 @@ export default {
             }
           })
         } else if (this.tableName === 'marketOrder') {
+          modifyMarketOrderReceipt(this.machine).then(resp => {
+            if (resp.data.code === 200) {
+              this.afterSubmit()
+            }
+          })
+        } else if (this.tableName === 'marketReturn') {
           modifyMarketReturnReceipt(this.machine).then(resp => {
+            if (resp.data.code === 200) {
+              this.afterSubmit()
+            }
+          })
+        } else if (this.tableName === 'marketReturnEnterStorage') {
+          modifyMarketReturnEnterStorageReceipt(this.machine).then(resp => {
+            if (resp.data.code === 200) {
+              this.afterSubmit()
+            }
+          })
+        } else if (this.tableName === 'fixSend') {
+          modifyFixSendReceipt(this.machine).then(resp => {
+            if (resp.data.code === 200) {
+              this.afterSubmit()
+            }
+          })
+        } else if (this.tableName === 'upShelfEnterStorage') {
+          modifyUpShelfEnterStorage(this.machine).then(resp => {
             if (resp.data.code === 200) {
               this.afterSubmit()
             }

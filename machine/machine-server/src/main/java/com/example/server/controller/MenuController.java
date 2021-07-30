@@ -37,6 +37,8 @@ public class MenuController {
 	@GetMapping("/")
 	public RespBean getAllMenuWithChildren(Authentication authentication) {
 		List<Role> roleList = ((Employee) authentication.getPrincipal()).getRoles();
+		System.out.println("aaa");
+		System.out.println(roleList);
 		StringBuffer sb = new StringBuffer();
 		for (Role role : roleList) {
 			sb.append(role.getId() + ",");

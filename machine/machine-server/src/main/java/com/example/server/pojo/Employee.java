@@ -1,6 +1,8 @@
 package com.example.server.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
@@ -39,6 +41,7 @@ public class Employee implements Serializable, UserDetails {
 	private static final long serialVersionUID = 1L;
 
 	@ApiModelProperty(value = "id")
+	@TableId(value = "id", type = IdType.AUTO)
 	private Integer id;
 
 	@ApiModelProperty(value = "姓名")
@@ -47,17 +50,15 @@ public class Employee implements Serializable, UserDetails {
 	@ApiModelProperty(value = "用户名")
 	private String username;
 
-	@ApiModelProperty(value = "邮箱")
-	private String email;
-
 	@ApiModelProperty(value = "密码")
 	private String password;
 
-	@ApiModelProperty(value = "员工头像id")
-	private Integer image;
+	//@ApiModelProperty(value = "用户状态")
+	//private Integer enabled;
 
-	@ApiModelProperty(value = "员工库位")
-	private Integer storageLocationId;
+	@ApiModelProperty(value = "角色（以字符串展示）")
+	@TableField(exist = false)
+	private String allRoleIds;
 
 	@ApiModelProperty(value = "员工角色")
 	@TableField(exist = false)

@@ -13,4 +13,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IEmployeeRoleService extends IService<EmployeeRole> {
 
+	/**
+	 * 添加用户角色对应关系
+	 */
+	Integer addEmpRole(Integer id, Integer[] rids);
 }

@@ -48,6 +48,9 @@ function getComponent(component) {
   if (component.startsWith("Machine")) {
     return () => import("../views/Machine/" + component + ".vue")
   }
+  if (component.startsWith("Fix")) {
+    return () => import("../views/Fix/" + component + ".vue")
+  }
 }
 
 export function receiveMenu(router, store) {

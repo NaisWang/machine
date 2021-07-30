@@ -32,7 +32,7 @@ export function getMarketOrderReceipt(currentPage, size, marketOrder, bidDateSco
 
 
 // 添加销售订单信息
-export function createMarketReturnReceipt(marketReturnReceipt) {
+export function createMarketOrderReceipt(marketReturnReceipt) {
   return myAxios({
     url: BASE_URL + '/',
     method: 'put',
@@ -40,8 +40,8 @@ export function createMarketReturnReceipt(marketReturnReceipt) {
   })
 }
 
-// 修改采购退货单信息
-export function modifyMarketReturnReceipt(receipt) {
+// 修改销售单信息
+export function modifyMarketOrderReceipt(receipt) {
   return myAxios({
     url: BASE_URL + '/modifyReceipt',
     method: 'put',
@@ -55,5 +55,29 @@ export function addMachineToMarketOrderReceipt(ids, receiptId) {
     url: BASE_URL + '/addMachine?receiptId=' + receiptId,
     method: 'put',
     data: ids
+  })
+}
+
+// 删除销售订单订单中的机器
+export function deleteMachineForMarketOrderReceipt(id) {
+  return myAxios({
+    url: BASE_URL + '/deleteMachine?id=' + id,
+    method: 'delete'
+  })
+}
+
+// 发布销售订单
+export function releaseMarketOrderReceipt(receiptId) {
+  return myAxios({
+    url: BASE_URL + '/release?receiptId=' + receiptId,
+    method: 'get'
+  })
+}
+
+// 删除销售订单
+export function deleteMarketOrderReceipt(receiptId) {
+  return myAxios({
+    url: BASE_URL + '/?receiptId=' + receiptId,
+    method: 'delete'
   })
 }

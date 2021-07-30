@@ -29,9 +29,11 @@
     <include refid="Base_Column_List"/>
     from t_menu as a
     where parent_id = #{parentId}
-    <foreach collection="roleIds.split(',')" item="roleId" separator=" ">
-      and a.role_ids like concat('%', #{roleId}, '%')
+    and(
+    <foreach collection="roleIds.split(',')" item="roleId" separator="or">a.role_ids like concat(#{roleId}, ',%') or
+      a.role_ids like concat('%,', #{roleId}, ',%') or a.role_ids like concat('%,', #{roleId}) or a.role_ids = #{roleId}
     </foreach>
+    )
   </select>
 
 </mapper>

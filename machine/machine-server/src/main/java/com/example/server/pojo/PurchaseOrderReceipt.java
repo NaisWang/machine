@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableField;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -37,9 +38,13 @@ public class PurchaseOrderReceipt implements Serializable {
 	@TableId(value = "purchase_order", type = IdType.AUTO)
 	private Integer purchaseOrder;
 
-	@ApiModelProperty(value = "采购日期")
-	@TableField("purchase_date")
-	private LocalDate purchaseDate;
+	@ApiModelProperty(value = "创建时间")
+	@TableField("create_time")
+	private LocalDateTime createTime;
+
+	@ApiModelProperty(value = "发布时间")
+	@TableField("release_time")
+	private LocalDateTime releaseTime;
 
 	@ApiModelProperty(value = "采购渠道id")
 	@TableField("purchase_channel_id")
@@ -81,5 +86,10 @@ public class PurchaseOrderReceipt implements Serializable {
 	@ApiModelProperty(value = "是否提交")
 	@TableField("is_release")
 	private Integer isRelease;
+
+	@ApiModelProperty(value = "是否可以删除, 0：可以删除，1：不可删除")
+	@TableField(exist = false)
+	private Integer isDelete;
+
 
 }

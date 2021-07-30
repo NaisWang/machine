@@ -5,10 +5,23 @@ let BASE_URL = "/deliver/receipt"
 
 
 // 获取转交单信息
-export function getDeliverReceipt(currentPage, size, receipt, type) {
-  let test = Object.assign(receipt, {currentPage: currentPage, size: size, type: type})
+export function getDeliverReceipt(currentPage, size, receipt) {
+  let test = Object.assign(receipt, {currentPage: currentPage, size: size})
   return myAxios({
     url: BASE_URL + '/',
+    method: 'get',
+    params: test,
+    paramsSerializer: function (params) {
+      return qs.stringify(params, {arrayFormat: 'repeat'})
+    }
+  })
+}
+
+// 获取需要接收的转交单
+export function getReceiveReceipt(currentPage, size, receipt) {
+  let test = Object.assign(receipt, {currentPage: currentPage, size: size})
+  return myAxios({
+    url: BASE_URL + '/receive',
     method: 'get',
     params: test,
     paramsSerializer: function (params) {

@@ -18,25 +18,48 @@
   <!--  获取转交表数据  -->
   <select id="getDeliverReceipt" resultType="com.example.server.pojo.DeliverReceipt">
     select a.deliver_receipt_id,
-    deliver_date,
-    deliver_intention_id,
-    receive_emp_ids,
-    a.comment,
-    operate_emp_id,
-    enable_edit,
-    count(b.deliver_receipt_id is not null or null) as "sum",
-    count(b.status != 2 or null) as "not_receive_sum"
+           create_time,
+           release_time,
+           deliver_intention_id,
+           receive_emp_ids,
+           a.comment,
+           operate_emp_id,
+           enable_edit,
+           count(b.deliver_receipt_id is not null or null) as "sum",
+           count(b.status != 2 or null)                    as "not_receive_sum",
+           case
+             when count(b.deliver_receipt_id is not null or null) = count(b.status != 2 or null) or enable_edit = 0
+               then 0
+             else 1 end                                    as is_delete
     from t_deliver_receipt as a
-    left join t_deliver_machine as b
-    on a.deliver_receipt_id = b.deliver_receipt_id
+           left join t_deliver_machine as b
+                     on a.deliver_receipt_id = b.deliver_receipt_id
     where operate_emp_id = #{deliverReceipt.operateEmpId}
-    <if test="empId != 0">
+    group by a.deliver_receipt_id
+  </select>
+
+  <!-- 获取需要接收的转交单 -->
+  <select id="getReceiveDeliverReceipt" resultType="com.example.server.pojo.DeliverReceipt">
+    select a.deliver_receipt_id,
+           create_time,
+           release_time,
+           deliver_intention_id,
+           receive_emp_ids,
+           a.comment,
+           operate_emp_id,
+           enable_edit,
+           count(b.deliver_receipt_id is not null or null) as "sum",
+           count(b.status != 2 or null)                    as "not_receive_sum"
+    from t_deliver_receipt as a
+           left join t_deliver_machine as b
+                     on a.deliver_receipt_id = b.deliver_receipt_id
+    where enable_edit = 1
       and (receive_emp_ids LIKE concat(#{empId}, ',%')
       OR receive_emp_ids LIKE concat('%,', #{empId})
       OR receive_emp_ids LIKE concat(concat('%,', #{empId}), ',%')
       OR receive_emp_ids = #{empId})
-    </if>
     group by a.deliver_receipt_id
+
   </select>
 
 </mapper>

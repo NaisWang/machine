@@ -68,17 +68,17 @@ export function releasePurchaseReturnReceipt(receiptId) {
 }
 
 // 设置退货成功
-export function purchaseReturnSuccess(machineId) {
+export function purchaseReturnSuccess(number) {
   return myAxios({
-    url: BASE_URL + '/returnSuccess?machineId=' + machineId,
+    url: BASE_URL + '/returnSuccess?number=' + number,
     method: 'get'
   })
 }
 
 // 设置退货失败
-export function purchaseReturnError(machineId) {
+export function purchaseReturnError(number) {
   return myAxios({
-    url: BASE_URL + '/returnError?machineId=' + machineId,
+    url: BASE_URL + '/returnError?number=' + number,
     method: 'get'
   })
 }

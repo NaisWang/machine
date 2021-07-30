@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.OperateTraceMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.OperateTrace">
+    <id column="id" property="id"/>
+    <result column="number" property="number"/>
+    <result column="operate_type" property="operateType"/>
+    <result column="before_status_id" property="beforeStatusId"/>
+    <result column="after_status_id" property="afterStatusId"/>
+    <result column="operate_time" property="operateTime"/>
+    <result column="operate_emp_id" property="operateEmpId"/>
+    <result column="storage_location_id" property="storageLocationId"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, number, operate_type, before_status_id, after_status_id, operate_time, operate_emp_id, storage_location_id
+  </sql>
+
+  <!-- 获取操作追踪   -->
+  <select id="getOperateTrace" resultType="com.example.server.pojo.OperateTrace">
+    select *
+    from t_operate_trace
+    where 1 = 1
+    <if test="operateTrace.operateEmpId != null and operateTrace.operateEmpId != ''">
+      and operate_emp_id = #{operateTrace.operateEmpId}
+    </if>
+    <if test="operateTrace.number != null and operateTrace.number != ''">
+      and number = #{operateTrace.number}
+    </if>
+    <if test="operateTrace.operateType != null and operateTrace.operateType != ''">
+      and operate_type= #{operateTrace.operateType}
+    </if>
+  </select>
+
+</mapper>

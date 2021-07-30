@@ -37,9 +37,13 @@ public class DeliverReceipt implements Serializable {
 	@TableId(value = "deliver_receipt_id", type = IdType.AUTO)
 	private Integer deliverReceiptId;
 
-	@ApiModelProperty(value = "转交日期")
-	@TableField("deliver_date")
-	private LocalDateTime deliverDate;
+	@ApiModelProperty(value = "创建时间")
+	@TableField("create_time")
+	private LocalDateTime createTime;
+
+	@ApiModelProperty(value = "发布时间")
+	@TableField("release_time")
+	private LocalDateTime releaseTime;
 
 	@ApiModelProperty(value = "转交意图id")
 	@TableField("deliver_intention_id")
@@ -64,6 +68,10 @@ public class DeliverReceipt implements Serializable {
 	@ApiModelProperty(value = "是否可以修改，0：可以修改，1：不可修改")
 	@TableField("enable_edit")
 	private Integer enableEdit;
+
+	@ApiModelProperty(value = "是否可以删除")
+	@TableField(exist = false)
+	private Integer isDelete;
 
 	@ApiModelProperty(value = "备注")
 	private String comment;

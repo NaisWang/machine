@@ -35,7 +35,7 @@ public class LogController {
 	@ApiOperation("获取操作日志")
 	@GetMapping("/")
 	public RespBean getLog(@RequestParam(defaultValue = "1") Integer currentPage,
-												 @RequestParam(defaultValue = "100") Integer size,
+												 @RequestParam(defaultValue = "10") Integer size,
 												 Log log,
 												 LocalDate[] logTimeScope) {
 		RespPageBean respPageBean = logService.getLog(currentPage, size, log, logTimeScope);

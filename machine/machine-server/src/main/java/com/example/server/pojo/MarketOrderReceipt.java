@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableField;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -37,9 +38,17 @@ public class MarketOrderReceipt implements Serializable {
 	@TableId(value = "market_order", type = IdType.AUTO)
 	private Integer marketOrder;
 
-	@ApiModelProperty(value = "销售订单日期")
-	@TableField("market_order_date")
-	private LocalDate marketOrderDate;
+	@ApiModelProperty(value = "创建时间")
+	@TableField("create_time")
+	private LocalDateTime createTime;
+
+	@ApiModelProperty(value = "发布时间")
+	@TableField("release_time")
+	private LocalDateTime releaseTime;
+
+	@ApiModelProperty(value = "操作人")
+	@TableField("operate_emp_id")
+	private Integer operateEmpId;
 
 	@ApiModelProperty(value = "总数")
 	@TableField(exist = false)

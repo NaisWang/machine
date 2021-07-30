@@ -38,7 +38,7 @@
   <update id="updateEnterStorageReceiptForOneKey">
     update t_machine as a
     set a.enter_storage_receipt_id = #{enterStorageReceipt.enterStorageOrder},
-        a.status_id                = 2,
+        a.status_id                = 20,
         a.enter_storage_date       = #{nowDateTime},
         a.enter_storage_emp_id     = #{empId}
     where a.purchase_order_id = #{purchaseOrderId}
@@ -48,15 +48,17 @@
   <select id="getPurchaseOrder" resultType="com.example.server.pojo.PurchaseOrderReceipt">
     select *
     from (
-    select b.purchase_order, b.purchase_date, count(a.id is not null or null) as "sum", b.purchase_channel_id,
+    select b.purchase_order, b.create_time, b.release_time, count(a.id is not null or null) as "sum",
+    b.purchase_channel_id,
     sum(a.purchase_price) as
-    sumPrice, count(a.status_id != 1 or a.status_id = 21 or null) as "enter_purchase_count", count(a.status_id = 1 or
-    a.status_id = 21 or
-    null) as
+    sumPrice, count(a.status_id not in (1, 20, 21) or null) as "enter_purchase_count", count(a.status_id in (1, 21, 20)
+    or null) as
     "not_enter_purchase_count", case when count((a.status_id != 1 and a.status_id != 21) or null) = 0 then 0 when
     count(a.status_id = 1 or a.status_id = 21 or null)
     = 0 then 1 else 2 end as "purchase_order_status", b.`comment`, b.operate_emp_id,
-    sum(if(a.status_id = 1 or a.status_id = 21 or null, a.purchase_price, 0)) as not_enter_purchase_price, is_release
+    sum(if(a.status_id = 1 or a.status_id = 21 or null, a.purchase_price, 0)) as not_enter_purchase_price, is_release,
+    case when count(a.status_id = 1 or null) = count(a.id is not null or null) or is_release = 0 then 0 else 1 end as
+    'is_delete'
     from t_machine as a
     right join t_purchase_order_receipt as b
     on a.purchase_order_id = b.purchase_order
@@ -77,11 +79,14 @@
 
   <!--  获取入库单信息-->
   <select id="getEnterStorageReceipt" resultType="com.example.server.pojo.EnterStorageReceipt">
-    select enter_storage_order, enter_storage_date, comment, count(a.enter_storage_receipt_id is not null or null) as
+    select enter_storage_order, create_time,release_time,operate_emp_id, comment, count(a.enter_storage_receipt_id is
+    not null or null) as
     sum,sum(a.purchase_price) as sumPrice,
-    is_release
+    case when count(a.status_id = 2 or null) = count(a.id is not null or null) or is_release = 0 then 0 else 1 end as
+    'is_delete',
+    is_release, storage_location_id
     from (
-    select enter_storage_receipt_id, purchase_price
+    select enter_storage_receipt_id, purchase_price, status_id, id
     from t_machine as a
     where a.enter_storage_receipt_id != ''
     and a.enter_storage_receipt_id is not null
@@ -95,10 +100,57 @@
     order by b.enter_storage_order Desc
   </select>
 
+  <!--  获取销退入库单信息-->
+  <select id="getMarketReturnEnterStorageReceipt"
+          resultType="com.example.server.pojo.MarketReturnEnterStorage">
+    select id,
+    create_time,release_time,operate_emp_id,
+    comment,
+    count(a.market_return_enter_storage_receipt_id is not null or null) as
+    sum,
+    sum(a.purchase_price) as sumPrice,
+    is_release, storage_location_id
+    from (
+    select market_return_enter_storage_receipt_id, purchase_price
+    from t_machine as a
+    where a.market_return_enter_storage_receipt_id != ''
+    and a.market_return_enter_storage_receipt_id is not null
+    <if test="marketReturnEnterStorage.id != null and marketReturnEnterStorage.id != ''">
+      and a.market_return_enter_storage_receipt_id = #{marketReturnEnterStorage.id}
+    </if>
+    ) as a
+    right join t_market_return_enter_storage as b
+    on a.market_return_enter_storage_receipt_id = b.id
+    group by b.id
+    order by b.id Desc
+  </select>
+
+  <!-- 获取上架入库单 -->
+  <select id="getUpShelfEnterStorageReceipt" resultType="com.example.server.pojo.UpShelfEnterStorageReceipt">
+    select id, create_time,release_time, operate_emp_id,
+    comment,
+    count(a.up_shelf_enter_storage_id is not null or null) as
+    sum,
+    sum(a.purchase_price) as sumPrice,
+    is_release, storage_location_id
+    from (
+    select up_shelf_enter_storage_id, purchase_price
+    from t_machine as a
+    where a.up_shelf_enter_storage_id != ''
+    and a.up_shelf_enter_storage_id is not null
+    <if test="upShelfEnterStorageReceipt.id != null and upShelfEnterStorageReceipt.id != ''">
+      and a.up_shelf_enter_storage_id = #{upShelfEnterStorageReceipt.id}
+    </if>
+    ) as a
+    right join t_up_shelf_enter_storage_receipt as b
+    on a.up_shelf_enter_storage_id = b.id
+    group by b.id
+    order by b.id Desc
+  </select>
+
   <!--  获取采购退货单信息-->
   <select id="getPurchaseReturnReceipt" resultType="com.example.server.pojo.PurchaseReturnReceipt">
-    select purchase_return_order,
-    purchase_return_date,
+    select purchase_return_order,create_time,release_time, operate_emp_id,
     count(b.purchase_return_receipt_id is not null or null) as 'sum',
     count(b.status_id = 12 or null) as 'return_and_not_send',
     count(b.status_id = 10 or null) as 'return_and_send',
@@ -123,7 +175,7 @@
   <!--  获取销售订单信息-->
   <select id="getMarketOrderReceipt" resultType="com.example.server.pojo.MarketOrderReceipt">
     select c.market_order,
-    c.market_order_date,
+    c.create_time, c.release_time, c.operate_emp_id,
     count(b.purchase_return_receipt_id is not null or null) as 'sum',
     sum(b.sale_price) as sale_sum_price,
     sum(b.purchase_price) as purchase_sum_price, is_release, c.comment as 'comment'
@@ -144,7 +196,9 @@
 
   <!--  获取销售退货订单信息-->
   <select id="getMarketReturnReceipt" resultType="com.example.server.pojo.MarketReturnReceipt">
-    select c.market_return_order, c.market_return_date, count(*) as sum, sum(b.sale_price) as sale_sum_price
+    select c.market_return_order, c.create_time,c.release_time, c.operate_emp_id, count(b.market_return_receipt_id is
+    not null or null) as sum,
+    sum(b.sale_price) as sale_sum_price, is_release,c.comment
     from (
     select market_return_receipt_id, sale_price
     from t_machine as a
@@ -154,7 +208,7 @@
       and a.market_return_receipt_id = #{marketReturnReceipt.marketReturnOrder}
     </if>
     ) as b
-    join t_market_return_receipt as c
+    right join t_market_return_receipt as c
     on b.market_return_receipt_id = c.market_return_order
     group by c.market_return_order
     order by c.market_return_order desc
@@ -182,6 +236,8 @@
   </select>
 
   <select id="getMachine" resultType="com.example.server.pojo.Machine">
+    select a.*, b.purchase_channel_id, b.release_time as purchase_time
+    from(
     select * from t_machine as a
     where 1 = 1
     <if test="machine.purchaseOrderId != null and machine.purchaseOrderId != ''">
@@ -192,6 +248,12 @@
     </if>
     <if test="machine.purchaseReturnReceiptId != null and machine.purchaseReturnReceiptId != ''">
       and a.purchase_return_receipt_id = #{machine.purchaseReturnReceiptId}
+    </if>
+    <if test="machine.marketReturnEnterStorageReceiptId != null and machine.marketReturnEnterStorageReceiptId != ''">
+      and a.market_return_enter_storage_receipt_id = #{machine.marketReturnEnterStorageReceiptId}
+    </if>
+    <if test="machine.upShelfEnterStorageId != null and machine.upShelfEnterStorageId != ''">
+      and a.up_shelf_enter_storage_id = #{machine.upShelfEnterStorageId}
     </if>
     <if test="machine.marketOrderId != null and machine.marketOrderId != ''">
       and a.market_order_id = #{machine.marketOrderId}
@@ -211,6 +273,9 @@
     <if test="machine.brandId != null and machine.brandId != ''">
       and a.brand_id = #{machine.brandId}
     </if>
+    <if test="machine.isUpShelf != null and machine.isUpShelf != ''">
+      and a.is_up_shelf = #{machine.isUpShelf}
+    </if>
     <if test="machine.type != null and machine.type != ''">
       and a.type like concat('%', #{machine.type}, '%')
     </if>
@@ -222,10 +287,9 @@
     </if>
     <if test="machine.describe != null and machine.describe != ''">
       and a.describe = #{machine.describe}
-    </if>
-    <if test="bidDateScope != null and bidDateScope.length == 2">
-      and a.bidding_date between #{bidDateScope[0]} and #{bidDateScope[1]}
-    </if>
+    </if>)as a
+    left join t_purchase_order_receipt as b
+    on a.purchase_order_id = b.purchase_order
   </select>
 
 </mapper>

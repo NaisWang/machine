@@ -11,7 +11,7 @@
 
     <MarketReturnShow @func="ChangeComponentsFlag" v-if="componentFlag === 0"></MarketReturnShow>
     <MarketReturnDetail v-else-if="componentFlag === 1"
-                        :receiptDetailNumber="receiptDetailNumber"></MarketReturnDetail>
+                        :receiptDetailNumber="receiptDetailNumber" :isRelease="isRelease"></MarketReturnDetail>
     <MarketReturnAdd v-else-if="componentFlag === 2"></MarketReturnAdd>
   </div>
 </template>
@@ -26,13 +26,15 @@ export default {
   data() {
     return {
       componentFlag: 0,
-      receiptDetailNumber: null
+      receiptDetailNumber: null,
+      isRelease: 0
     }
   },
   methods: {
-    ChangeComponentsFlag(componentFlag, receiptDetailNumber) {
+    ChangeComponentsFlag(componentFlag, receiptDetailNumber, isRelease) {
       this.componentFlag = componentFlag
       this.receiptDetailNumber = receiptDetailNumber
+      this.isRelease = isRelease
     },
     toEnterStorage() {
       this.componentFlag = 0

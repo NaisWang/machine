@@ -16,6 +16,7 @@
     </div>
 
     <el-button type="primary" icon="el-icon-plus" @click="addReceipt">添加转交单</el-button>
+    <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
 
     <div>
       <el-table
@@ -120,23 +121,22 @@
                 @click="orderDetail(scope.row)">详情
             </el-button>
 
-            <span v-if="scope.row.enableEdit === 0">
-              <el-button
-                  size="mini"
-                  type="primary"
-                  @click="release(scope.row)">发布
-              </el-button>
-
-              <el-button
-                  size="mini"
-                  type="danger"
-                  v-if=""
-                  @click="handleDelete(scope.row)">删除
-              </el-button>
-            </span>
+            <el-button
+                size="mini"
+                type="primary"
+                v-if="scope.row.enableEdit === 0"
+                @click="release(scope.row)">发布
+            </el-button>
 
             <el-button
-                v-else
+                size="mini"
+                type="danger"
+                v-if="scope.row.isDelete === 0"
+                @click="handleDelete(scope.row)">删除
+            </el-button>
+
+            <el-button
+                v-if="scope.row.enableEdit === 1"
                 size="mini"
                 type="primary"
                 disabled>已发布
@@ -167,9 +167,10 @@
       <el-form ref="form" :model="newDeliverReceiptInfo" label-width="80px">
 
         <el-form-item label="类别">
-          <el-select clearable v-model="newDeliverReceiptInfo.deliverIntentionId" size="mini" placeholder="类别">
+          <el-select clearable v-model="newDeliverReceiptInfo.deliverIntentionId" size="mini" placeholder="类别"
+                     @change="typeChange">
             <el-option
-                v-for="id in Object.keys($store.state.deliverIntentionCorr).map(Number)"
+                v-for="id in deliverIntention"
                 :label="$store.state.deliverIntentionCorr[id]"
                 :value="id"
                 :key="id">
@@ -177,10 +178,11 @@
           </el-select>
         </el-form-item>
 
+
         <el-form-item label="接收人">
           <el-select v-model="newDeliverReceiptInfo.receiveEmpIds" multiple placeholder="请选择">
             <el-option
-                v-for="item in Object.keys($store.state.employeeNameCorr).map(Number)"
+                v-for="item in canSelectReceiveEmpIds"
                 :key="item"
                 :label="$store.state.employeeNameCorr[item]"
                 :value="item">
@@ -192,10 +194,23 @@
           <el-input type="text" v-model="newDeliverReceiptInfo.comment" size="mini"></el-input>
         </el-form-item>
 
+        <!--        <el-form-item label="当前库位">-->
+        <!--          <el-tag>{{-->
+        <!--              $store.state.storageLocationCorr[originStorageLocationId]-->
+        <!--            }}-->
+        <!--          </el-tag>-->
+        <!--        </el-form-item>-->
+
+        <!--        <el-form-item label="目标库位">-->
+        <!--          <el-tag v-if="targetStorageLocationId != null">-->
+        <!--            {{ $store.state.storageLocationCorr[targetStorageLocationId] }}-->
+        <!--          </el-tag>-->
+        <!--        </el-form-item>-->
+
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-                              <el-button @click="dialogVisible = false">取 消</el-button>
+                              <el-button @click="addReceiptDialogVisible= false">取 消</el-button>
                               <el-button type="primary" @click="addReceiptInfo">添 加</el-button>
                             </span>
     </el-dialog>
@@ -219,13 +234,93 @@ export default {
       size: 10,
       total: null,
       newDeliverReceiptInfo: {},
-      addReceiptDialogVisible: false
+      addReceiptDialogVisible: false,
+      deliverIntention: [],
+      deliverTypeRoleCorr: {
+        // 转交单类型id - 能接收该转交单的角色id
+        // 采购退货
+        1: [9],
+        //检测
+        3: [2, 3],
+        //成色检测
+        4: [2],
+        //功能检测
+        5: [3],
+        //上架
+        6: [8],
+        // 销售
+        9: [1],
+        // 维修
+        10: [6],
+        //退回
+        11: [10],
+        //库存入库
+        2: [10],
+        //上架入库
+        7: [10],
+        // 销退入库
+        8: [10],
+      },
+      deliverTypeLaunchCorr: {
+        // 转交单类型id - 能发起该转交单的角色id
+        // 采购退货
+        1: [9, 4, 10, 11],
+        //检测
+        3: [2, 3, 4, 8, 10, 11],
+        //成色检测
+        4: [2, 3, 4, 8, 10, 11],
+        //功能检测
+        5: [2, 3, 4, 8, 10, 11],
+        //上架
+        6: [2, 3, 4, 8, 10, 11],
+        // 销售
+        9: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        // 维修
+        10: [1, 4, 5, 6, 8, 10, 11],
+        //退回
+        11: [1, 2, 3, 8],
+        //库存入库
+        2: [10, 11, 6],
+        //上架入库
+        7: [10, 11],
+        // 销退入库
+        8: [10, 11],
+      },
+      //targetStorageLocationId: null,
+      canSelectReceiveEmpIds: [],
+      //canAddReceipt: true,
+      //originStorageLocationId: this.$store.state.empIdToStorageLocationIdCorr[JSON.parse(window.sessionStorage.getItem('user'))['id']]
     }
   },
   mounted() {
-    this.initAllOrderInfo();
+    this.refresh()
   },
   methods: {
+    refresh(type) {
+      this.initAllOrderInfo();
+      this.initDeliverIntention();
+      if (type === 1) {
+        this.$message.success("刷新成功");
+      }
+    },
+    initDeliverIntention() {
+      //当前用户所拥有的角色
+      let nowUserRoles = this.$store.state.empIdToRoleIdsCorr[this.$store.state.userId]
+      console.log("bbb")
+      console.log(nowUserRoles)
+
+      Object.keys(this.deliverTypeLaunchCorr).forEach(key => {
+        let flag = true
+        this.deliverTypeLaunchCorr[key].forEach(roleId => {
+          if (flag && nowUserRoles.indexOf(roleId) !== -1) {
+            flag = false
+            this.deliverIntention.push(key);
+          }
+        })
+      })
+      console.log("aaaadfd")
+      console.log(this.deliverIntention)
+    },
     initAllOrderInfo() {
       getDeliverReceipt(this.currentPage, this.size, this.searchOrder, 0).then(resp => {
         if (resp.data.obj) {
@@ -253,6 +348,14 @@ export default {
       this.addReceiptDialogVisible = true
     },
     addReceiptInfo() {
+      //if (!this.canAddReceipt) {
+      //  console.log("aaa")
+      //  return;
+      //}
+      if (this.newDeliverReceiptInfo.receiveEmpIds.length === 0) {
+        this.$message.error("接收人为空");
+        return
+      }
       this.$confirm('是否确定要添加', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -262,6 +365,7 @@ export default {
           if (resp.data.code === 200) {
             this.$message.success("创建成功");
             this.initAllOrderInfo();
+            this.newDeliverReceiptInfo = {}
             this.addReceiptDialogVisible = false;
           }
         })
@@ -309,7 +413,61 @@ export default {
           message: '已取消发布'
         });
       });
-    }
+    },
+    typeChange() {
+      this.newDeliverReceiptInfo.receiveEmpIds = []
+      //this.targetStorageLocationId = null
+
+      //获取变化后的角色id
+      let roleIds = this.deliverTypeRoleCorr[this.newDeliverReceiptInfo.deliverIntentionId]
+      //通过角色id获取对应的员工ids,
+      let empIds = []
+      roleIds.forEach(roleId => {
+        let tempEmpIds = this.$store.state.roleIdToEmpIdsCorr[roleId];
+        tempEmpIds.forEach(empId => {
+          if (empIds.indexOf(empId) === -1) {
+            empIds.push(empId);
+          }
+        })
+      })
+      console.log("ffff")
+      console.log(this.$store.state.roleIdToEmpIdsCorr)
+
+      this.canSelectReceiveEmpIds = empIds;
+
+      // 判断是否能跨库，然后赋值给canSelectReceiveEmpIds
+      //如果是处理人员，则可以进行跨库
+      //let deliverEmpId = JSON.parse(window.sessionStorage.getItem('user'))['id']; //发起转发订单的发起人的id
+      //console.log(this.$store.state.roleIdToEmpIdsCorr)
+      //if (this.$store.state.roleIdToEmpIdsCorr[7] !== undefined && this.$store.state.roleIdToEmpIdsCorr[7].indexOf(deliverEmpId) !== -1) {
+      //  this.canSelectReceiveEmpIds = empIds
+      //} else {
+      //  this.canSelectReceiveEmpIds = []
+      //  empIds.forEach(empId => {
+      //    if (this.$store.state.empIdToStorageLocationIdCorr[deliverEmpId] === this.$store.state.empIdToStorageLocationIdCorr[empId]) {
+      //      this.canSelectReceiveEmpIds.push(empId);
+      //    }
+      //  })
+      //}
+    },
+    //receiveEmpChange() {
+    //  if (this.newDeliverReceiptInfo.receiveEmpIds.length !== 0) {
+    //    let storageLocationId = this.$store.state.empIdToStorageLocationIdCorr[this.newDeliverReceiptInfo.receiveEmpIds[0]];
+    //    this.newDeliverReceiptInfo.receiveEmpIds.forEach(empId => {
+    //      if (this.$store.state.empIdToStorageLocationIdCorr[empId] !== storageLocationId) {
+    //        this.$message.error("接收人：" + this.$store.state.employeeNameCorr[this.newDeliverReceiptInfo.receiveEmpIds[0]] + "与" + this.$store.state.employeeNameCorr[empId] + "是不同库位的人");
+    //        this.canAddReceipt = false
+    //        return
+    //      }
+    //    })
+    //    this.targetStorageLocationId = storageLocationId
+    //    console.log("c")
+    //    this.canAddReceipt = true
+    //  } else {
+    //    console.log("b")
+    //    this.canAddReceipt = false
+    //  }
+    //}
   }
 }
 </script>

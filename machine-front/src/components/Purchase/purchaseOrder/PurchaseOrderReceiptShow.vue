@@ -42,6 +42,7 @@
 
     <div>
       <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加采购单</el-button>
+      <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
     </div>
 
     <div>
@@ -60,8 +61,14 @@
         </el-table-column>
 
         <el-table-column
-            prop="purchaseDate"
-            label="采购日期"
+            prop="createTime"
+            label="创建日期"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="releaseTime"
+            label="发布日期"
             width="170">
         </el-table-column>
 
@@ -169,7 +176,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" fixed="right" width="250px">
+        <el-table-column label="操作" fixed="right" width="300px">
           <template #default="scope">
             <el-button
                 size="mini"
@@ -177,30 +184,29 @@
                 @click="orderDetail(scope.row)">详情
             </el-button>
 
-            <span v-if="scope.row.isRelease === 0">
-              <el-button
-                  size="mini"
-                  type="primary"
-                  @click="release(scope.row)">发布
-              </el-button>
-
-              <el-button
-                  size="mini"
-                  type="danger"
-                  v-if=""
-                  @click="eidt(scope.row)">修改
-              </el-button>
-
-              <el-button
-                  size="mini"
-                  type="danger"
-                  v-if=""
-                  @click="handleDelete(scope.row)">删除
-              </el-button>
-            </span>
+            <el-button
+                v-if="scope.row.isRelease === 0"
+                size="mini"
+                type="primary"
+                @click="release(scope.row)">发布
+            </el-button>
 
             <el-button
-                v-else
+                v-if="scope.row.isRelease === 0"
+                size="mini"
+                type="info"
+                @click="eidt(scope.row)">修改
+            </el-button>
+
+            <el-button
+                v-if="scope.row.isDelete === 0"
+                size="mini"
+                type="danger"
+                @click="handleDelete(scope.row)">删除
+            </el-button>
+
+            <el-button
+                v-if="scope.row.isRelease === 1"
                 size="mini"
                 type="primary"
                 :disabled="scope.row.purchaseOrderStatus !== 0"
@@ -297,6 +303,7 @@ import {
   releasePurchaseReceipt
 } from "../../../api/purchaseOrderReceipt";
 import MachineEdit from "../../Machine/MachineEdit.vue";
+import {showDeleteReceiptJudge} from "../../../utils/showDeleteJudge";
 
 
 export default {
@@ -324,16 +331,20 @@ export default {
     }
   },
   mounted() {
-    initMachineCorr(this.$store)
-    this.initAllOrderInfo()
+    this.refresh();
   },
   methods: {
+    refresh(type) {
+      initMachineCorr(this.$store)
+      this.initAllOrderInfo()
+      if (type === 1) {
+        this.$message.success("刷新成功");
+      }
+    },
     initAllOrderInfo() {
       purchaseOrder.getPurchaseOrderInfo(this.currentPage, this.size, this.searchOrder).then(resp => {
         if (resp.data.obj) {
           this.allOrderInfo = resp.data.obj.data;
-          console.log("ffff")
-          console.log(this.allOrderInfo)
           this.total = resp.data.obj.total
         }
       })
@@ -454,6 +465,10 @@ export default {
       });
     },
     release(row) {
+      if (row.sum === 0) {
+        this.$message.error("该采购单为空，不能发布");
+        return
+      }
       this.$confirm('是否确定要发布该转交单', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',

@@ -19,6 +19,7 @@
       <span>扫码接收</span>
       <el-input clearable placeholder="请输入物品编号" @keydown.enter.native="receive"
                 v-model="numberInput"></el-input>
+      <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
     </div>
 
     <div>
@@ -145,10 +146,11 @@
 </template>
 
 <script>
-import {getDeliverReceipt} from "../../../api/deliverReceiptApi";
+import {getDeliverReceipt, getReceiveReceipt} from "../../../api/deliverReceiptApi";
 import {getMachine} from "../../../api/machineApi";
 import {deliverJudge} from "../../../utils/deliverJudge";
 import {receiveDeliverMachine} from "../../../api/deliverMachineApi";
+import {dealMachineJudge} from "../../../utils/dealMachineJudge";
 
 export default {
   name: "MachineReceiveShow",
@@ -163,12 +165,17 @@ export default {
     }
   },
   mounted() {
-
-    this.initAllOrderInfo();
+    this.refresh()
   },
   methods: {
+    refresh(type) {
+      this.initAllOrderInfo();
+      if (type === 1) {
+        this.$message.success("刷新成功");
+      }
+    },
     initAllOrderInfo() {
-      getDeliverReceipt(this.currentPage, this.size, this.searchOrder, 1).then(resp => {
+      getReceiveReceipt(this.currentPage, this.size, this.searchOrder, 1).then(resp => {
         if (resp.data.obj) {
           this.allOrderInfo = resp.data.obj.data
           this.total = resp.data.obj.total
@@ -199,28 +206,52 @@ export default {
               return
             }
 
-            let nowEditMachine = resp.data.obj.data[0]
+            //let nowEditMachine = resp.data.obj.data[0]
+            let machine = resp.data.obj.data[0];
 
-            let deliverJudgeResult = {"code": "", "message": "", "deliverReceipt": {}}
-            if (nowEditMachine.deliverMachineId === 0) {
-              //状态判断
+            if (machine.deliverReceiptId === 0) {
               this.$message.error("该机器状态不是转交状态")
-            } else {
-              //转交判断
-              deliverJudge(nowEditMachine, this.$store, deliverJudgeResult).then(() => {
-                if (deliverJudgeResult.code === 1) {
-                  receiveDeliverMachine(nowEditMachine.id).then(resp => {
-                    if (resp.data.code === 200) {
-                      this.$message.success("接收成功");
-                      this.numberInput = ""
-                      this.initAllOrderInfo()
-                    }
-                  })
-                } else {
-                  this.$message.error(deliverJudgeResult.message);
-                }
-              })
+              return
             }
+            dealMachineJudge(machine, this.$store, '').then(resp => {
+              if (resp.code === -1) {
+                this.$message.error(resp.message);
+              }
+              if (resp.receiveDiagLog !== undefined) {
+                let _this = this
+                setTimeout(function () {
+                  _this.$notify(resp.receiveDiagLog)
+                }, 50);
+              }
+              //receiveDeliverMachine(machine.id).then(resp => {
+              //  if (resp.data.code === 200) {
+              //    this.$message.success("接收成功");
+              //    this.numberInput = ""
+              //    this.initAllOrderInfo()
+              //  }
+              //})
+            })
+
+            //let deliverJudgeResult = {"code": "", "message": "", "deliverReceipt": {}}
+            //if (nowEditMachine.deliverMachineId === 0) {
+            //  //状态判断
+            //  this.$message.error("该机器状态不是转交状态")
+            //} else {
+            //  //转交判断
+            //  deliverJudge(nowEditMachine, this.$store, deliverJudgeResult).then(() => {
+            //    if (deliverJudgeResult.code === 1) {
+            //      receiveDeliverMachine(nowEditMachine.id).then(resp => {
+            //        if (resp.data.code === 200) {
+            //          this.$message.success("接收成功");
+            //          this.numberInput = ""
+            //          this.initAllOrderInfo()
+            //        }
+            //      })
+            //    } else {
+            //      this.$message.error(deliverJudgeResult.message);
+            //    }
+            //  })
+            //}
           }
         })
       }

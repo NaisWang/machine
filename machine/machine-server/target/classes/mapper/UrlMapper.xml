@@ -21,19 +21,38 @@
     id, url,method,descr
   </sql>
 
+
   <!-- 根据url获取用户角色-->
-  <select id="getRolesByUrl" resultType="com.example.server.pojo.Role">
-    select e.id id, e.en_name en_name, e.zh_name zh_name
-    from t_operation_url b
-           left join t_url a on a.id = b.url_id
-           left join t_operation c
-                     on b.operation_id = c.id
-           left join t_role_operation d
-                     on c.id = d.operation_id
-           left join t_role e
-                     on d.role_id = e.id
+  <!--  <select id="getRolesByUrl" resultType="com.example.server.pojo.Role">-->
+  <!--    select e.id id, e.en_name en_name, e.zh_name zh_name-->
+  <!--    from t_operation_url b-->
+  <!--           left join t_url a on a.id = b.url_id-->
+  <!--           left join t_operation c-->
+  <!--                     on b.operation_id = c.id-->
+  <!--           left join t_role_operation d-->
+  <!--                     on c.id = d.operation_id-->
+  <!--           left join t_role e-->
+  <!--                     on d.role_id = e.id-->
+  <!--    where a.method = #{method}-->
+  <!--      and (locate(#{url}, a.url) or locate(a.url, #{url}))-->
+  <!--    order by a.url-->
+  <!--  </select>-->
+
+
+  <!--   根据url获取用户角色-->
+  <!--  <select id="getRolesByUrl" resultType="com.example.server.pojo.Role">-->
+  <!--    select *-->
+  <!--    from t_url-->
+  <!--    where method = #{method}-->
+  <!--      and url = ${url}-->
+  <!--    order by url-->
+  <!--  </select>-->
+
+  <select id="getRolesByUrl" resultType="java.lang.String">
+    select role_ids
+    from t_url as a
     where a.method = #{method}
-      and (locate(#{url}, a.url) or locate(a.url, #{url}))
+      and a.url = #{url}
     order by a.url
   </select>
 

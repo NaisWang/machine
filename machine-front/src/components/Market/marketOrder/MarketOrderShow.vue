@@ -16,6 +16,7 @@
     </div>
 
     <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加退货单</el-button>
+    <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
 
     <div>
       <el-table
@@ -33,8 +34,14 @@
         </el-table-column>
 
         <el-table-column
-            prop="marketOrderDate"
-            label="销售订单日期"
+            prop="createTime"
+            label="创建日期"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="releaseTime"
+            label="发布日期"
             width="170">
         </el-table-column>
 
@@ -54,6 +61,17 @@
             prop="purchaseSumPrice"
             label="购买金额"
             width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="operateEmpId"
+            label="操作人"
+            width="80">
+          <template #default="scope">
+              <span>{{
+                  $store.state.employeeNameCorr[scope.row.operateEmpId]
+                }}</span>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -159,7 +177,13 @@
 </template>
 
 <script>
-import {createMarketReturnReceipt, getMarketOrderReceipt} from "../../../api/marketOrderApi"
+import {
+  createMarketOrderReceipt,
+  createMarketReturnReceipt,
+  deleteMarketOrderReceipt,
+  getMarketOrderReceipt,
+  releaseMarketOrderReceipt
+} from "../../../api/marketOrderApi"
 import MachineEdit from "../../Machine/MachineEdit.vue";
 
 export default {
@@ -181,9 +205,15 @@ export default {
     MachineEdit
   },
   mounted() {
-    this.initAllOrderInfo();
+    this.refresh()
   },
   methods: {
+    refresh(type) {
+      this.initAllOrderInfo();
+      if (type === 1) {
+        this.$message.success("刷新成功");
+      }
+    },
     initAllOrderInfo() {
       getMarketOrderReceipt(this.currentPage, this.size, this.searchOrder).then(resp => {
         if (resp.data.obj) {
@@ -216,7 +246,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        createMarketReturnReceipt(this.newReceiptInfo).then(resp => {
+        createMarketOrderReceipt(this.newReceiptInfo).then(resp => {
           if (resp.data.code === 200) {
             this.$message.success("创建成功");
             this.initAllOrderInfo();
@@ -234,6 +264,49 @@ export default {
       this.editShow.value = true
       this.editReceipt = JSON.parse(JSON.stringify(row))
     },
+    release(row) {
+      if (row.sum === 0) {
+        this.$message.error("该采购单为空，不能发布");
+        return
+      }
+      this.$confirm('是否确定要发布该销售单', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        releaseMarketOrderReceipt(row.marketOrder).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("发布成功");
+            this.initAllOrderInfo();
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消发布'
+        });
+      });
+    },
+    handleDelete(row) {
+      this.$confirm('是否确定要删除', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteMarketOrderReceipt(row.marketOrder).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("删除成功");
+            this.initAllOrderInfo()
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消发布'
+        });
+      });
+
+    }
   }
 }
 </script>

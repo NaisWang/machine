@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.SendFixMachineMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.SendFixMachine">
+    <id column="id" property="id"/>
+    <result column="send_fix_date" property="sendFixDate"/>
+    <result column="fix_item" property="fixItem"/>
+    <result column="send_destination" property="sendDestination"/>
+    <result column="comment" property="comment"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, send_fix_date, fix_item, send_destination, comment
+  </sql>
+
+  <!-- 获取送修单中的机器   -->
+  <select id="getSendFixMachine" resultType="com.example.server.pojo.SendFixMachine">
+    select send_fix_date, fix_item, send_destination, fix_item, fix_comment, is_repair, number, fix_status,
+    send_fix_machine_id, receive_time
+    from t_send_fix_machine
+    where 1 = 1
+    <if test="sendFixMachine.receiptId != null and sendFixMachine.receiptId != ''">
+      and receipt_id = #{sendFixMachine.receiptId}
+    </if>
+  </select>
+
+</mapper>

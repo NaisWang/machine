@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.StorageLocationMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.StorageLocation">
+    <id column="id" property="id"/>
+    <result column="name" property="name"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, name
+  </sql>
+
+  <!-- 获取库位   -->
+  <select id="getStorageLocation" resultType="com.example.server.pojo.StorageLocation">
+    select a.*,
+           count(DISTINCT (b.id is not null or null)) as 'subStorageSum',
+           count(tm.id is not null or null)           as 'machineSum'
+    from t_storage_location as a
+           left join t_sub_storage_location as b
+                     on a.id = b.parent_storage_location_id
+           left join t_machine as tm on tm.storage_location_id = b.id
+    group by a.id
+  </select>
+
+</mapper>

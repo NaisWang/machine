@@ -63,6 +63,7 @@ export default {
             receiveMenu(this.$router, this.$store).then(() => {
               getIndividualInfo().then(resp => {
                 window.sessionStorage.setItem("user", JSON.stringify(resp.data.obj));
+                this.$store.commit('initUserId', resp.data.obj['id'])
                 initMachineCorr(this.$store)
                 this.$message.success(data.message);
                 this.$router.push('/home');

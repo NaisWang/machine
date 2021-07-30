@@ -1,17 +1,19 @@
 package com.example.server.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.example.server.pojo.Employee;
-import com.example.server.pojo.Log;
-import com.example.server.pojo.Machine;
+import com.example.server.pojo.*;
 import com.example.server.service.impl.LogServiceImpl;
 import com.example.server.service.impl.MachineServiceImpl;
+import com.example.server.service.impl.MachineTraceServiceImpl;
+import com.example.server.service.impl.OperateTraceServiceImpl;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,9 +38,13 @@ public class MachineController {
 
 	@Autowired
 	private MachineServiceImpl machineService;
-
 	@Autowired
 	private LogServiceImpl logService;
+	@Autowired
+	private MachineTraceServiceImpl machineTraceService;
+	@Autowired
+	private OperateTraceServiceImpl operateTraceService;
+
 
 	@ApiOperation("获取机器信息")
 	@GetMapping("/")
@@ -46,8 +52,6 @@ public class MachineController {
 																 @RequestParam(defaultValue = "10") Integer size,
 																 LocalDate[] bidDateScope,
 																 Machine machine) {
-		System.out.println("aaa");
-		System.out.println(machine);
 		RespPageBean purchaseOrder1 = machineService.getMachine(currentPage, size, machine, bidDateScope);
 		return RespBean.success("获取成功", purchaseOrder1);
 	}
@@ -69,26 +73,40 @@ public class MachineController {
 	@ApiOperation("更改机器成色检测描述")
 	@PutMapping("/modify/quality")
 	@Transactional
-	public RespBean modifyMachineQuality(@RequestBody Machine[] machines, Authentication authentication) {
-
-		List<String> logs = new ArrayList<>();
+	public RespBean modifyMachineQuality(@RequestBody Machine machine, Authentication authentication) {
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();
 		LocalDateTime now = LocalDateTime.now();
-
 		try {
-			for (Machine machine : machines) {
-				machine.setOperateEmpId(empId);
-				machine.setStatusId(14);
-				machine.setOperateDate(now);
-				machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()).set("quality_desc", machine.getQualityDesc()).set("comment", machine.getComment()));
-				logs.add("机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc());
+			Machine addMachine = new Machine();
+			addMachine.setId(machine.getId());
+			addMachine.setOperateEmpId(empId);
+
+			Integer nowStatusId = machineService.getById(machine.getId()).getStatusId();
+
+			if (nowStatusId == 10) {
+				addMachine.setStatusId(10);
+			} else if (nowStatusId == 9) {
+				addMachine.setStatusId(10);
+			} else {
+				addMachine.setStatusId(8);
 			}
-			for (String log : logs) {
-				logService.save(new Log(empId, "更改机器成色检测描述", log, now, 0));
+
+			addMachine.setOperateDate(now);
+			addMachine.setQualityDesc(machine.getQualityDesc());
+			addMachine.setComment(machine.getComment());
+
+			if (machineService.update(addMachine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId()))) {
+					if (operateTraceService.save(new OperateTrace(machine.getNumber(), 1, nowStatusId, addMachine.getStatusId(), now, empId, machine.getStorageLocationId()))) {
+						logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 0));
+						return RespBean.success("修改成功", addMachine);
+					}
+				}
 			}
-			return RespBean.success("修改成功", machines);
+			throw new RuntimeException("修改失败");
 		} catch (Exception e) {
 			e.printStackTrace();
+			logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 1));
 			throw new RuntimeException("修改失败");
 		}
 	}
@@ -96,26 +114,111 @@ public class MachineController {
 	@ApiOperation("更改机器功能检测描述")
 	@PutMapping("/modify/feature")
 	@Transactional
-	public RespBean modifyMachineFeature(@RequestBody Machine[] machines, Authentication authentication) {
+	public RespBean modifyMachineFeature(@RequestBody Machine machine, Authentication authentication) {
+
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		LocalDateTime now = LocalDateTime.now();
+
+		try {
+			Machine addMachine = new Machine();
+			addMachine.setId(machine.getId());
+			addMachine.setOperateEmpId(empId);
+
+			Integer nowStatusId = machineService.getById(machine.getId()).getStatusId();
+
+			if (nowStatusId == 10) {
+				addMachine.setStatusId(10);
+			} else if (nowStatusId == 8) {
+				addMachine.setStatusId(10);
+			} else {
+				addMachine.setStatusId(9);
+			}
+
+			addMachine.setOperateDate(now);
+			addMachine.setFeatureDesc(machine.getFeatureDesc());
+			addMachine.setComment(machine.getComment());
+			addMachine.setPaijiBarcode(machine.getPaijiBarcode());
+			if (machineService.update(addMachine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId()))) {
+					if (operateTraceService.save(new OperateTrace(machine.getNumber(), 2, nowStatusId, addMachine.getStatusId(), now, empId, machine.getStorageLocationId()))) {
+						logService.save(new Log(empId, "更改机器功能检测描述", "机器id为" + machine.getId() + "机器功能检测设为" + machine.getQualityDesc(), now, 0));
+						return RespBean.success("修改成功", addMachine);
+					}
+				}
+			}
+			throw new RuntimeException("修改失败");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("修改失败");
+		}
+	}
+
+	@ApiOperation("确定机器维修项")
+	@PutMapping("/modify/needFix")
+	@Transactional
+	public RespBean modifyMachineFixItem(@RequestBody Machine machine, Authentication authentication) {
 
 		List<String> logs = new ArrayList<>();
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();
 		LocalDateTime now = LocalDateTime.now();
 
 		try {
-			for (Machine machine : machines) {
-				machine.setOperateEmpId(empId);
-				machine.setStatusId(15);
-				machine.setOperateDate(now);
-				machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()).set("feature_desc", machine.getFeatureDesc()).set("comment", machine.getComment()).set("paiji_barcode", machine.getPaijiBarcode()));
-				logs.add("机器id为" + machine.getId() + "机器功能检测设为" + machine.getQualityDesc());
+			Machine addMachine = new Machine();
+			addMachine.setOperateEmpId(empId);
+			addMachine.setStatusId(32);
+			addMachine.setOperateDate(now);
+			addMachine.setNeedFix(machine.getNeedFix());
+			addMachine.setComment(machine.getComment());
+			if (machineService.update(addMachine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId()))) {
+					if (operateTraceService.save(new OperateTrace(machine.getNumber(), 4, machine.getStatusId(), 32, now, empId, machine.getStorageLocationId()))) {
+						logService.save(new Log(empId, "确定机器维修项", "机器number为" + machine.getNumber(), now, 0));
+						return RespBean.success("修改成功", addMachine);
+					}
+				}
 			}
-			for (String log : logs) {
-				logService.save(new Log(empId, "更改机器功能检测描述", log, now, 0));
-			}
-			return RespBean.success("修改成功", machines);
+			logService.save(new Log(empId, "确定机器维修项", "机器number为" + machine.getNumber(), now, 1));
+			throw new RuntimeException("修改失败");
 		} catch (Exception e) {
 			e.printStackTrace();
+			logService.save(new Log(empId, "确定机器维修项", "机器number为" + machine.getNumber(), now, 1));
+			throw new RuntimeException("修改失败");
+		}
+	}
+
+	@ApiOperation("维修完成")
+	@PutMapping("/modify/fixComplete")
+	@Transactional
+	public RespBean modifyMachineFixComplete(@RequestBody Machine machine, Authentication authentication) {
+
+		List<String> logs = new ArrayList<>();
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		LocalDateTime now = LocalDateTime.now();
+
+		try {
+			Machine addMachine = new Machine();
+			addMachine.setId(machine.getId());
+			addMachine.setOperateEmpId(empId);
+			addMachine.setStatusId(33);
+			addMachine.setOperateDate(now);
+			addMachine.setFixed(machine.getFixed());
+			addMachine.setNotFixed(machine.getNotFixed());
+			addMachine.setFixToBad(machine.getFixToBad());
+			addMachine.setFixPrice(machine.getFixPrice());
+			addMachine.setComment(machine.getComment());
+			if (machineService.update(addMachine, new UpdateWrapper<Machine>().eq("number", machine.getNumber()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId()))) {
+					if (operateTraceService.save(new OperateTrace(machine.getNumber(), 5, machine.getStatusId(), 33, now, empId, machine.getStorageLocationId()))) {
+						logService.save(new Log(empId, "维修完成", "机器number：" + machine.getNumber(), now, 0));
+						return RespBean.success("修改成功", addMachine);
+					}
+				}
+			}
+			logService.save(new Log(empId, "维修完成", "机器number：" + machine.getNumber(), now, 1));
+			throw new RuntimeException("修改失败");
+		} catch (Exception e) {
+			e.printStackTrace();
+			logService.save(new Log(empId, "维修完成", "机器number：" + machine.getNumber(), now, 1));
 			throw new RuntimeException("修改失败");
 		}
 	}
@@ -123,26 +226,82 @@ public class MachineController {
 	@ApiOperation("更改机器的上架信息")
 	@PutMapping("/modify/upShelf")
 	@Transactional
-	public RespBean modifyMachineUpShelf(@RequestBody Machine[] machines, Authentication authentication){
+	public RespBean modifyMachineUpShelf(@RequestBody Machine machine, Authentication authentication) {
+
+		//状态判断是否合法
+		Integer nowStatusId = machineService.getOne(new QueryWrapper<Machine>().eq("number", machine.getNumber())).getStatusId();
+		if (nowStatusId != 10) {
+			return RespBean.error("数据非法");
+		}
+
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		LocalDateTime now = LocalDateTime.now();
+
+		try {
+			Machine addMachine = new Machine();
+			addMachine.setId(machine.getId());
+			addMachine.setOperateEmpId(empId);
+			addMachine.setStatusId(11);
+			addMachine.setOperateDate(now);
+			addMachine.setGoodPrice(machine.getGoodPrice());
+			addMachine.setBidPrice(machine.getBidPrice());
+			addMachine.setOnePrice(machine.getOnePrice());
+			addMachine.setRankDesc(machine.getRankDesc());
+			addMachine.setBagNumber(machine.getBagNumber());
+			addMachine.setComment(machine.getComment());
+			if (machineService.update(addMachine, new UpdateWrapper<Machine>().eq("number", machine.getNumber()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId()))) {
+					if (operateTraceService.save(new OperateTrace(machine.getNumber(), 3, machine.getStatusId(), 11, now, empId, machine.getStorageLocationId()))) {
+						logService.save(new Log(empId, "更改机器上架信息", "机器id为" + machine.getId() + "。一口价：" + machine.getOnePrice() + "; 最高价：" + machine.getBidPrice() + "; 好的价格：" + machine.getGoodPrice() + "; 机器等级：" + machine.getRankDesc() + "; 袋子编号：" + machine.getBagNumber(), now, 0));
+						return RespBean.success("修改成功", addMachine);
+					}
+				}
+			}
+			throw new RuntimeException("修改失败");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("修改失败");
+		}
+	}
+
+	@ApiOperation("确定机器是否可以上架")
+	@PutMapping("/modify/canUpShelf")
+	@Transactional
+	public RespBean modifyMachineCanUpShelf(@RequestBody Machine[] machines, Authentication authentication, Integer type) {
 
 		List<String> logs = new ArrayList<>();
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();
 		LocalDateTime now = LocalDateTime.now();
 
+		List<MachineTrace> machineTraces = new ArrayList<>();
+		List<Machine> addMachines = new ArrayList<>();
+
 		try {
 			for (Machine machine : machines) {
-				machine.setOperateEmpId(empId);
-				machine.setStatusId(15);
-				machine.setOperateDate(now);
-				machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()).set("feature_desc", machine.getFeatureDesc()).set("comment", machine.getComment()).set("paiji_barcode", machine.getPaijiBarcode()));
-				logs.add("机器id为" + machine.getId() + "。一口价：" + machine.getOnePrice() + "; 最高价：" + machine.getBidPrice() + "; 好的价格：" + machine.getGoodPrice() + "; 机器等级：" + machine.getRankDesc() + "; 袋子编号：" + machine.getBagNumber());
+				Machine addMachine = new Machine();
+
+				addMachine.setId(machine.getId());
+				addMachine.setOperateDate(now);
+				addMachine.setIsUpShelf(type);
+				addMachine.setStatusId(machine.getStatusId());
+				addMachines.add(addMachine);
+
+				MachineTrace machineTrace = new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId());
+				machineTrace.setIsUpShelf(type);
+				machineTraces.add(machineTrace);
 			}
-			for (String log : logs) {
-				logService.save(new Log(empId, "更改机器上架信息", log, now, 0));
+
+			if (machineService.updateBatchById(addMachines)) {
+				if (machineTraceService.saveBatch(machineTraces)) {
+					logService.save(new Log(empId, "确定是否可以上架", "", now, 0));
+					return RespBean.success("修改成功");
+				}
 			}
-			return RespBean.success("修改成功", machines);
+			logService.save(new Log(empId, "确定机器是否可以上架", "", now, 1));
+			throw new RuntimeException("修改失败");
 		} catch (Exception e) {
 			e.printStackTrace();
+			logService.save(new Log(empId, "确定机器是否可以上架", "", now, 1));
 			throw new RuntimeException("修改失败");
 		}
 	}
@@ -150,7 +309,7 @@ public class MachineController {
 	@ApiOperation("更改机器的状态信息")
 	@PutMapping("/modify/status-to5")
 	@Transactional
-	public RespBean modifyMachineStatusTo5(@RequestBody Machine[] machines, Authentication authentication){
+	public RespBean modifyMachineStatusTo5(@RequestBody Machine[] machines, Authentication authentication) {
 
 		List<String> logs = new ArrayList<>();
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();

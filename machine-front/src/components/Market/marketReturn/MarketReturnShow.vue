@@ -15,7 +15,8 @@
       </el-button>
     </div>
 
-    <el-button type="primary" icon="el-icon-plus" @click="addReceipt">添加退货单</el-button>
+    <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加销售退货单</el-button>
+    <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
 
     <div>
       <el-table
@@ -33,8 +34,14 @@
         </el-table-column>
 
         <el-table-column
-            prop="marketReturnDate"
-            label="销售退货日期"
+            prop="createTime"
+            label="创建日期"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="releaseTime"
+            label="发布日期"
             width="170">
         </el-table-column>
 
@@ -48,6 +55,17 @@
             prop="refundAmount"
             label="退款金额"
             width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="operateEmpId"
+            label="操作人"
+            width="80">
+          <template #default="scope">
+              <span>{{
+                  $store.state.employeeNameCorr[scope.row.operateEmpId]
+                }}</span>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -88,13 +106,28 @@
                 @click="orderDetail(scope.row)">详情
             </el-button>
 
-            <el-button
-                size="mini"
-                type="danger"
-                @click="handleDelete(scope.$index, scope.row)">删除
-            </el-button>
+            <span v-if="scope.row.isRelease === 0">
+              <el-button
+                  size="mini"
+                  type="primary"
+                  @click="release(scope.row)">发布
+              </el-button>
+
+              <el-button
+                  size="mini"
+                  type="danger"
+                  @click="eidt(scope.row)">修改
+              </el-button>
+
+              <el-button
+                  size="mini"
+                  type="danger"
+                  @click="handleDelete(scope.row)">删除
+              </el-button>
+            </span>
           </template>
         </el-table-column>
+
 
       </el-table>
 
@@ -111,16 +144,45 @@
       </el-pagination>
     </div>
 
+    <MachineEdit table-name="marketReturn" :machine="editReceipt" :edit-show="editShow"
+                 @initShow="initAllOrderInfo"></MachineEdit>
+
+    <el-dialog
+        title="采购退货单信息"
+        :visible.sync="addReceiptDialogVisible">
+
+      <el-form ref="form" :model="newReceiptInfo" label-width="80px">
+
+        <el-form-item label="备注">
+          <el-input type="text" v-model="newReceiptInfo.comment" size="mini"></el-input>
+        </el-form-item>
+
+      </el-form>
+
+      <span slot="footer" class="dialog-footer">
+                              <el-button @click="addReceiptDialogVisible = false">取 消</el-button>
+                              <el-button type="primary" @click="addReceiptInfo">添 加</el-button>
+                            </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import {getMarketReturnReceipt} from "../../../api/marketReturnReceiptApi";
+import {
+  createMarketReturnReceipt, deleteMarketReturnReceipt,
+  getMarketReturnReceipt,
+  releaseMarketReturnReceipt
+} from "../../../api/marketReturnReceiptApi";
+import MachineEdit from "../../Machine/MachineEdit.vue";
 
 export default {
   name: "MarketReturnShow",
   data() {
     return {
+      editShow: {"value": false},
+      editReceipt: {},
+      addReceiptDialogVisible: false,
+      newReceiptInfo: {},
       searchOrder: {},
       allOrderInfo: [],
       currentPage: 1,
@@ -128,10 +190,19 @@ export default {
       total: null,
     }
   },
+  components: {
+    MachineEdit
+  },
   mounted() {
-    this.initAllOrderInfo();
+    this.refresh()
   },
   methods: {
+    refresh(type) {
+      this.initAllOrderInfo();
+      if (type === 1) {
+        this.$message.success("刷新成功");
+      }
+    },
     initAllOrderInfo() {
       getMarketReturnReceipt(this.currentPage, this.size, this.searchOrder).then(resp => {
         if (resp.data.obj) {
@@ -153,11 +224,78 @@ export default {
       this.initAllOrderInfo();
     },
     orderDetail(row) {
-      this.$emit('func', 1, row.marketReturnOrder)
+      this.$emit('func', 1, row.marketReturnOrder, row.isRelease)
     },
-    addReceipt() {
-      this.$emit('func', 2)
-    }
+    //addReceipt() {
+    //  this.$emit('func', 2)
+    //}
+    addReceiptInfo() {
+      this.$confirm('是否确定要添加', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        createMarketReturnReceipt(this.newReceiptInfo).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("创建成功");
+            this.initAllOrderInfo();
+            this.addReceiptDialogVisible = false;
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消添加'
+        });
+      });
+    },
+    eidt(row) {
+      this.editShow.value = true
+      this.editReceipt = JSON.parse(JSON.stringify(row))
+    },
+    handleDelete(row) {
+      this.$confirm('是否确定要删除', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteMarketReturnReceipt(row.marketReturnOrder).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("删除成功");
+            this.initAllOrderInfo()
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消发布'
+        });
+      });
+
+    },
+    release(row) {
+      if (row.sum === 0) {
+        this.$message.error("该采购单为空，不能发布");
+        return
+      }
+      this.$confirm('是否确定要发布该销售退货单', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        releaseMarketReturnReceipt(row.marketReturnOrder).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("发布成功");
+            this.initAllOrderInfo();
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消发布'
+        });
+      });
+    },
   }
 }
 

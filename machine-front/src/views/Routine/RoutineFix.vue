@@ -1,7 +1,7 @@
 <template>
   <div>
 
-    <el-input clearable placeholder="请输入物品编号" @keydown.enter.native="addMachineByScan"
+    <el-input clearable style="width: 89%" placeholder="请输入物品编号" @keydown.enter.native="addMachineByScan"
               v-model="numberInput"></el-input>
 
     <MachineShowDetail :machines="scanMachine" :paging="false"
@@ -23,24 +23,39 @@ export default {
     return {
       scanMachine: [],
       numberInput: "",
+      searchOptions: [{
+        value: 'number',
+        label: '物品编码'
+      }, {
+        value: 'imei',
+        label: 'imei号'
+      }, {
+        value: 'paijiBarCode',
+        label: '拍机堂条码'
+      }],
+      searchMethod: "number"
     }
   },
   methods: {
     addMachineByScan() {
       if (this.numberInput !== "") {
-        getMachine(1, 10, {"number": this.numberInput}).then(resp => {
+        let search = {}
+        if (this.searchMethod === 'number') {
+          search['number'] = this.showMachineDetailNumber
+        } else if (this.searchMethod === 'imei') {
+          search['imei'] = this.showMachineDetailNumber
+        } else if (this.searchMethod === 'paijiBarCode') {
+          search['paijiBarcode'] = this.showMachineDetailNumber
+        }
+        getMachine(1, 10, search).then(resp => {
           console.log(resp.data.obj)
           if (resp.data.obj) {
             if (resp.data.obj.total === 0) {
-              this.$message.error("没有物品编号为:" + this.numberInput + "的机器")
-              return
-            }
-            if (resp.data.obj.total >= 2) {
-              this.$message.error("物品编号为:" + this.numberInput + "的机器在库存中超过2个")
+              this.$message.error("没有该机器")
               return
             }
             if (this.judgeIsAdd(resp.data.obj.data[0].number) === -1) {
-              this.$message.error("物品编号为:" + this.numberInput + "的机器已添加到该单据中了")
+              this.$message.error("该机器已添加到该单据中了")
               return
             }
             resp.data.obj.data[0].qualityDesc = resp.data.obj.data[0].qualityDesc === null ? "" : resp.data.obj.data[0].qualityDesc.split(",");

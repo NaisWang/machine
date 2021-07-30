@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.SubStorageLocationMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.SubStorageLocation">
+    <id column="id" property="id"/>
+    <result column="parent_storage_location_id" property="parentStorageLocationId"/>
+    <result column="name" property="name"/>
+    <result column="gate_emp_id" property="gateEmpId"/>
+    <result column="emp_ids" property="empIds"/>
+    <result column="comment" property="comment"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, parent_storage_location_id, name, gate_emp_id, emp_ids, comment
+  </sql>
+  <!-- 获取子库   -->
+  <select id="getGetSubStorageLocation" resultType="com.example.server.pojo.SubStorageLocation">
+    select a.*, count(tm.id is not null or null) as machine_sum
+    from (
+    select *
+    from t_sub_storage_location
+    where 1 =1
+    <if test="parentStorageLocationId != null and parentStorageLocationId != ''">
+      and parent_storage_location_id = #{parentStorageLocationId}
+    </if>
+    ) as a
+    left join t_machine as tm
+    on a.id = tm.storage_location_id
+    group by a.id
+  </select>
+
+</mapper>

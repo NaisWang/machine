@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,8 @@ public class DeliverReceiptController {
 	private EmployeeServiceImpl employeeService;
 	@Autowired
 	private MachineServiceImpl machineService;
+	@Autowired
+	private MachineTraceServiceImpl machineTraceService;
 
 	@ApiOperation("分页获取转交单信息")
 	@GetMapping("/")
@@ -55,21 +58,26 @@ public class DeliverReceiptController {
 																					@RequestParam(defaultValue = "10") Integer size,
 																					DeliverReceipt deliverReceipt,
 																					LocalDate[] localDateScope,
-																					Integer type,
 																					Authentication authentication) {
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();
 		deliverReceipt.setOperateEmpId(empId);
-		IPage<DeliverReceipt> deliverReceiptIPage = null;
-		System.out.println("aaa");
-		System.out.println(type);
-		System.out.println("aaaa");
-		if (type == null || type == 0) {
-			deliverReceiptIPage = deliverReceiptService.getDeliverReceiptByPage(currentPage, size, deliverReceipt, localDateScope, 0);
-		} else {
-			deliverReceiptIPage = deliverReceiptService.getDeliverReceiptByPage(currentPage, size, deliverReceipt, localDateScope, empId);
-		}
+		IPage<DeliverReceipt> deliverReceiptIPage = deliverReceiptService.getDeliverReceiptByPage(currentPage, size, deliverReceipt, localDateScope);
 		return RespBean.success("获取成功", new RespPageBean(deliverReceiptIPage.getTotal(), deliverReceiptIPage.getRecords()));
 	}
+
+	@ApiOperation("获取需要接收的转接单")
+	@GetMapping("/receive")
+	public RespBean getReceiveDeliverReceipt(@RequestParam(defaultValue = "1") Integer currentPage,
+																					 @RequestParam(defaultValue = "10") Integer size,
+																					 DeliverReceipt deliverReceipt,
+																					 LocalDate[] localDateScope,
+																					 Authentication authentication) {
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		RespPageBean respPageBean = deliverReceiptService.getReceiveDeliverReceipt(currentPage, size, deliverReceipt, empId);
+		//List<DeliverReceipt> deliverReceiptList = deliverReceiptService.list(new QueryWrapper<DeliverReceipt>().likeRight("receive_emp_ids", empId + ",").or().likeLeft("receive_emp_ids", "," + empId).or().like("receive_emp_ids", "," + empId + ",").or().eq("receive_emp_ids", empId).orderByDesc("deliver_receipt_id"));
+		return RespBean.success("获取成功", respPageBean);
+	}
+
 
 	@ApiOperation("通过receiptId获取转交单")
 	@GetMapping("/getByMachineId")
@@ -92,8 +100,9 @@ public class DeliverReceiptController {
 	@Transactional
 	public RespBean createDeliverReceipt(@RequestBody DeliverReceipt deliverReceipt, Authentication authentication) {
 		try {
+			LocalDateTime now = LocalDateTime.now();
 			Integer empId = ((Employee) authentication.getPrincipal()).getId();
-			deliverReceipt.setDeliverDate(LocalDateTime.now());
+			deliverReceipt.setCreateTime(now);
 			deliverReceipt.setSum(0);
 			deliverReceipt.setNotReceiveSum(0);
 			deliverReceipt.setEnableEdit(0);
@@ -120,9 +129,15 @@ public class DeliverReceiptController {
 		try {
 			Integer empId = ((Employee) authentication.getPrincipal()).getId();
 			DeliverReceipt deliverReceipt = deliverReceiptService.getById(receiptId);
-			if (deliverReceipt.getEnableEdit() == 1) {
-				return RespBean.error("该转交单已提交，无法删除");
+
+			if (!empId.equals(deliverReceipt.getOperateEmpId())) {
+				return RespBean.error("你没有权限操作该单据");
 			}
+
+			//if (deliverReceipt.getIsDelete() == 1) {
+			//		return RespBean.error("该转交单已提交，无法删除");
+			//	}
+
 			if (deliverReceiptService.removeById(receiptId)) {
 				List<DeliverMachine> deliverMachines = deliverMachineService.list(new QueryWrapper<DeliverMachine>().eq("deliver_receipt_id", receiptId));
 
@@ -149,15 +164,43 @@ public class DeliverReceiptController {
 	@Transactional
 	public RespBean releaseDeliverReceipt(Integer receiptId, Authentication authentication) {
 		try {
+			LocalDateTime now = LocalDateTime.now();
 			Integer empId = ((Employee) authentication.getPrincipal()).getId();
 			DeliverReceipt deliverReceipt = deliverReceiptService.getById(receiptId);
+
+			if (!empId.equals(deliverReceipt.getOperateEmpId())) {
+				return RespBean.error("你没有权限操作该单据");
+			}
+
 			if (deliverReceipt.getEnableEdit() == 1) {
 				return RespBean.error("该转交单已经发布了");
 			}
-			if (deliverReceiptService.update(new DeliverReceipt(), new UpdateWrapper<DeliverReceipt>().eq("deliver_receipt_id", receiptId).set("enable_edit", 1))) {
+
+			List<DeliverMachine> deliverMachines = deliverMachineService.list(new QueryWrapper<DeliverMachine>().eq("deliver_receipt_id", receiptId));
+			List<MachineTrace> machineTraces = new ArrayList<>();
+			if (deliverMachines.size() == 0) {
+				return RespBean.error("该转交为空，不能提交");
+			}
+
+			List<String> machineNumbers = new ArrayList<>();
+
+			for (DeliverMachine deliverMachine : deliverMachines) {
+				machineNumbers.add(deliverMachine.getMachineNumber());
+			}
+			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("number", machineNumbers));
+			for (Machine machine : machines) {
+				MachineTrace machineTrace = new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId());
+				machineTrace.setDeliverStatusId(1);
+				machineTrace.setDeliverIntentionId(deliverReceipt.getDeliverIntentionId());
+				machineTraces.add(machineTrace);
+			}
+
+			if (deliverReceiptService.update(new DeliverReceipt(), new UpdateWrapper<DeliverReceipt>().eq("deliver_receipt_id", receiptId).set("enable_edit", 1).set("release_time", now))) {
 				if (deliverMachineService.update(new DeliverMachine(), new UpdateWrapper<DeliverMachine>().eq("deliver_receipt_id", receiptId).set("status", 1))) {
-					logService.save(new Log(empId, "发布转交单", "转交单号为：" + receiptId, LocalDateTime.now(), 0));
-					return RespBean.success("发布成功");
+					if (machineTraceService.saveBatch(machineTraces)) {
+						logService.save(new Log(empId, "发布转交单", "转交单号为：" + receiptId, now, 0));
+						return RespBean.success("发布成功");
+					}
 				}
 			}
 			throw new RuntimeException("发布失败");
@@ -165,15 +208,6 @@ public class DeliverReceiptController {
 			e.printStackTrace();
 			throw new RuntimeException("发布失败");
 		}
-	}
-
-	@ApiOperation("获取需要接收的转接单")
-	@GetMapping("/receive")
-	public RespBean getReceiveDeliverReceipt(Authentication authentication) {
-		Integer empId = ((Employee) authentication.getPrincipal()).getId();
-		List<DeliverReceipt> deliverReceiptList = deliverReceiptService.list(new QueryWrapper<DeliverReceipt>().likeRight("receive_emp_ids", empId + ",").or().likeLeft("receive_emp_ids", "," + empId).or().like("receive_emp_ids", "," + empId + ",").or().eq("receive_emp_ids", empId).orderByDesc("deliver_receipt_id"));
-		System.out.println(deliverReceiptList);
-		return RespBean.success("获取成功", deliverReceiptList);
 	}
 
 }

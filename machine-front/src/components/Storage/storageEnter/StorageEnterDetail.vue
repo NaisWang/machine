@@ -92,11 +92,12 @@
       </el-row>
     </div>
 
-    <AddMachineByScan v-if="isRelease === 0" table-name="storageEnter" :machines="machines"
+    <AddMachineByScan v-if="isRelease === 0" table-name="storageEnter" operate-name="addMachineToEnterStorage"
+                      :machines="machines"
                       :receiptId="storageEnterOrderNumber" @initShow="initMachine"></AddMachineByScan>
 
     <MachineShowDetail ref="child" :machines="machines" :paging="true" :tableName="'storageEnter'"
-                       :is-release="isRelease"></MachineShowDetail>
+                       :is-release="isRelease" :extra-not-show="[]"></MachineShowDetail>
   </div>
 </template>
 

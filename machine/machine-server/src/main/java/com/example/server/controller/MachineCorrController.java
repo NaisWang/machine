@@ -1,15 +1,20 @@
 package com.example.server.controller;
 
+import com.example.server.pojo.Channel;
 import com.example.server.service.impl.BrandServiceImpl;
 import com.example.server.service.impl.CategoryServiceImpl;
 import com.example.server.service.impl.ChannelServiceImpl;
 import com.example.server.service.impl.MachineStatusServiceImpl;
+import com.example.server.utils.Corr;
 import com.example.server.utils.RespBean;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author : whz
@@ -48,7 +53,14 @@ public class MachineCorrController {
 	@ApiOperation("获取所有渠道")
 	@GetMapping("/channel")
 	public RespBean getChannelCorr() {
-		return RespBean.success("操作成功", channelService.list(null));
+		List<Channel> channelList = channelService.list(null);
+		if (Corr.channelCorr == null) {
+			Corr.channelCorr = new HashMap<>();
+			for (Channel channel : channelList) {
+				Corr.channelCorr.put(channel.getId(), channel.getName());
+			}
+		}
+		return RespBean.success("操作成功", channelList);
 	}
 
 }

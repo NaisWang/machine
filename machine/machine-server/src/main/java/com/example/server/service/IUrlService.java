@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author whz
@@ -24,5 +24,6 @@ public interface IUrlService extends IService<Url> {
 	/**
 	 * 根据url获取Role
 	 */
-	public List<Role> getRolesByUrl(String url, Integer method);
+//	public List<Role> getRolesByUrl(String url, Integer method);
+	public String getRolesByUrl(String url, Integer method);
 }

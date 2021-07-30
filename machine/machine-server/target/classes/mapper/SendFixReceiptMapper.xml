@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.SendFixReceiptMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.SendFixReceipt">
+    <id column="id" property="id"/>
+    <result column="operate_emp_id" property="operateEmpId"/>
+    <result column="comment" property="comment"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, operate_emp_id, comment
+  </sql>
+
+  <!-- 创建外修订单  -->
+  <select id="getSendFixReceipt" resultType="com.example.server.pojo.SendFixReceipt">
+    select a.id,
+           count(b.send_fix_machine_id is not null or null) as 'sum',
+           count(b.fix_status = 2)                          as 'receive_sum',
+           create_time,
+           release_time,
+           operate_emp_id,
+           is_release,
+           a.comment
+    from t_send_fix_receipt as a
+           left join t_send_fix_machine as b
+                     on a.id = b.receipt_id
+    group by a.id
+  </select>
+
+</mapper>

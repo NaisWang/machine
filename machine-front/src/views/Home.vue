@@ -1,10 +1,22 @@
 <template>
   <div>
     <el-container>
-
       <el-header class="homeHeader">
         <div class="title">网上办公系统</div>
+        <span style="width: 60%">
+          <el-input style="width: 85%" placeholder="请输入物品编码" v-model="showMachineDetailNumber"
+                    @keydown.enter.native="showMachineDetail"></el-input>
+          <el-select style="width: 10%" v-model="searchMethod" placeholder="请选择">
+            <el-option
+                v-for="item in searchOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+            </el-option>
+          </el-select>
+        </span>
         <el-dropdown class="userInfo" @command="handleCommand">
+
           <span class="el-dropdown-link">
             {{ user.name }}<i><img :src="user.userFace"></i>
           </span>
@@ -61,19 +73,43 @@
       </el-container>
     </el-container>
 
+    <MachineShowDetailVertical v-if="showDetail.value" :table-name="'storageSearch'" :machine="showDetailMachine"
+                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+
   </div>
 </template>
 
 <script>
 import * as tab from "../utils/tab"
+import {getMachineTrace} from "../api/machineTraceApi";
+import {getMachine} from "../api/machineApi";
+import MachineShowDetailVertical from "../components/Machine/MachineShowDetailVertical.vue";
 
 export default {
   name: "Home",
   data() {
     return {
+      showDetail: {"value": false},
+      showDetailMachine: {},
+      showMachineTrace: {},
       user: JSON.parse(window.sessionStorage.getItem("user")),
-      isCollapse: true
+      isCollapse: true,
+      showMachineDetailNumber: "",
+      searchOptions: [{
+        value: 'number',
+        label: '物品编码'
+      }, {
+        value: 'imei',
+        label: 'imei号'
+      }, {
+        value: 'paijiBarCode',
+        label: '拍机堂条码'
+      }],
+      searchMethod: "number"
     };
+  },
+  components: {
+    MachineShowDetailVertical
   },
   mounted() {
     let tabItem = {
@@ -128,6 +164,30 @@ export default {
     chooseTab(tab1) {
       tab.chooseTab(tab1, this.$router, this.$route, this.$store)
     },
+    showMachineDetail() {
+      if (this.showMachineDetailNumber !== "") {
+        let search = {}
+        if (this.searchMethod === 'number') {
+          search['number'] = this.showMachineDetailNumber
+        } else if (this.searchMethod === 'imei') {
+          search['imei'] = this.showMachineDetailNumber
+        } else if (this.searchMethod === 'paijiBarCode') {
+          search['paijiBarcode'] = this.showMachineDetailNumber
+        }
+        getMachine(1, 10, search).then(resp => {
+          console.log(resp);
+          if (resp.data.obj.total === 0) {
+            this.$message.error("没有该机器");
+          }
+          this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
+          getMachineTrace({'number': this.showDetailMachine['number']}).then(resp => {
+            this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
+            this.showDetail.value = true
+            this.showMachineDetailNumber = ""
+          })
+        })
+      }
+    }
   },
   computed: {
     menuRoutes() {
@@ -177,5 +237,9 @@ export default {
 
 .el-aside li {
   min-width: 120px !important;
+}
+
+.el-select .el-input {
+  display: inline-block;
 }
 </style>

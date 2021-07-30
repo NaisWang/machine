@@ -2,16 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.server.mapper.EmployeeRoleMapper">
 
-    <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.example.server.pojo.EmployeeRole">
-        <id column="id" property="id" />
-        <result column="employee_id" property="employeeId" />
-        <result column="role_id" property="roleId" />
-    </resultMap>
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.EmployeeRole">
+    <id column="id" property="id"/>
+    <result column="employee_id" property="employeeId"/>
+    <result column="role_id" property="roleId"/>
+  </resultMap>
 
-    <!-- 通用查询结果列 -->
-    <sql id="Base_Column_List">
-        id, employee_id, role_id
-    </sql>
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, employee_id, role_id
+  </sql>
+
+  <insert id="addEmpRole">
+    insert into t_employee_role(employee_id, role_id) values
+    <foreach collection="rids" item="rid" separator=",">
+      (#{id}, #{rid})
+    </foreach>
+  </insert>
 
 </mapper>

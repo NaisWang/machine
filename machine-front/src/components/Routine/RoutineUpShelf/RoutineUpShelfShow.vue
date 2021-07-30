@@ -15,8 +15,10 @@
       <el-button type="primary" icon="el-icon-search" @click="doSearch()">搜索
       </el-button>
 
-      <el-button type="primary" icon="el-icon-plus" @click="addReceipt">添加上架单号</el-button>
     </div>
+
+    <el-button type="primary" icon="el-icon-plus" @click="addReceipt">添加上架单号</el-button>
+    <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
 
     <div>
       <el-table
@@ -111,9 +113,15 @@ export default {
     }
   },
   mounted() {
-    this.initAllOrderInfo();
+    this.refresh();
   },
   methods: {
+    refresh(type) {
+      this.initAllOrderInfo();
+      if (type === 1) {
+        this.$message.success("刷新成功");
+      }
+    },
     initAllOrderInfo() {
       getUpShelfReceipt(this.currentPage, this.size, this.searchOrder).then(resp => {
         if (resp.data.obj) {

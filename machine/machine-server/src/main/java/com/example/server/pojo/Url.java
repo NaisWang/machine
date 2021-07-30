@@ -39,7 +39,10 @@ public class Url implements Serializable {
 	private Integer method;
 
 	@ApiModelProperty(value = "url描述")
-	private String desc;
+	private String descr;
+
+	@ApiModelProperty(value = "角色id")
+	private String roleIds;
 
 	@ApiModelProperty(value = "角色英文名")
 	@TableField(exist = false)

@@ -34,8 +34,9 @@
       </el-row>
     </div>
 
+    <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
+
     <el-table :data="logs"
-              max-height="1000"
               style="width: 100%">
       <el-table-column
           prop="empId"
@@ -50,7 +51,7 @@
       <el-table-column
           prop="urlDesc"
           label="操作"
-          width="100">
+          width="200">
       </el-table-column>
       <el-table-column
           prop="parameter"
@@ -67,6 +68,17 @@
           width="50">
       </el-table-column>
     </el-table>
+
+    <div style="display: flex; justify-content: flex-end">
+      <el-pagination
+          background
+          layout="sizes, prev, pager, next, ->, total"
+          @current-change="currentChange"
+          @size-change="sizeChange"
+          :page-size="20"
+          :total="total">
+      </el-pagination>
+    </div>
   </div>
 </template>
 
@@ -79,16 +91,22 @@ export default {
     return {
       searchLog: {},
       currentPage: 1,
-      size: 100,
+      size: 20,
       logTimeScope: [],
       logs: [],
       total: null
     }
   },
   mounted() {
-    this.initLog();
+    this.refresh()
   },
   methods: {
+    refresh(type) {
+      this.initLog();
+      if (type === 1) {
+        this.$message.success("刷新成功");
+      }
+    },
     initLog() {
       getLog(this.currentPage, this.size, this.searchLog, this.logTimeScope).then(resp => {
         if (resp.data.obj) {
@@ -96,12 +114,22 @@ export default {
           this.logs = resp.data.obj.data;
         }
       })
-    }
+    },
+    currentChange(currentPage) {
+      this.currentPage = currentPage;
+      this.initLog();
+    },
+    sizeChange(size) {
+      this.size = size;
+      this.initLog()
+    },
   }
 
 }
 </script>
 
-<style scoped>
-
+<style>
+.el-table--small td, .el-table--small td {
+  padding: 0 !important;
+}
 </style>

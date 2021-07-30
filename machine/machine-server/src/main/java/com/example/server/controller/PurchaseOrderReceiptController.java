@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.server.pojo.*;
 import com.example.server.service.impl.LogServiceImpl;
 import com.example.server.service.impl.MachineServiceImpl;
+import com.example.server.service.impl.MachineTraceServiceImpl;
 import com.example.server.service.impl.PurchaseOrderReceiptServiceImpl;
+import com.example.server.utils.Corr;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -26,6 +28,7 @@ import org.springframework.web.server.handler.ResponseStatusExceptionHandler;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +51,8 @@ public class PurchaseOrderReceiptController {
 	private PurchaseOrderReceiptServiceImpl purchaseOrderReceiptService;
 	@Autowired
 	private LogServiceImpl logService;
+	@Autowired
+	private MachineTraceServiceImpl machineTraceService;
 
 
 	@ApiOperation("获取采购单信息")
@@ -99,21 +104,21 @@ public class PurchaseOrderReceiptController {
 	@PutMapping("/")
 	@Transactional
 	public RespBean createPurchaseOrderReceipt(@RequestBody PurchaseOrderReceipt purchaseOrderReceipt, Authentication authentication) throws Exception {
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		LocalDateTime now = LocalDateTime.now();
 		try {
-			System.out.println("aaa");
-			System.out.println(purchaseOrderReceipt);
-			LocalDate now = LocalDate.now();
-			Integer empId = ((Employee) authentication.getPrincipal()).getId();
-			purchaseOrderReceipt.setPurchaseDate(now);
+			purchaseOrderReceipt.setCreateTime(now);
 			purchaseOrderReceipt.setOperateEmpId(empId);
 			purchaseOrderReceipt.setIsRelease(0);
 			if (purchaseOrderReceiptService.save(purchaseOrderReceipt)) {
-				logService.save(new Log(empId, "添加采购单", "", LocalDateTime.now(), 0));
+				logService.save(new Log(empId, "添加采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
 				return RespBean.success("添加成功");
 			}
+			logService.save(new Log(empId, "添加采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
 			throw new RuntimeException("添加失败");
 		} catch (Exception e) {
 			e.printStackTrace();
+			logService.save(new Log(empId, "添加采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
 			throw new RuntimeException("添加失败");
 		}
 	}
@@ -122,21 +127,43 @@ public class PurchaseOrderReceiptController {
 	@GetMapping("/release")
 	@Transactional
 	public RespBean releasePurchaseReceipt(Integer receiptId, Authentication authentication) {
+		if (receiptId == 0) {
+			return RespBean.error("数据错误");
+		}
+		LocalDateTime now = LocalDateTime.now();
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		PurchaseOrderReceipt purchaseOrderReceipt = purchaseOrderReceiptService.getById(receiptId);
 		try {
-			Integer empId = ((Employee) authentication.getPrincipal()).getId();
-			PurchaseOrderReceipt purchaseOrderReceipt = purchaseOrderReceiptService.getById(receiptId);
+			if (!empId.equals(purchaseOrderReceipt.getOperateEmpId())) {
+				return RespBean.error("你没有权限操作该单据");
+			}
 			if (purchaseOrderReceipt.getIsRelease() == 1) {
 				return RespBean.error("该转交单已经发布了");
 			}
-			if (purchaseOrderReceiptService.update(new PurchaseOrderReceipt(), new UpdateWrapper<PurchaseOrderReceipt>().eq("purchase_order", receiptId).set("is_release", 1))) {
+
+			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().eq("purchase_order_id", receiptId));
+			if (machines.size() == 0) {
+				return RespBean.error("该采购单为空，不能发布");
+			}
+
+			if (purchaseOrderReceiptService.update(new PurchaseOrderReceipt(), new UpdateWrapper<PurchaseOrderReceipt>().eq("purchase_order", receiptId).set("is_release", 1).set("release_time", now))) {
 				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("purchase_order_id", receiptId).set("status_id", 1))) {
-					logService.save(new Log(empId, "发布采购单", "采购单号为：" + receiptId, LocalDateTime.now(), 0));
-					return RespBean.success("发布成功");
+					List<MachineTrace> machineTraces = new ArrayList<>();
+					//跟踪机器数据
+					for (Machine machine : machines) {
+						machineTraces.add(new MachineTrace(machine.getNumber(), 1, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+					}
+					if (machineTraceService.saveBatch(machineTraces)) {
+						logService.save(new Log(empId, "发布采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
+						return RespBean.success("发布成功");
+					}
 				}
 			}
+			logService.save(new Log(empId, "发布采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
 			throw new RuntimeException("发布失败");
 		} catch (Exception e) {
 			e.printStackTrace();
+			logService.save(new Log(empId, "发布采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
 			throw new RuntimeException("发布失败");
 		}
 	}
@@ -145,24 +172,53 @@ public class PurchaseOrderReceiptController {
 	@PutMapping("/addMachine")
 	@Transactional
 	public RespBean addMachine(@RequestBody Machine[] machines, Integer receiptId, Authentication authentication) {
+		if (receiptId == 0) {
+			return RespBean.error("数据错误");
+		}
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		PurchaseOrderReceipt purchaseOrderReceipt = purchaseOrderReceiptService.getById(receiptId);
+		LocalDateTime now = LocalDateTime.now();
+		List<MachineTrace> machineTraces = new ArrayList<>();
 		try {
-			Integer empId = ((Employee) authentication.getPrincipal()).getId();
-			PurchaseOrderReceipt purchaseOrderReceipt = purchaseOrderReceiptService.getById(receiptId);
+			if (!empId.equals(purchaseOrderReceipt.getOperateEmpId())) {
+				return RespBean.error("你没有权限操作该单据");
+			}
 			if (purchaseOrderReceipt.getIsRelease() == 1) {
 				return RespBean.error("该转交单已经发布了");
 			}
+
+			//判断是否含有相同number的机器
+			List<String> numbers = new ArrayList<>();
 			for (Machine machine : machines) {
+				numbers.add(machine.getNumber());
 				machine.setStatusId(21);
 				machine.setPurchaseOrderId(receiptId);
 				machine.setOperateEmpId(empId);
+				if (machine.getComment() == null) {
+					machine.setComment("");
+				}
+				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+			}
+			List<Machine> machineList = machineService.list(new QueryWrapper<Machine>().in("number", numbers));
+			if (machineList.size() != 0) {
+				StringBuffer repeatNubmer = new StringBuffer();
+				for (Machine machine : machineList) {
+					repeatNubmer.append(machine.getNumber() + '、');
+				}
+				return RespBean.error("如下物品编码已经存在：" + repeatNubmer.toString());
 			}
 			if (machineService.saveBatch(Arrays.asList(machines))) {
-				return RespBean.success("添加成功");
+				if (machineTraceService.saveBatch(machineTraces)) {
+					logService.save(new Log(empId, "往采购单中添加机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
+					return RespBean.success("添加成功");
+				}
 			}
-			throw new RuntimeException("发布失败");
+			logService.save(new Log(empId, "往采购单中添加机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
+			throw new RuntimeException("添加失败");
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException("发布失败");
+			logService.save(new Log(empId, "往采购单中添加机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
+			throw new RuntimeException("添加失败");
 		}
 	}
 
@@ -172,32 +228,56 @@ public class PurchaseOrderReceiptController {
 	public RespBean deleteMachine(Integer id, Authentication authentication) {
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();
 		Machine machine = machineService.getById(id);
-		if (machine.getStatusId() != 21) {
-			return RespBean.error("不能删除该机器");
+		LocalDateTime now = LocalDateTime.now();
+		PurchaseOrderReceipt purchaseOrderReceipt = purchaseOrderReceiptService.getById(machine.getPurchaseOrderId());
+		if (!empId.equals(purchaseOrderReceipt.getOperateEmpId())) {
+			return RespBean.error("你没有权限操作该单据");
 		}
+		//if (purchaseOrderReceipt.getIsRelease() == 1) {
+		//	return RespBean.error("该采购单已经提交了");
+		//}
+
 		if (machineService.removeById(id)) {
-			return RespBean.success("删除成功");
+			if (machineTraceService.remove(new QueryWrapper<MachineTrace>().eq("number", machine.getNumber()))) {
+				logService.save(new Log(empId, "往采购单中未提交的机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
+				return RespBean.success("删除成功");
+			}
 		}
+		logService.save(new Log(empId, "往采购单中未提交的机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
 		return RespBean.error("删除失败");
 	}
 
 	@ApiOperation("删除采购单")
 	@DeleteMapping("/")
 	@Transactional
-	public RespBean deleteReceipt(Integer receiptId) {
+	public RespBean deleteReceipt(Integer receiptId, Authentication authentication) {
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		LocalDateTime now = LocalDateTime.now();
+		PurchaseOrderReceipt purchaseOrderReceipt = purchaseOrderReceiptService.getById(receiptId);
 		try {
-			PurchaseOrderReceipt purchaseOrderReceipt = purchaseOrderReceiptService.getById(receiptId);
-			if (purchaseOrderReceipt.getIsRelease() == 1) {
-				return RespBean.error("该采购单已经提交了, 无法再删除");
+			if (receiptId == 0) {
+				return RespBean.error("数据错误");
+			}
+			if (!empId.equals(purchaseOrderReceipt.getOperateEmpId())) {
+				return RespBean.error("你没有权限操作该单据");
+			}
+			if (purchaseOrderReceipt.getIsDelete() == 1) {
+				return RespBean.error("该采购单中的机器已经发生变化, 无法再删除");
 			}
 			if (purchaseOrderReceiptService.removeById(receiptId)) {
+				List<Machine> machines = machineService.list(new QueryWrapper<Machine>().eq("purchase_order_id", purchaseOrderReceipt.getPurchaseOrder()));
 				if (machineService.remove(new QueryWrapper<Machine>().eq("purchase_order_id", purchaseOrderReceipt.getPurchaseOrder()))) {
-					return RespBean.success("删除成功");
+					if (machineTraceService.remove(new QueryWrapper<MachineTrace>().eq("receipt_id", purchaseOrderReceipt.getPurchaseOrder()))) {
+						logService.save(new Log(empId, "删除采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
+						return RespBean.success("删除成功");
+					}
 				}
 			}
+			logService.save(new Log(empId, "删除采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
 			throw new RuntimeException("删除失败");
 		} catch (Exception e) {
 			e.printStackTrace();
+			logService.save(new Log(empId, "删除采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
 			throw new RuntimeException("删除失败");
 		}
 	}
@@ -211,10 +291,17 @@ public class PurchaseOrderReceiptController {
 
 	@ApiOperation("修改采购单中机器的信息")
 	@PutMapping("/modifyMachine")
-	public RespBean modifyMachine(@RequestBody Machine machine) {
-		if (machine.getStatusId() != 21) {
-			return RespBean.error("更新失败");
+	public RespBean modifyMachine(@RequestBody Machine machine, Authentication authentication) {
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		PurchaseOrderReceipt purchaseOrderReceipt = purchaseOrderReceiptService.getById(machine.getPurchaseOrderId());
+		if (!empId.equals(purchaseOrderReceipt.getOperateEmpId())) {
+			return RespBean.error("你没有权限操作该单据");
 		}
+		//if (purchaseOrderReceipt.getIsRelease() == 1) {
+		//	return RespBean.error("该采购单已经提交了");
+		//}
+
+		LocalDateTime now = LocalDateTime.now();
 
 		Machine afterMachine = new Machine();
 		afterMachine.setId(machine.getId());
@@ -230,26 +317,40 @@ public class PurchaseOrderReceiptController {
 		afterMachine.setComment(machine.getComment());
 
 		if (machineService.update(afterMachine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
+			logService.save(new Log(empId, "修改采购单中机器信息", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment() + ";机器number：" + machine.getNumber(), now, 0));
 			return RespBean.success("更新成功");
 		}
+		logService.save(new Log(empId, "修改采购单中机器信息", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment() + ";机器number：" + machine.getNumber(), now, 1));
 		return RespBean.error("更新失败");
 	}
 
 	@ApiOperation("修改采购单信息")
 	@PutMapping("/modifyReceipt")
-	public RespBean modifyReceipt(@RequestBody PurchaseOrderReceipt purchaseOrderReceipt) {
+	@Transactional
+	public RespBean modifyReceipt(@RequestBody PurchaseOrderReceipt purchaseOrderReceipt, Authentication authentication) {
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		if (!empId.equals(purchaseOrderReceipt.getOperateEmpId())) {
+			return RespBean.error("你没有权限操作该单据");
+		}
 		if (purchaseOrderReceipt.getIsRelease() == 1) {
 			return RespBean.error("该采购单已添加");
 		}
+		LocalDateTime now = LocalDateTime.now();
+		try {
+			PurchaseOrderReceipt afterPurchaseOrderReceipt = new PurchaseOrderReceipt();
+			afterPurchaseOrderReceipt.setPurchaseChannelId(purchaseOrderReceipt.getPurchaseChannelId());
+			afterPurchaseOrderReceipt.setComment(purchaseOrderReceipt.getComment());
 
-		PurchaseOrderReceipt afterPurchaseOrderReceipt = new PurchaseOrderReceipt();
-		afterPurchaseOrderReceipt.setPurchaseChannelId(purchaseOrderReceipt.getPurchaseChannelId());
-		afterPurchaseOrderReceipt.setComment(purchaseOrderReceipt.getComment());
-
-		if (purchaseOrderReceiptService.update(afterPurchaseOrderReceipt, new UpdateWrapper<PurchaseOrderReceipt>().eq("purchase_order", purchaseOrderReceipt.getPurchaseOrder()))) {
-			return RespBean.success("更新成功");
+			if (purchaseOrderReceiptService.update(afterPurchaseOrderReceipt, new UpdateWrapper<PurchaseOrderReceipt>().eq("purchase_order", purchaseOrderReceipt.getPurchaseOrder()))) {
+				logService.save(new Log(empId, "修改采购单信息", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
+				return RespBean.success("更新成功");
+			}
+			logService.save(new Log(empId, "修改采购单信息", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
+			return RespBean.error("更新失败");
+		} catch (Exception e) {
+			e.printStackTrace();
+			logService.save(new Log(empId, "修改采购单信息", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
+			throw new RuntimeException("有错误");
 		}
-		return RespBean.error("更新失败");
 	}
-
 }

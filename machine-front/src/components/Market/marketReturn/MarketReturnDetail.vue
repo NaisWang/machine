@@ -92,14 +92,19 @@
       </el-row>
     </div>
 
-    <MachineShowDetail ref="child" :machines="machines" :paging="true" :tableName="'marketReturn'" extra-not-show="[]"></MachineShowDetail>
 
+    <AddMachineByScan v-if="isRelease === 0" table-name="marketReturn" operate-name="addMachineToMarketReturn" :machines="machines"
+                      :receiptId="receiptDetailNumber" @initShow="initMachine"></AddMachineByScan>
+
+    <MachineShowDetail ref="child" :machines="machines" :paging="true"
+                       :tableName="'marketReturn'" :is-release="isRelease" :extra-not-show="[]"></MachineShowDetail>
   </div>
 </template>
 
 <script>
 import MachineShowDetail from "../../Machine/MachineShowDetail.vue";
 import initMachineCorr from "../../../utils/machineCorr";
+import AddMachineByScan from "../../Machine/AddMachineByScan.vue";
 
 export default {
   name: "MarketReturnDetail",
@@ -109,15 +114,20 @@ export default {
       machines: []
     }
   },
-  props: ['receiptDetailNumber'],
+  props: ['receiptDetailNumber', 'isRelease'],
   mounted() {
-    this.searchMachine.marketOrderId = this.receiptDetailNumber;
+    this.searchMachine.marketReturnReceiptId = this.receiptDetailNumber;
     this.$refs.child.initMachinesByApi(this.searchMachine)
     initMachineCorr(this.$store)
   },
-  methods: {},
+  methods: {
+    initMachine() {
+      this.$refs.child.initMachinesByApi(this.searchMachine)
+    }
+  },
   components: {
-    MachineShowDetail
+    MachineShowDetail,
+    AddMachineByScan
   }
 }
 </script>

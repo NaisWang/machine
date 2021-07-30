@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.MachineRecallMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.MachineRecall">
+    <id column="id" property="id"/>
+    <result column="number" property="number"/>
+    <result column="pre_operate_emp_id" property="preOperateEmpId"/>
+    <result column="now_operate_emp_id" property="nowOperateEmpId"/>
+    <result column="status_id" property="statusId"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id, number, pre_operate_emp_id, now_operate_emp_id, status_id
+  </sql>
+
+  <!-- 获取机器召回信息 -->
+  <select id="getMachineRecall" resultType="com.example.server.pojo.MachineRecall">
+    select * from
+    t_machine_recall
+    where 1 = 1
+    <if test="machineRecall.nowOperateEmpId != null and machineRecall.nowOperateEmpId != ''">
+      and now_operate_emp_id = #{machineRecall.nowOperateEmpId}
+    </if>
+    <if test="machineRecall.preOperateEmpId != null and machineRecall.preOperateEmpId != ''">
+      and pre_operate_emp_id = #{machineRecall.preOperateEmpId}
+    </if>
+  </select>
+
+</mapper>

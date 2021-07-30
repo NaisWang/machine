@@ -36,9 +36,9 @@ export function addMachineToDeliverReceipt(ids, receiptId) {
 }
 
 //删除转交单中机器
-export function deleteDeliverMachine(machineId, receiptId) {
+export function deleteDeliverMachine(machineNumber, receiptId) {
   return myAxios({
-    url: BASE_URL + '/?machineId=' + machineId + "&receiptId=" + receiptId,
+    url: BASE_URL + '/?machineNumber=' + machineNumber + "&receiptId=" + receiptId,
     method: 'delete'
   })
 }

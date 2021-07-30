@@ -1,13 +1,19 @@
 package com.example.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.server.mapper.EmployeeRoleMapper;
 import com.example.server.pojo.Employee;
 import com.example.server.mapper.EmployeeMapper;
+import com.example.server.pojo.EmployeeRole;
 import com.example.server.service.IEmployeeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.server.utils.RespBean;
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,17 +43,19 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
 	 * @return
 	 */
 	@Override
-	public List<Employee> getAllEmployee() {
-		return employeeMapper.getAllEmployee();
+	public List<Employee> getAllEmployee(Employee employee) {
+		return employeeMapper.getAllEmployee(employee);
 	}
 
 
 	/**
 	 * 获取员工Corr
+	 *
 	 * @return
 	 */
 	@Override
 	public List<Employee> getEmpCorr() {
 		return employeeMapper.selectList(new QueryWrapper<Employee>().select("id", "name"));
 	}
+
 }

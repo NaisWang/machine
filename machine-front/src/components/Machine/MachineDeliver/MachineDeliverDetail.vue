@@ -93,10 +93,6 @@
       </el-row>
     </div>
 
-    <!--    <div>-->
-    <!--      <el-button @click="addMachine" v-if="isEdit === 0">添加机器</el-button>-->
-    <!--    </div>-->
-
     <AddMachineByScan v-if="isEdit === 0" :machines="machines" table-name="machineDeliver"
                       :receiptId="receiptDetailNumber" @initShow="initDeliverMachines"></AddMachineByScan>
 
@@ -111,7 +107,7 @@
 
         <el-table-column
             prop="machineNumber"
-            label="机器物品编码"
+            label="物品编码"
             width="170">
         </el-table-column>
 
@@ -170,11 +166,11 @@
             <el-button
                 size="mini"
                 type="success"
-                @click="orderDetail(scope.row)">详情
+                @click="detail(scope.row)">详情
             </el-button>
 
             <el-button
-                v-if="isEdit === 0"
+                v-if="isEdit === 0 || scope.row.status === 1"
                 size="mini"
                 type="danger"
                 @click="handleDelete(scope.row)">删除
@@ -194,6 +190,10 @@
           :total="total">
       </el-pagination>
     </div>
+
+
+    <MachineShowDetailVertical v-if="showDetail.value" :table-name="tableName" :machine="showDetailMachine"
+                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
 
 
     <!--    <el-dialog-->
@@ -225,16 +225,20 @@
 <script>
 import initMachineCorr from "../../../utils/machineCorr";
 import {getDeliverMachine} from "../../../api/deliverMachineApi";
-import MachineShowDetailVertical from "../MachineShowDetailVertical.vue";
 import {getMachine} from "../../../api/machineApi";
 import {addDeliverMachine} from "../../../api/deliverMachineApi";
 import {deleteDeliverMachine} from "../../../api/deliverMachineApi";
 import AddMachineByScan from "../AddMachineByScan.vue";
+import MachineShowDetailVertical from "../MachineShowDetailVertical.vue";
+import {getMachineTrace} from "../../../api/machineTraceApi";
 
 export default {
   name: "MachineDeliverDetail",
   data() {
     return {
+      showDetail: {"value": false},
+      showDetailMachine: {},
+      showMachineTrace: {},
       searchMachine: {},
       machines: [],
       currentPage: 1,
@@ -295,22 +299,6 @@ export default {
         })
       }
     },
-    add() {
-      this.addDeliverMachineInfo['deliverReceiptId'] = this.receiptDetailNumber;
-      this.addDeliverMachineInfo['machineId'] = this.addMachineInfo['id'];
-      this.addDeliverMachineInfo['status'] = 0;
-      addDeliverMachine([this.addDeliverMachineInfo]).then(resp => {
-        if (resp.data.code === 200) {
-          this.$message.success("添加成功")
-          this.showMachineTable = false;
-          this.dialogVisible = false;
-          this.addMachineInfo = {}
-          this.addDeliverMachineInfo = {}
-          this.initDeliverMachines()
-        }
-      })
-      this.addDeliverMachineInfo['comment'] = ""
-    },
     handleDelete(row) {
       this.$confirm('是否确定要删除', '提示', {
         confirmButtonText: '确定',
@@ -318,7 +306,7 @@ export default {
         type: 'warning'
       }).then(() => {
         console.log(row)
-        deleteDeliverMachine(row.machineId, this.receiptDetailNumber).then(resp => {
+        deleteDeliverMachine(row.machineNumber, this.receiptDetailNumber).then(resp => {
           if (resp.data.code === 200) {
             this.$message.success("删除成功");
             this.initDeliverMachines()
@@ -330,6 +318,15 @@ export default {
           message: '已取消删除'
         });
       });
+    },
+    detail(row) {
+      getMachine(1, 10, {"number": row.machineNumber}).then(resp => {
+        this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
+        getMachineTrace({"number": row.machineNumber}).then(resp => {
+          this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
+          this.showDetail.value = true
+        })
+      })
     }
   },
   components: {

@@ -2,6 +2,7 @@ package com.example.server.mapper;
 
 import com.example.server.pojo.Employee;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -19,5 +20,5 @@ public interface EmployeeMapper extends BaseMapper<Employee> {
 	 * 获取所有员工
 	 * @return
 	 */
-	List<Employee> getAllEmployee();
+	List<Employee> getAllEmployee(@Param("employee") Employee employee);
 }

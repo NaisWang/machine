@@ -92,7 +92,7 @@
       </el-row>
     </div>
 
-    <AddMachineByScan v-if="isRelease === 0" table-name="purchaseReturn" :machines="machines"
+    <AddMachineByScan v-if="isRelease === 0" table-name="purchaseReturn" operate-name="addMachineToPurchaseReturn" :machines="machines"
                       :receiptId="receiptDetailNumber" @initShow="initMachine"></AddMachineByScan>
 
     <MachineShowDetail ref="child" :machines="machines" :paging="true"

@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author whz
@@ -23,12 +23,14 @@ public interface IEmployeeService extends IService<Employee> {
 
 	/**
 	 * 获取所有员工
+	 *
 	 * @return
 	 */
-	List<Employee> getAllEmployee();
+	List<Employee> getAllEmployee(Employee employee);
 
 	/**
 	 * 获取员工Corr
+	 *
 	 * @return
 	 */
 	List<Employee> getEmpCorr();

@@ -34,6 +34,11 @@ public interface MachineMapper extends BaseMapper<Machine> {
 	IPage<EnterStorageReceipt> getEnterStorageReceipt(Page<EnterStorageReceipt> page, @Param("enterStorageReceipt") EnterStorageReceipt enterStorageReceipt);
 
 	/**
+	 * 获取销退入库单信息
+	 */
+	IPage<MarketReturnEnterStorage> getMarketReturnEnterStorageReceipt(Page<MarketReturnEnterStorage> page, @Param("marketReturnEnterStorage") MarketReturnEnterStorage marketReturnEnterStorage);
+
+	/**
 	 * 获取采购退货信息
 	 */
 	IPage<PurchaseReturnReceipt> getPurchaseReturnReceipt(Page<PurchaseReturnReceipt> purchaseReturnReceiptPage, @Param("purchaseReturnReceipt") PurchaseReturnReceipt purchaseReturnReceipt);
@@ -63,4 +68,8 @@ public interface MachineMapper extends BaseMapper<Machine> {
 	 */
 	Boolean updateEnterStorageReceiptForOneKey(@Param("enterStorageReceipt") EnterStorageReceipt enterStorageReceipt, @Param("purchaseOrderId") Integer purchaseOrderId, @Param("nowDateTime") LocalDateTime nowDateTime, @Param("empId") Integer empId);
 
+	/**
+	 * 获取上架入库单
+	 */
+	IPage<UpShelfEnterStorageReceipt> getUpShelfEnterStorageReceipt(Page<UpShelfEnterStorageReceipt> page, @Param("upShelfEnterStorageReceipt") UpShelfEnterStorageReceipt upShelfEnterStorageReceipt);
 }

@@ -6,6 +6,7 @@ import com.example.server.pojo.DeliverReceipt;
 import com.example.server.mapper.DeliverReceiptMapper;
 import com.example.server.service.IDeliverReceiptService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.server.utils.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,9 +30,20 @@ public class DeliverReceiptServiceImpl extends ServiceImpl<DeliverReceiptMapper,
 	 * 分页获取转交表数据
 	 */
 	@Override
-	public IPage<DeliverReceipt> getDeliverReceiptByPage(Integer currentPage, Integer size, DeliverReceipt deliverReceipt, LocalDate[] localDateScope, Integer empId) {
+	public IPage<DeliverReceipt> getDeliverReceiptByPage(Integer currentPage, Integer size, DeliverReceipt deliverReceipt, LocalDate[] localDateScope) {
 		Page<DeliverReceipt> page = new Page<>(currentPage, size);
-		IPage<DeliverReceipt> iPage = deliverReceiptMapper.getDeliverReceipt(page, deliverReceipt, localDateScope, empId);
+		IPage<DeliverReceipt> iPage = deliverReceiptMapper.getDeliverReceipt(page, deliverReceipt, localDateScope);
 		return iPage;
+	}
+
+
+	/**
+	 * 获取需要接收的转交单
+	 */
+	@Override
+	public RespPageBean getReceiveDeliverReceipt(Integer currentPage, Integer size, DeliverReceipt deliverReceipt, Integer empId) {
+		Page<DeliverReceipt> deliverReceiptPage = new Page<>(currentPage, size);
+		IPage<DeliverReceipt> iPage = deliverReceiptMapper.getReceiveDeliverReceipt(deliverReceiptPage, deliverReceipt, empId);
+		return new RespPageBean(iPage.getTotal(), iPage.getRecords());
 	}
 }
