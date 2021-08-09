@@ -74,6 +74,9 @@
     <if test="purchase.purchaseOrderStatus != null and purchase.purchaseOrderStatus != ''">
       where c.purchase_order_status = #{purchase.purchaseOrderStatus} - 1
     </if>
+    <if test="purchase.operateEmpId != null and purchase.operateEmpId != ''">
+      where c.operate_emp_id = #{purchase.operateEmpId}
+    </if>
     order by purchase_order desc
   </select>
 
@@ -96,6 +99,9 @@
     ) as a
     right join t_enter_storage_receipt as b
     on a.enter_storage_receipt_id = b.enter_storage_order
+    <if test="enterStorageReceipt.operateEmpId != null and enterStorageReceipt.operateEmpId != ''">
+      and b.operate_emp_id = #{enterStorageReceipt.operateEmpId}
+    </if>
     group by b.enter_storage_order
     order by b.enter_storage_order Desc
   </select>
@@ -121,6 +127,9 @@
     ) as a
     right join t_market_return_enter_storage as b
     on a.market_return_enter_storage_receipt_id = b.id
+    <if test="marketReturnEnterStorage.operateEmpId != null and marketReturnEnterStorage.operateEmpId != ''">
+      and b.operate_emp_id = #{marketReturnEnterStorage.operateEmpId}
+    </if>
     group by b.id
     order by b.id Desc
   </select>
@@ -144,6 +153,9 @@
     ) as a
     right join t_up_shelf_enter_storage_receipt as b
     on a.up_shelf_enter_storage_id = b.id
+    <if test="upShelfEnterStorageReceipt.operateEmpId != null and upShelfEnterStorageReceipt.operateEmpId != ''">
+      and b.operate_emp_id = #{upShelfEnterStorageReceipt.operateEmpId}
+    </if>
     group by b.id
     order by b.id Desc
   </select>
@@ -167,6 +179,9 @@
     ) as b
     right join t_purchase_return_receipt as c
     on b.purchase_return_receipt_id = c.purchase_return_order
+    <if test="purchaseReturnReceipt.operateEmpId != null and purchaseReturnReceipt.operateEmpId != ''">
+      and c.operate_emp_id = #{ purchaseReturnReceipt.operateEmpId}
+    </if>
     group by c.purchase_return_order
     order by c.purchase_return_order desc
   </select>
@@ -190,6 +205,9 @@
     ) as b
     right join t_market_order_receipt as c
     on b.market_order_id = c.market_order
+    <if test="marketOrderReceipt.operateEmpId != null and marketOrderReceipt.operateEmpId != ''">
+      and c.operate_emp_id = #{marketOrderReceipt.operateEmpId}
+    </if>
     group by c.market_order
     order by c.market_order desc
   </select>
@@ -210,6 +228,9 @@
     ) as b
     right join t_market_return_receipt as c
     on b.market_return_receipt_id = c.market_return_order
+    <if test="marketReturnReceipt.operateEmpId != null and marketReturnReceipt.operateEmpId != ''">
+      and c.operate_emp_id = #{marketReturnReceipt.operateEmpId}
+    </if>
     group by c.market_return_order
     order by c.market_return_order desc
   </select>
@@ -225,12 +246,12 @@
     <if test="upShelfReceipt.upShelfOrder != null and upShelfReceipt.upShelfOrder != ''">
       and a.up_shelf_receipt_id = #{upShelfReceipt.upShelfOrder}
     </if>
-    <if test="localDateScope != null and localDateScope.length === 2">
-      and a. = #{upShelfReceipt.upShelfOrder}
-    </if>
     ) as a
     join t_up_shelf_receipt as b
     on a.up_shelf_receipt_id = b.up_shelf_order
+    <if test="upShelfReceipt.operateEmpId null and upShelfReceipt.operateEmpId != ''">
+      and b.operate_emp_id = #{upShelfReceipt.operateEmpId}
+    </if>
     group by b.up_shelf_order
     order by b.up_shelf_order desc
   </select>
@@ -285,11 +306,18 @@
     <if test="machine.rank != null and machine.rank != ''">
       and a.rank like concat('%', #{machine.rank}, '%')
     </if>
+    <if test="machine.storageLocationId != null and machine.storageLocationId != ''">
+      and a.storage_location_id = #{machine.storageLocationId}
+    </if>
     <if test="machine.describe != null and machine.describe != ''">
       and a.describe = #{machine.describe}
     </if>)as a
     left join t_purchase_order_receipt as b
     on a.purchase_order_id = b.purchase_order
+    where 1 = 1
+    <if test="machine.purchaseChannelId != null and machine.purchaseChannelId != ''">
+      and b.purchase_channel_id = #{machine.purchaseChannelId}
+    </if>
   </select>
 
 </mapper>

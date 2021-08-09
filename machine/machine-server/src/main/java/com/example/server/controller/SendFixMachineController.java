@@ -86,7 +86,7 @@ public class SendFixMachineController {
 
 			if (sendFixMachineService.save(sendFixMachine)) {
 				if (machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-					if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()))) {
+					if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
 						logService.save(new Log(empId, "往外修单中添加机器", "外修单据id为" + receiptId, now, 0));
 						return RespBean.success("添加成功");
 					}
@@ -124,7 +124,7 @@ public class SendFixMachineController {
 				Machine machine = machineService.getOne(new QueryWrapper<Machine>().eq("number", number));
 				machine.setStatusId(machine.getPreviousStatusId());
 				if (machineService.update(machine, new UpdateWrapper<Machine>().eq("number", number))) {
-					if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()))) {
+					if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
 						logService.save(new Log(empId, "删除外修单中机器", "外修单据id为" + receiptId, now, 0));
 						return RespBean.success("删除成功");
 					}
@@ -157,7 +157,7 @@ public class SendFixMachineController {
 			if (machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
 				SendFixMachine sendFixMachine = sendFixMachineService.getOne(new QueryWrapper<SendFixMachine>().orderByDesc("send_fix_date").eq("number", number));
 				if (sendFixMachineService.update(new SendFixMachine(), new UpdateWrapper<SendFixMachine>().eq("send_fix_machine_id", sendFixMachine.getSendFixMachineId()).set("fix_status", 2).set("receive_time", LocalDateTime.now()))) {
-					if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), sendFixMachine.getReceiptId(), now, empId, machine.getComment(), machine.getStorageLocationId()))) {
+					if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), sendFixMachine.getReceiptId(), now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
 						logService.save(new Log(empId, "机器取回", "机器number：" + number, now, 0));
 						return RespBean.success("取回成功");
 					}

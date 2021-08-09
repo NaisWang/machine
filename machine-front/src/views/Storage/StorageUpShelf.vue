@@ -10,7 +10,8 @@
 
     <StorageUpShelfShow @func="ChangeComponentsFlag" v-if="componentFlag === 0"></StorageUpShelfShow>
     <StorageUpShelfDetail v-else-if="componentFlag === 1"
-                          :receiptId="receiptId" :is-release="isRelease"></StorageUpShelfDetail>
+                          :receiptId="receiptId" :is-release="isRelease"
+                          :operate-emp-id="operateEmpId"></StorageUpShelfDetail>
   </div>
 </template>
 
@@ -26,6 +27,7 @@ export default {
       receiptId: null,
       purchaseOrderNumber: null,
       isRelease: 0,
+      operateEmpId: null
     }
   },
   activated() {
@@ -41,11 +43,12 @@ export default {
   //  }
   //},
   methods: {
-    ChangeComponentsFlag(componentFlag, receiptId, isRelease) {
+    ChangeComponentsFlag(componentFlag, receiptId, isRelease, operateEmpId) {
       this.componentFlag = componentFlag
       this.receiptId = receiptId
       //this.purchaseOrderNumber = purchaseOrderNumber
       this.isRelease = isRelease
+      this.operateEmpId = operateEmpId
     },
     toEnterStorage() {
       this.componentFlag = 0

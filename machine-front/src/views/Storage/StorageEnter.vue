@@ -11,7 +11,8 @@
 
     <StorageEnterShow @func="ChangeComponentsFlag" v-if="componentFlag === 0"></StorageEnterShow>
     <StorageEnterDetail v-else-if="componentFlag === 1"
-                        :storageEnterOrderNumber="storageEnterOrderNumber" :is-release="isRelease"></StorageEnterDetail>
+                        :storageEnterOrderNumber="storageEnterOrderNumber" :is-release="isRelease"
+                        :operate-emp-id="operateEmpId"></StorageEnterDetail>
     <!--    <StorageEnterAdd v-else-if="componentFlag === 2" @func="ChangeComponentsFlag"-->
     <!--                     :purchaseOrderNumber="purchaseOrderNumber"></StorageEnterAdd>-->
   </div>
@@ -30,6 +31,7 @@ export default {
       storageEnterOrderNumber: null,
       purchaseOrderNumber: null,
       isRelease: 0,
+      operateEmpId: null
     }
   },
   activated() {
@@ -45,11 +47,12 @@ export default {
   //  }
   //},
   methods: {
-    ChangeComponentsFlag(componentFlag, storageEnterOrderNumber, isRelease) {
+    ChangeComponentsFlag(componentFlag, storageEnterOrderNumber, isRelease, operateEmpId) {
       this.componentFlag = componentFlag
       this.storageEnterOrderNumber = storageEnterOrderNumber
       //this.purchaseOrderNumber = purchaseOrderNumber
       this.isRelease = isRelease
+      this.operateEmpId = operateEmpId
     },
     toEnterStorage() {
       this.componentFlag = 0

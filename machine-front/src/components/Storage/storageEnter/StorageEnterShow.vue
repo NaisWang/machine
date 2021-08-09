@@ -247,7 +247,7 @@ export default {
       this.initAllOrderInfo();
     },
     orderDetail(row) {
-      this.$emit('func', 1, row.enterStorageOrder, row.isRelease)
+      this.$emit('func', 1, row.enterStorageOrder, row.isRelease, row.operateEmpId)
     },
     //addStorageEnterReceipt() {
     //  this.$emit('func', 2)

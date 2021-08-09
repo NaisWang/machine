@@ -221,6 +221,10 @@ public class Machine implements Serializable {
 	@TableField("deliver_receipt_id")
 	private Integer deliverReceiptId;
 
+	@ApiModelProperty(value = "是否完成转交单指定的指标，为0，表示完成了，反之，表示没有完成")
+	@TableField("need_complete_deliver_receipt_id")
+	private Integer needCompleteDeliverReceiptId;
+
 	@ApiModelProperty(value = "是否能上架")
 	@TableField("is_up_shelf")
 	private Integer isUpShelf;
@@ -228,6 +232,5 @@ public class Machine implements Serializable {
 	@ApiModelProperty(value = "备注")
 	@TableField("comment")
 	private String comment;
-
 
 }

@@ -178,6 +178,7 @@ export default {
           console.log(resp);
           if (resp.data.obj.total === 0) {
             this.$message.error("没有该机器");
+            return
           }
           this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
           getMachineTrace({'number': this.showDetailMachine['number']}).then(resp => {

@@ -224,7 +224,7 @@ export default {
       this.initAllOrderInfo();
     },
     orderDetail(row) {
-      this.$emit('func', 1, row.marketReturnOrder, row.isRelease)
+      this.$emit('func', 1, row.marketReturnOrder, row.isRelease, row.operateEmpId)
     },
     //addReceipt() {
     //  this.$emit('func', 2)

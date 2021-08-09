@@ -1,99 +1,24 @@
 <template>
   <div>
-    <div style="border: 1px solid #409eff; border-radius: 5px; box-sizing: border-box; padding: 5px; margin: 10px 0px"
-         class="machineDeliverDetail">
-      <el-row>
-        <el-col :span="8" style="margin-right: 10px;">
-          采购退货单号：
-          <el-input v-model="searchMachine.marketOrderId"
-                    disabled
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入物品编号进行搜索..."
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="8" style="margin-right: 10px;">
-          物品编号：
-          <el-input v-model="searchMachine.number"
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入物品编号进行搜索..."
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="8" style="margin-right: 10px;">
-          IMEI号：
-          <el-input v-model="searchMachine.imei"
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入IMEI号进行搜索..."
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="4" style="margin-right: 10px;">
-          品类：
-          <el-select clearable v-model="searchMachine.categoryId" size="mini" placeholder="品类">
-            <el-option
-                v-for="id in Object.keys($store.state.machineCategoryCorr).map(Number)"
-                :label="$store.state.machineCategoryCorr[id]"
-                :value="id"
-                :key="id">
-            </el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="3" style="margin-right: 10px;">
-          品牌：
-          <el-select clearable v-model="searchMachine.brandId" size="mini" placeholder="品牌">
-            <el-option
-                v-for="id in Object.keys($store.state.machineBrandCorr).map(Number)"
-                :label="$store.state.machineBrandCorr[id]"
-                :value="id"
-                :key="id">
-            </el-option>
-          </el-select>
-        </el-col>
-      </el-row>
-      <el-row style="margin-top: 15px;">
-        <el-col :span="4" style="margin-right: 10px;">
-          <div>购入渠道：</div>
-          <el-select clearable v-model="searchMachine.purchasingChannelId" size="mini" placeholder="购入渠道">
-            <el-option
-                v-for="id in Object.keys($store.state.machineChannelCorr).map(Number)"
-                :label="$store.state.machineChannelCorr[id]"
-                :value="id"
-                :key="id">
-            </el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="4" style="margin-right: 10px;">
-          <div>库位：</div>
-          <el-input v-model="searchMachine.stockLocation"
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入库位"
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="14" style="margin-right: 10px;">
-          <div>中标日期：</div>
-          <el-date-picker
-              v-model="bidDateScope"
-              type="daterange"
-              size="mini"
-              unlink-panels
-              value-format="yyyy-MM-dd"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期">
-          </el-date-picker>
-        </el-col>
-      </el-row>
-      <el-row style="margin-top: 10px;">
-        <el-col :span="7" :offset="17">
-          <el-button size="mini" @click="cancelAdvSearch">取消</el-button>
-          <el-button size="mini" icon="el-icon-search" type="primary" @click="initMachine">搜索</el-button>
-        </el-col>
-      </el-row>
+    <MachineSearch @searchMachines="initDeliverMachines" @cancelAdvSearch="cancelAdvSearch"
+                   :search-machine="searchMachine"></MachineSearch>
+
+
+    <div v-if="[2,7,8].indexOf(deliverIntentionId) !== -1">
+      <span>入库单号: </span>
+      <el-tag>{{ enterStorageReceiptId }}</el-tag>
+
+      <span>库位: </span>
+      <el-tag>{{ $store.state.subStorageLocationIdToNameCorr[storageLocationId] }}</el-tag>
+
+      <el-button @click="dialogVisible = true">接收入库</el-button>
     </div>
 
+    <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
+
+
     <div>
+
       <el-table
           :data="machines"
           style="width: 100%">
@@ -116,6 +41,16 @@
             <span v-if="scope.row.status === 0">待转交</span>
             <span v-else-if="scope.row.status === 1">转交中</span>
             <span v-else>已接收</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            prop="isComplete"
+            label="是否完成指标"
+            width="170">
+          <template #default="scope">
+            <el-tag type="danger" v-if="scope.row.isComplete === 0">没有</el-tag>
+            <el-tag v-else-if="scope.row.isComplete === 1">完成</el-tag>
           </template>
         </el-table-column>
 
@@ -181,6 +116,45 @@
       </el-pagination>
     </div>
 
+    <el-dialog
+        title="提示"
+        :visible.sync="dialogVisible"
+        width="80%"
+        :before-close="handleClose">
+      <el-input style="width:  89%" clearable placeholder="请输入物品编号" @keydown.enter.native="addMachineByScan"
+                v-model="numberInput"></el-input>
+      <el-select style="width: 9%" v-model="searchMethod" placeholder="请选择">
+        <el-option
+            v-for="item in searchOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+        </el-option>
+      </el-select>
+
+      <el-form>
+        <el-form-item label="库位" v-if="storageLocationId === null">
+          <el-select clearable v-model="editStorageLocationId"
+                     size="mini" placeholder="库位">
+            <el-option
+                v-for="id in $store.state.empIdToStorageLocationIdsForGateCorr[$store.state.userId]"
+                :label="$store.state.subStorageLocationIdToNameCorr[id]"
+                :value="id + ''"
+                :key="id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <MachineShowDetail :machines="scanMachine" :paging="false" table-name="machineDeliver"
+                         table-operate="add" extra-not-show="[]"></MachineShowDetail>
+
+      <span slot="footer" class="dialog-footer">
+              <el-button @click="dialogVisible = false">取 消</el-button>
+              <el-button type="primary" @click="submit">提 交</el-button>
+            </span>
+    </el-dialog>
+
     <MachineShowDetailVertical v-if="showDetail.value" :table-name="tableName" :machine="showDetailMachine"
                                :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
   </div>
@@ -194,6 +168,11 @@ import {addDeliverMachine} from "../../../api/deliverMachineApi";
 import {deleteDeliverMachine} from "../../../api/deliverMachineApi";
 import {getMachineTrace} from "../../../api/machineTraceApi";
 import MachineShowDetailVertical from "../MachineShowDetailVertical.vue";
+import MachineSearch from "../MachineSearch.vue";
+import MachineShowDetail from "../MachineShowDetail.vue";
+import {createAddReleaseEnterStorageReceipt} from "../../../api/enterStorageApi";
+import {createAddReleaseMarketReturnEnterStorageReceipt} from "../../../api/marketReturnEnterStorageApi";
+import {createAddReleaseUpShelfEnterStorageReceipt} from "../../../api/upShelfEnterStorageApi";
 
 export default {
   name: "MachineReceiveDetail",
@@ -207,25 +186,52 @@ export default {
       currentPage: 1,
       size: 10,
       total: null,
+      dialogVisible: false,
+      numberInput: "",
+      searchOptions: [{
+        value: 'number',
+        label: '物品编码'
+      }, {
+        value: 'imei',
+        label: 'imei号'
+      }, {
+        value: 'paijiBarCode',
+        label: '拍机堂条码'
+      }],
+      scanMachine: [],
+      searchMethod: "number",
+      editStorageLocationId: null
     }
   },
-  props: ['receiptDetailNumber'],
+  props: ['receiptDetailNumber', 'deliverIntentionId', 'enterStorageReceiptId', 'storageLocationId'],
   components: {
-    MachineShowDetailVertical
+    MachineShowDetailVertical,
+    MachineSearch,
+    MachineShowDetail
   },
   mounted() {
-    this.searchMachine.deliverReceiptId = this.receiptDetailNumber;
-    this.initDeliverMachines();
-    initMachineCorr(this.$store)
+    this.refresh()
   },
   methods: {
+    refresh(type) {
+      this.initDeliverMachines();
+      if (type === 1) {
+        this.$message.success("刷新成功");
+      }
+    },
     initDeliverMachines() {
+      this.searchMachine.deliverReceiptId = this.receiptDetailNumber;
       getDeliverMachine(this.currentPage, this.size, this.searchMachine).then(resp => {
         if (resp.data.obj) {
           this.totol = resp.data.obj.total;
           this.machines = resp.data.obj.data;
         }
       })
+    },
+    cancelAdvSearch() {
+      this.searchMachine = {}
+      this.searchMachine.purchaseOrderId = this.receiptDetailNumber;
+      this.initDeliverMachines();
     },
     currentChange(currentPage) {
       this.currentPage = currentPage;
@@ -243,7 +249,113 @@ export default {
           this.showDetail.value = true
         })
       })
-    }
+    },
+    addMachineByScan() {
+      if (this.numberInput !== "") {
+        let search = {}
+        if (this.searchMethod === 'number') {
+          search['number'] = this.numberInput
+        } else if (this.searchMethod === 'imei') {
+          search['imei'] = this.numberInput
+        } else if (this.searchMethod === 'paijiBarCode') {
+          search['paijiBarcode'] = this.numberInput
+        }
+        getMachine(1, 10, search).then(resp => {
+          if (resp.data.obj) {
+            console.log(resp.data.obj)
+            if (resp.data.obj.total === 0) {
+              this.$message.error("没有该机器")
+              return
+            }
+            if (resp.data.obj.total !== 1) {
+              this.$message.error("该机器在库存中超过2个")
+              return
+            }
+            if (this.judgeIsAdd(resp.data.obj.data[0].number) === -1) {
+              this.$message.error("该机器已添加到该单据中了")
+              return
+            }
+
+            let machine = resp.data.obj.data[0]
+
+            if (machine.deliverReceiptId === 0 || machine.needCompleteDeliverReceiptId !== this.receiptDetailNumber) {
+              this.$message.error("该机器不能添加")
+              return
+            }
+
+            this.scanMachine.push(machine);
+            this.numberInput = ""
+
+          }
+        })
+      }
+    },
+    //判断编号为number的机器是否已经添加到单据中
+    judgeIsAdd(number) {
+      let flag = 1
+      this.scanMachine.forEach(item => {
+        console.log("itemNum" + item.number)
+        console.log("num" + number)
+        if (item.number === number) {
+          flag = -1
+        }
+      })
+      this.machines.forEach(item => {
+        if (item.number === number) {
+          flag = -1
+        }
+      })
+      return flag
+    },
+    submit() {
+      if (this.storageLocationId === null && this.editStorageLocationId === null) {
+        this.$message.error("请选择一个库位！！！");
+        return
+      }
+      let targetStorageLocationId = this.storageLocationId === null ? this.editStorageLocationId : this.storageLocationId;
+
+      let numbers = []
+      this.scanMachine.forEach(machine => {
+        numbers.push(machine.number);
+      })
+
+      console.log(this.deliverIntentionId);
+
+      if (this.deliverIntentionId === 2) {
+        createAddReleaseEnterStorageReceipt(numbers, this.enterStorageReceiptId, targetStorageLocationId, this.receiptDetailNumber).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("操作成功");
+            this.enterStorageReceiptId = resp.data.obj;
+            this.storageLocationId = targetStorageLocationId
+            this.scanMachine = []
+            this.dialogVisible = false
+            this.refresh()
+          }
+        })
+      } else if (this.deliverIntentionId === 7) {
+        createAddReleaseUpShelfEnterStorageReceipt(numbers, this.enterStorageReceiptId, targetStorageLocationId, this.receiptDetailNumber).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("操作成功");
+            this.enterStorageReceiptId = resp.data.obj;
+            this.storageLocationId = targetStorageLocationId
+            this.scanMachine = []
+            this.dialogVisible = false
+            this.refresh()
+          }
+        })
+      } else if (this.deliverIntentionId === 8) {
+        createAddReleaseMarketReturnEnterStorageReceipt(numbers, this.enterStorageReceiptId, targetStorageLocationId, this.receiptDetailNumber).then(resp => {
+          if (resp.data.code === 200) {
+            this.$message.success("操作成功");
+            this.enterStorageReceiptId = resp.data.obj;
+            this.storageLocationId = targetStorageLocationId
+            this.scanMachine = []
+            this.dialogVisible = false
+            this.refresh()
+          }
+        })
+      }
+    },
   },
 }
 </script>

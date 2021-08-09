@@ -42,7 +42,7 @@
         <el-table-column
             prop="role"
             label="角色"
-            width="170">
+            width="500">
           <template #default="scope">
             <el-tag type="success" v-for="(role, index) in scope.row.roles" :key="index" style="margin-left: 5px;">
               {{ role.zhName }}

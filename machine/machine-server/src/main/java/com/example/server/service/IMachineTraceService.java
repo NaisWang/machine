@@ -2,10 +2,13 @@ package com.example.server.service;
 
 import com.example.server.pojo.MachineTrace;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.server.pojo.Statistics;
+
+import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author whz
@@ -13,4 +16,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IMachineTraceService extends IService<MachineTrace> {
 
+	/**
+	 * 获取所有数据
+	 */
+	List<Statistics> getAllStatistics(Integer[] empIds, Integer[] statusIds, Integer[] dateScope);
 }

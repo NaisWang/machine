@@ -32,6 +32,15 @@
         </el-table-column>
 
         <el-table-column
+            label="是否完成"
+            width="80">
+          <template #default="scope">
+            <el-tag type="danger" v-if="scope.row.completeSum !== scope.row.sum">没有</el-tag>
+            <el-tag v-else-if="scope.row.completeSum === scope.row.sum">完成</el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column
             prop="deliverReceiptId"
             label="转交订单单号"
             width="170">
@@ -49,8 +58,14 @@
         </el-table-column>
 
         <el-table-column
-            prop="deliverDate"
-            label="转交订单日期"
+            prop="createTime"
+            label="创建日期"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="releaseTime"
+            label="发布日期"
             width="170">
         </el-table-column>
 
@@ -63,6 +78,12 @@
         <el-table-column
             prop="notReceiveSum"
             label="转交未接收机器总数"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="completeSum"
+            label="完成指标总数"
             width="170">
         </el-table-column>
 
@@ -195,7 +216,7 @@ export default {
       this.initAllOrderInfo();
     },
     orderDetail(row) {
-      this.$emit('func', 1, row.deliverReceiptId, row.enableEdit)
+      this.$emit('func', 1, row.deliverReceiptId, row.deliverIntentionId, row.enterStorageReceiptId, row.storageLocationId);
     },
     receive() {
       if (this.numberInput !== "") {

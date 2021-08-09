@@ -86,7 +86,7 @@ public class MachineTrace implements Serializable {
 	private Integer isRecall;
 
 
-	public MachineTrace(String number, Integer statusId, Integer receiptId, LocalDateTime time, Integer operateEmpId, String comment, Integer storageLocationId) {
+	public MachineTrace(String number, Integer statusId, Integer receiptId, LocalDateTime time, Integer operateEmpId, String comment, Integer storageLocationId, Integer isUpShelf) {
 		this.number = number;
 		this.statusId = statusId;
 		this.receiptId = receiptId;
@@ -94,6 +94,7 @@ public class MachineTrace implements Serializable {
 		this.operateEmpId = operateEmpId;
 		this.comment = comment;
 		this.storageLocationId = storageLocationId;
+		this.isUpShelf = isUpShelf;
 	}
 
 }

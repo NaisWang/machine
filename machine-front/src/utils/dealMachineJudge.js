@@ -3,10 +3,7 @@ import {getDeliverStatus, receiveDeliverMachine} from "../api/deliverMachineApi"
 
 export function dealMachineJudge(machine, store, operateName) {
 
-  console.log("fjdifjask")
-  console.log(machine)
-  if (['addMachineToEnterStorage'].indexOf(operateName) === -1 && machine.storageLocationId === null) {
-
+  if (['addMachineToEnterStorage', 'marketReturnEnterStorage'].indexOf(operateName) === -1 && machine.storageLocationId === null) {
     return Promise.resolve({
       "code": -1,
       message: "该机器还没有入库!!!"
@@ -37,6 +34,8 @@ export function dealMachineJudge(machine, store, operateName) {
                 receiveEmp += store.state.employeeNameCorr[item] + '、'
               })
               return Promise.resolve({"code": -1, "message": "该机器正处于转交中状态，你不是接收人, 请交给以下接收人: " + receiveEmp})
+            } else if ([2, 7, 8].indexOf(deliverReceipt.deliverIntentionId) !== -1) {
+              return Promise.resolve({"code": -1, "message": "该机器处于库存调拨中，请通过入库方式来接收"})
             } else {
               let receiveDialog = {}
               return receiveDeliverMachine(machine.id).then(resp => {
@@ -98,11 +97,11 @@ function machineStatusJudge(statusId, operateName, state, receiveDialog) {
       })
     }
   } else if (operateName === 'upShelf') {
-    //机器上架:：待上架 -> 已上架
-    if (statusId !== 10) {
+    //机器上架:：待上架、已上架、提交并退回 -> 已上架
+    if ([10, 11, 36].indexOf(statusId) === -1) {
       return Promise.resolve({
         "code": -1,
-        "message": "该机器状态是" + state.machineStatusCorr[statusId] + ", 而不是待上架, 不能进行上架操作",
+        "message": "该机器状态是" + state.machineStatusCorr[statusId] + ", 而不是待上架、已上架、提交并退回, 不能进行上架操作",
         "receiveDiagLog": receiveDialog
       })
     }
@@ -126,13 +125,13 @@ function machineStatusJudge(statusId, operateName, state, receiveDialog) {
     }
   } else if (operateName === 'addMachineToEnterStorage') {
     // 往入库单中添加机器： 待入库、退货中(提示用户)、退货失败 -> 入库中
-    if ([1, 3, 4].indexOf(statusId) === -1) {
-      return Promise.resolve({
-        "code": -1,
-        "message": "该机器状态是" + state.machineStatusCorr[statusId] + ", 而不是待入库、退货中或退货失败中, 不能进行入库操作",
-        "receiveDiagLog": receiveDialog
-      })
-    }
+    //if ([1, 3, 4].indexOf(statusId) === -1) {
+    //  return Promise.resolve({
+    //    "code": -1,
+    //    "message": "该机器状态是" + state.machineStatusCorr[statusId] + ", 而不是待入库、退货中或退货失败中, 不能进行入库操作",
+    //    "receiveDiagLog": receiveDialog
+    //  })
+    //}
     if (statusId === 3) {
       return Promise.resolve({"code": 0, "message": "该机器为退货中，是否要入库", "receiveDiagLog": receiveDialog})
     }

@@ -142,7 +142,7 @@ public class DeliverReceiptController {
 				List<DeliverMachine> deliverMachines = deliverMachineService.list(new QueryWrapper<DeliverMachine>().eq("deliver_receipt_id", receiptId));
 
 				for (DeliverMachine deliverMachine : deliverMachines) {
-					if (!machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("id", deliverMachine.getMachineId()).set("deliver_receipt_id", 0))) {
+					if (!machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("id", deliverMachine.getMachineId()).set("deliver_receipt_id", 0).set("need_complete_deliver_receipt_id", 0))) {
 						throw new RuntimeException("删除失败");
 					}
 				}
@@ -189,7 +189,16 @@ public class DeliverReceiptController {
 			}
 			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("number", machineNumbers));
 			for (Machine machine : machines) {
-				MachineTrace machineTrace = new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId());
+				MachineTrace machineTrace = new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf());
+
+				machine.setNeedCompleteDeliverReceiptId(receiptId);
+
+				//如果为“成色检测（不上架）”类别转交单，则设置为不上架
+				if (deliverReceipt.getDeliverIntentionId() == 12) {
+					machine.setIsUpShelf(1);
+					machineTrace.setIsUpShelf(1);
+				}
+
 				machineTrace.setDeliverStatusId(1);
 				machineTrace.setDeliverIntentionId(deliverReceipt.getDeliverIntentionId());
 				machineTraces.add(machineTrace);
@@ -197,9 +206,11 @@ public class DeliverReceiptController {
 
 			if (deliverReceiptService.update(new DeliverReceipt(), new UpdateWrapper<DeliverReceipt>().eq("deliver_receipt_id", receiptId).set("enable_edit", 1).set("release_time", now))) {
 				if (deliverMachineService.update(new DeliverMachine(), new UpdateWrapper<DeliverMachine>().eq("deliver_receipt_id", receiptId).set("status", 1))) {
-					if (machineTraceService.saveBatch(machineTraces)) {
-						logService.save(new Log(empId, "发布转交单", "转交单号为：" + receiptId, now, 0));
-						return RespBean.success("发布成功");
+					if (machineService.updateBatchById(machines)) {
+						if (machineTraceService.saveBatch(machineTraces)) {
+							logService.save(new Log(empId, "发布转交单", "转交单号为：" + receiptId, now, 0));
+							return RespBean.success("发布成功");
+						}
 					}
 				}
 			}

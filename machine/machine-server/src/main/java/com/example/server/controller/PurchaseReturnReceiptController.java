@@ -10,6 +10,7 @@ import com.example.server.service.impl.MachineServiceImpl;
 import com.example.server.service.impl.MachineTraceServiceImpl;
 import com.example.server.service.impl.PurchaseReturnReceiptServiceImpl;
 import com.example.server.utils.Corr;
+import com.example.server.utils.JudgeCompleteDeliverIntention;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -164,7 +165,7 @@ public class PurchaseReturnReceiptController {
 			for (Machine machine : machines) {
 				machine.setPurchaseReturnReceiptId(0);
 				machine.setStatusId(machine.getPreviousStatusId());
-				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 			if (purchaseReturnReceiptService.removeById(receiptId)) {
 				if (machines.size() == 0 || machineService.updateBatchById(machines)) {
@@ -212,7 +213,7 @@ public class PurchaseReturnReceiptController {
 				machine.setStatusId(23);
 				machine.setPurchaseReturnReceiptId(receiptId);
 				machine.setOperateEmpId(empId);
-				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 
 			if (machineService.updateBatchById(machines)) {
@@ -243,14 +244,15 @@ public class PurchaseReturnReceiptController {
 			if (!empId.equals(purchaseReturnReceipt.getOperateEmpId())) {
 				return RespBean.error("你没有权限操作该单据");
 			}
-			if (purchaseReturnReceipt.getIsRelease() == 1) {
-				return RespBean.error("采购退货单已经提交");
-			}
+
+			//if (purchaseReturnReceipt.getIsRelease() == 1) {
+			//		return RespBean.error("采购退货单已经提交");
+			//	}
 
 			machine.setStatusId(machine.getPreviousStatusId());
 			machine.setPurchaseReturnReceiptId(0);
 			if (machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), purchaseReturnReceipt.getPurchaseReturnOrder(), now, empId, machine.getComment(), machine.getStorageLocationId()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), purchaseReturnReceipt.getPurchaseReturnOrder(), now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
 					logService.save(new Log(empId, "删除采购退货单中的机器", "采购退货单据id为" + purchaseReturnReceipt.getPurchaseReturnOrder() + "; 备注是：" + purchaseReturnReceipt.getComment(), now, 0));
 					return RespBean.success("删除成功");
 				}
@@ -279,7 +281,7 @@ public class PurchaseReturnReceiptController {
 				return RespBean.error("你没有权限操作该单据");
 			}
 			if (purchaseReturnReceipt.getIsRelease() == 1) {
-				return RespBean.error("该入库单已经发布了");
+				return RespBean.error("该采购退货单已经发布了");
 			}
 			if (purchaseReturnReceiptService.update(new PurchaseReturnReceipt(), new UpdateWrapper<PurchaseReturnReceipt>().eq("purchase_return_order", receiptId).set("is_release", 1).set("release_time", now))) {
 
@@ -288,11 +290,13 @@ public class PurchaseReturnReceiptController {
 					List<Machine> machines = machineService.list(new UpdateWrapper<Machine>().eq("purchase_return_receipt_id", receiptId));
 					List<MachineTrace> machineTraces = new ArrayList<>();
 					for (Machine machine : machines) {
-						machineTraces.add(new MachineTrace(machine.getNumber(), 3, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+						machineTraces.add(new MachineTrace(machine.getNumber(), 3, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 					}
 					if (machineTraceService.saveBatch(machineTraces)) {
-						logService.save(new Log(empId, "发布采购退货单据", "采购退货单据id为" + purchaseReturnReceipt.getPurchaseReturnOrder() + "; 备注是：" + purchaseReturnReceipt.getComment(), now, 0));
-						return RespBean.success("发布成功");
+						if (JudgeCompleteDeliverIntention.judgeIsComplete(machines, 1)) {
+							logService.save(new Log(empId, "发布采购退货单据", "采购退货单据id为" + purchaseReturnReceipt.getPurchaseReturnOrder() + "; 备注是：" + purchaseReturnReceipt.getComment(), now, 0));
+							return RespBean.success("发布成功");
+						}
 					}
 				}
 			}
@@ -315,8 +319,8 @@ public class PurchaseReturnReceiptController {
 		if (machine.getStatusId() != 3) {
 			return RespBean.error("该机器不是退回中的机器");
 		}
-		if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("number", number).set("status_id", 24).set("operate_emp_id", empId))) {
-			if (machineTraceService.save(new MachineTrace(number, 24, -1, now, empId, machine.getComment(), machine.getStorageLocationId()))) {
+		if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("number", number).set("status_id", 24).set("operate_emp_id", empId).set("storage_location_id", null))) {
+			if (machineTraceService.save(new MachineTrace(number, 24, -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
 				logService.save(new Log(empId, "退货成功", "机器number：" + number + "; 备注是：" + machine.getComment(), now, 0));
 				return RespBean.success("操作成功");
 			}
@@ -337,7 +341,7 @@ public class PurchaseReturnReceiptController {
 			return RespBean.error("该机器不是退回中的机器");
 		}
 		if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("number", number).set("status_id", 4))) {
-			if (machineTraceService.save(new MachineTrace(number, 4, -1, now, empId, machine.getComment(), machine.getStorageLocationId()))) {
+			if (machineTraceService.save(new MachineTrace(number, 4, -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
 				logService.save(new Log(empId, "退货失败", "机器number：" + number + "; 备注是：" + machine.getComment(), now, 0));
 				return RespBean.success("操作成功");
 			}

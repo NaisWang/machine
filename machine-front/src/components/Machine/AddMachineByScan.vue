@@ -140,7 +140,7 @@
           </el-option>
         </el-select>
 
-        <MachineShowDetail :machines="scanMachine" paging="false" :table-name="tableName"
+        <MachineShowDetail :machines="scanMachine" :paging="false" :table-name="tableName"
                            table-operate="add" extra-not-show="[]"></MachineShowDetail>
 
         <span slot="footer" class="dialog-footer">

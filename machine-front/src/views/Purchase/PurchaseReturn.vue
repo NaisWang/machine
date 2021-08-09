@@ -11,7 +11,8 @@
 
     <PurchaseReturnShow @func="changeComponentFlag" v-if="componentFlag === 0"></PurchaseReturnShow>
     <PurchaseReturnDetail v-else-if="componentFlag === 1"
-                          :receiptDetailNumber="receiptDetailNumber" :isRelease="isRelease"></PurchaseReturnDetail>
+                          :receiptDetailNumber="receiptDetailNumber" :isRelease="isRelease"
+                          :operate-emp-id="operateEmpId"></PurchaseReturnDetail>
     <PurchaseReturnAdd v-else-if="componentFlag === 2"></PurchaseReturnAdd>
   </div>
 </template>
@@ -29,13 +30,15 @@ export default {
       componentFlag: 0,
       receiptDetailNumber: undefined,
       isRelease: 0,
+      operateEmpId: null
     }
   },
   methods: {
-    changeComponentFlag(flag, receiptDetailNumber, isRelease) {
+    changeComponentFlag(flag, receiptDetailNumber, isRelease, operateEmpId) {
       this.componentFlag = flag
       this.receiptDetailNumber = receiptDetailNumber
       this.isRelease = isRelease
+      this.operateEmpId = operateEmpId
     },
     toPurchaseOrder() {
       this.componentFlag = 0

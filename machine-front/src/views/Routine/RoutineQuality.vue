@@ -25,6 +25,12 @@
       </el-table-column>
 
       <el-table-column
+          prop="sku"
+          label="sku"
+          width="170">
+      </el-table-column>
+
+      <el-table-column
           prop="beforeStatusId"
           label="操作前的状态"
           width="170">
@@ -101,6 +107,11 @@
           </el-tag>
         </el-form-item>
 
+        <el-form-item label="机器状态"
+                      style="margin: 0;">
+          <el-tag>{{ $store.state.machineStatusCorr[nowEditMachine.statusId] }}</el-tag>
+        </el-form-item>
+
         <el-form-item label="机器备注"
                       style="margin: 0;">
           <el-input disabled :value="nowEditMachine.comment"></el-input>
@@ -138,8 +149,12 @@
       <hr style="margin-top: 15px">
       <h2 style="color: #409EFF">其他信息设置：</h2>
       <el-form label-width="80px">
+        <el-form-item label="是否可以上架">
+          <el-radio v-model="nowEditMachine.isUpShelf" :label="0">可以</el-radio>
+          <el-radio v-model="nowEditMachine.isUpShelf" :label="1">不可以</el-radio>
+        </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="nowEditMachine.editComment"></el-input>
+          <el-input v-model="nowEditMachine.editComment1"></el-input>
         </el-form-item>
       </el-form>
 
@@ -150,6 +165,9 @@
     </el-dialog>
 
 
+    <MachineShowDetailVertical v-if="showDetail.value" :machine="showDetailMachine"
+                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+
   </div>
 </template>
 
@@ -159,11 +177,16 @@ import {getMachine} from "../../api/machineApi";
 import {modifyMachineQuality} from "../../api/machineApi";
 import {dealMachineJudge} from "../../utils/dealMachineJudge";
 import {getOperateTrace} from "../../api/operateTraceApi";
+import MachineShowDetailVertical from "../../components/Machine/MachineShowDetailVertical.vue";
+import {getMachineTrace} from "../../api/machineTraceApi";
 
 export default {
   name: "成色检测",
   data() {
     return {
+      showDetail: {"value": false},
+      showDetailMachine: {},
+      showMachineTrace: {},
       allOperateMachines: [],
       test: null,
       numberInput: "",
@@ -197,7 +220,10 @@ export default {
       }
     },
     initOperateTrace() {
-      getOperateTrace(this.currentPage, this.size, {"operateEmpId": this.$store.state.userId}).then(resp => {
+      getOperateTrace(this.currentPage, this.size, {
+        "operateEmpId": this.$store.state.userId,
+        "operateType": 1
+      }).then(resp => {
         if (resp.data.code === 200) {
           this.allOperateMachines = resp.data.obj.data
           this.total = resp.data.obj.total
@@ -240,7 +266,7 @@ export default {
 
             getOperateTrace(1, 10, {
               "operateEmpId": this.$store.state.userId,
-              "number": this.numberInput,
+              "number": machine.number,
               "operateType": 1
             }).then(resp => {
               if (resp.data.code === 200) {
@@ -324,9 +350,19 @@ export default {
         });
       });
     },
+    detail(row) {
+      getMachine(1, 10, {"number": row.number}).then(resp => {
+        this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
+        getMachineTrace({"number": row.number}).then(resp => {
+          this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
+          this.showDetail.value = true
+        })
+      })
+    }
   },
   components: {
-    MachineShowDetail
+    MachineShowDetail,
+    MachineShowDetailVertical
   }
 
 }

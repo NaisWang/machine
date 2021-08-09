@@ -33,6 +33,38 @@
     <if test="operateTrace.operateType != null and operateTrace.operateType != ''">
       and operate_type= #{operateTrace.operateType}
     </if>
+    <if test="operateTrace.afterStatusId != null and operateTrace.afterStatusId != ''">
+      and after_status_id = #{operateTrace.afterStatusId}
+    </if>
+
+    order by operate_time desc
+  </select>
+
+  <!-- 获取统计数据 -->
+  <select id="getStatistics" resultType="com.example.server.pojo.Statistics">
+    select count(distinct number,
+    a.after_status_id = 8 or (a.before_status_id = 9 and a.after_status_id = 10) or
+    null) as quality_detection,
+    count(distinct number, a.after_status_id = 9 or (a.before_status_id = 8 and a.after_status_id = 10) or
+    null) as feature_detection,
+    count(distinct number, a.after_status_id = 11 or null) as up_shelf,
+    count(distinct number, a.after_status_id = 33 or null) as fixed
+    from t_operate_trace as a
+    where 1 = 1
+    <if test="type == 1">
+      and DATEDIFF(a.operate_time, NOW()) = 0
+    </if>
+    <if test="type == 2">
+      and a.operate_time >=
+      date_format(date_sub(date_sub(now(), INTERVAL WEEKDAY(NOW()) DAY), INTERVAL 1 WEEK), '%Y-%m-%d')
+    </if>
+    <if test="type == 3">
+      and a.operate_time between (SELECT DATE_ADD(now(),INTERVAL -1 MONTH)) and now()
+    </if>
+    <if test="id != -1">
+      and a.operate_emp_id = #{id}
+    </if>
+    group by a.operate_emp_id
   </select>
 
 </mapper>

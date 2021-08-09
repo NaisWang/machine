@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.server.pojo.*;
 import com.example.server.service.impl.*;
+import com.example.server.utils.JudgeCompleteDeliverIntention;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
 import io.swagger.annotations.Api;
@@ -121,7 +122,7 @@ public class DeliverMachineController {
 					deliverMachine.setMachineNumber(machine.getNumber());
 					deliverMachines.add(deliverMachine);
 
-					MachineTrace machineTrace = new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId());
+					MachineTrace machineTrace = new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf());
 					machineTrace.setDeliverStatusId(0);
 					machineTrace.setDeliverIntentionId(deliverReceipt.getDeliverIntentionId());
 					machineTraces.add(machineTrace);
@@ -164,7 +165,7 @@ public class DeliverMachineController {
 			if (deliverMachineService.remove(new QueryWrapper<DeliverMachine>().eq("machine_number", machineNumber).eq("deliver_receipt_id", receiptId))) {
 				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("number", machineNumber).set("deliver_receipt_id", 0))) {
 					Machine machine = machineService.getOne(new QueryWrapper<Machine>().eq("number", machineNumber));
-					MachineTrace machineTrace = new MachineTrace(machineNumber, machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId());
+					MachineTrace machineTrace = new MachineTrace(machineNumber, machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf());
 					if (machineTraceService.save(machineTrace)) {
 						return RespBean.success("删除成功");
 					}
@@ -221,12 +222,16 @@ public class DeliverMachineController {
 
 			if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("id", machineId).set("deliver_receipt_id", 0).set("operate_emp_id", empId))) {
 				if (deliverMachineService.update(deliverMachine, new QueryWrapper<DeliverMachine>().allEq(queryMap))) {
-					MachineTrace machineTrace = new MachineTrace(machine.getNumber(), machine.getStatusId(), deliverMachine.getDeliverReceiptId(), now, empId, machine.getComment(), machine.getStorageLocationId());
+					MachineTrace machineTrace = new MachineTrace(machine.getNumber(), machine.getStatusId(), deliverMachine.getDeliverReceiptId(), now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf());
 					machineTrace.setDeliverStatusId(2);
 					machineTrace.setDeliverIntentionId(deliverReceipt.getDeliverIntentionId());
 					if (machineTraceService.save(machineTrace)) {
-						logService.save(new Log(empId, "接收机器", "机器id为" + machineId, now, 0));
-						return RespBean.success("接收成功");
+						List<Machine> machines = new ArrayList<>();
+						machines.add(machine);
+						if (JudgeCompleteDeliverIntention.judgeIsComplete(machines, 11)) {
+							logService.save(new Log(empId, "接收机器", "机器id为" + machineId, now, 0));
+							return RespBean.success("接收成功");
+						}
 					}
 				}
 			}

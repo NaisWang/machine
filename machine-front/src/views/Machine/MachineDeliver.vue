@@ -11,7 +11,8 @@
 
     <MachineDeliverShow @func="ChangeComponentsFlag" v-if="componentFlag === 0"></MachineDeliverShow>
     <MachineDeliverDetail v-else-if="componentFlag === 1"
-                          :receiptDetailNumber="receiptDetailNumber" :isEdit="isEdit"></MachineDeliverDetail>
+                          :receiptDetailNumber="receiptDetailNumber" :isEdit="isEdit"
+                          :operate-emp-id="operateEmpId"></MachineDeliverDetail>
     <MachineDeliverAdd v-else-if="componentFlag === 2"></MachineDeliverAdd>
   </div>
 </template>
@@ -27,14 +28,16 @@ export default {
     return {
       componentFlag: 0,
       receiptDetailNumber: null,
-      isEdit:0
+      isEdit: 0,
+      operateEmpId: null
     }
   },
   methods: {
-    ChangeComponentsFlag(componentFlag, receiptDetailNumber, isEdit) {
+    ChangeComponentsFlag(componentFlag, receiptDetailNumber, isEdit, operateEmpId) {
       this.componentFlag = componentFlag
       this.receiptDetailNumber = receiptDetailNumber
       this.isEdit = isEdit
+      this.operateEmpId = operateEmpId
     },
     toEnterStorage() {
       this.componentFlag = 0

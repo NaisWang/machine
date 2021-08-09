@@ -9,6 +9,7 @@ import com.example.server.service.impl.LogServiceImpl;
 import com.example.server.service.impl.MachineServiceImpl;
 import com.example.server.service.impl.MachineTraceServiceImpl;
 import com.example.server.service.impl.MarketOrderReceiptServiceImpl;
+import com.example.server.utils.JudgeCompleteDeliverIntention;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -53,7 +54,15 @@ public class MarketOrderReceiptController {
 	@GetMapping("/")
 	public RespBean getMarketOrderReceipt(@RequestParam(defaultValue = "1") Integer currentPage,
 																				@RequestParam(defaultValue = "10") Integer size,
-																				MarketOrderReceipt marketOrderReceipt) {
+																				MarketOrderReceipt marketOrderReceipt, Integer scope, Authentication authentication) {
+		//Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		//marketOrderReceipt.setOperateEmpId(empId);
+		//if (scope == 1) {
+		//	if (((Employee) authentication.getPrincipal()).getAuthorities().contains("ROLE_marketPlus")) {
+		//		marketOrderReceipt.setOperateEmpId(null);
+		//	}
+		//}
+		//System.out.println(((Employee) authentication.getPrincipal()).getAuthorities());
 		RespPageBean respPageBean = marketOrderReceiptService.getMarketOrderReceipt(currentPage, size, marketOrderReceipt);
 		return RespBean.success("获取成功", respPageBean);
 	}
@@ -167,7 +176,7 @@ public class MarketOrderReceiptController {
 				machine.setStatusId(25);
 				machine.setMarketOrderId(receiptId);
 				machine.setOperateEmpId(empId);
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 
 			if (machineService.updateBatchById(machines)) {
@@ -205,7 +214,7 @@ public class MarketOrderReceiptController {
 			machine.setMarketOrderId(0);
 
 			if (machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
 					logService.save(new Log(empId, "删除销售订单货单中机器", "", LocalDateTime.now(), 0));
 					return RespBean.success("删除成功");
 				}
@@ -245,14 +254,16 @@ public class MarketOrderReceiptController {
 			}
 
 			if (marketOrderReceiptService.update(new MarketOrderReceipt(), new UpdateWrapper<MarketOrderReceipt>().eq("market_order", receiptId).set("is_release", 1).set("release_time", now))) {
-				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("market_order_id", receiptId).set("status_id", 13))) {
+				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("market_order_id", receiptId).set("status_id", 13).set("storage_location_id", null))) {
 					List<MachineTrace> machineTraces = new ArrayList<>();
 					for (Machine machine : machines) {
-						machineTraces.add(new MachineTrace(machine.getNumber(), 13, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+						machineTraces.add(new MachineTrace(machine.getNumber(), 13, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 					}
 					if (machineTraceService.saveBatch(machineTraces)) {
-						logService.save(new Log(empId, "发布销售单", "销售单号为：" + receiptId, now, 0));
-						return RespBean.success("发布成功");
+						if (JudgeCompleteDeliverIntention.judgeIsComplete(machines, 9)) {
+							logService.save(new Log(empId, "发布销售单", "销售单号为：" + receiptId, now, 0));
+							return RespBean.success("发布成功");
+						}
 					}
 				}
 			}
@@ -289,7 +300,7 @@ public class MarketOrderReceiptController {
 			for (Machine machine : machines) {
 				machine.setMarketOrderId(0);
 				machine.setStatusId(machine.getPreviousStatusId());
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 			if (marketOrderReceiptService.removeById(receiptId)) {
 				if (machines.size() == 0 || machineService.updateBatchById(machines)) {

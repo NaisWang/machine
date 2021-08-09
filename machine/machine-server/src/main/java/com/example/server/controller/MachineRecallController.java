@@ -70,7 +70,7 @@ public class MachineRecallController {
 				machineRecall.setNowOperateEmpId(empId);
 				machineRecall.setRecallTime(now);
 
-				MachineTrace machineTrace = new MachineTrace(machineRecall.getNumber(), machineRecall.getStatusId(), -1, now, machineRecall.getNowOperateEmpId(), "", machineRecall.getStorageLocationId());
+				MachineTrace machineTrace = new MachineTrace(machineRecall.getNumber(), machineRecall.getStatusId(), -1, now, machineRecall.getNowOperateEmpId(), "", machineRecall.getStorageLocationId(), machineRecall.getIsUpShelf());
 				machineTrace.setIsRecall(1);
 				machineTraceList.add(machineTrace);
 			}

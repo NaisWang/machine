@@ -393,7 +393,7 @@ export default {
       this.initAllOrderInfo()
     },
     orderDetail(row) {
-      this.$emit('changeComponentFlag', 1, row.purchaseOrder, row.isRelease)
+      this.$emit('changeComponentFlag', 1, row.purchaseOrder, row.isRelease, row.operateEmpId)
     },
     addPurchaseOrderReceipt() {
       this.$emit('changeComponentFlag', 2)

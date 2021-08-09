@@ -163,7 +163,7 @@ public class MarketReturnReceiptController {
 				machine.setStatusId(27);
 				machine.setMarketReturnReceiptId(receiptId);
 				machine.setOperateEmpId(empId);
-				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 
 			if (machineService.updateBatchById(machines)) {
@@ -201,7 +201,7 @@ public class MarketReturnReceiptController {
 			machine.setMarketReturnReceiptId(0);
 
 			if (machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
 					logService.save(new Log(empId, "删除销售退货单中添加机器", "", LocalDateTime.now(), 0));
 					return RespBean.success("删除成功");
 				}
@@ -242,7 +242,7 @@ public class MarketReturnReceiptController {
 				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("market_return_receipt_id", receiptId).set("status_id", 14))) {
 					List<MachineTrace> machineTraces = new ArrayList<>();
 					for (Machine machine : machines) {
-						machineTraces.add(new MachineTrace(machine.getNumber(), 14, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+						machineTraces.add(new MachineTrace(machine.getNumber(), 14, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 					}
 					if (machineTraceService.saveBatch(machineTraces)) {
 						logService.save(new Log(empId, "发布销售退货单", "销售退货单号为：" + receiptId, now, 0));
@@ -282,7 +282,7 @@ public class MarketReturnReceiptController {
 			for (Machine machine : machines) {
 				machine.setStatusId(machine.getPreviousStatusId());
 				machine.setMarketReturnReceiptId(0);
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 			if (marketReturnReceiptService.removeById(receiptId)) {
 				if (machines.size() == 0 || machineService.updateBatchById(machines)) {

@@ -4,10 +4,8 @@ package com.example.server.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.server.pojo.*;
-import com.example.server.service.impl.LogServiceImpl;
-import com.example.server.service.impl.MachineServiceImpl;
-import com.example.server.service.impl.MachineTraceServiceImpl;
-import com.example.server.service.impl.UpShelfEnterStorageReceiptServiceImpl;
+import com.example.server.service.impl.*;
+import com.example.server.utils.JudgeCompleteDeliverIntention;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
 import io.swagger.annotations.ApiModelProperty;
@@ -21,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -43,6 +43,10 @@ public class UpShelfEnterStorageReceiptController {
 	private LogServiceImpl logService;
 	@Autowired
 	private MachineTraceServiceImpl machineTraceService;
+	@Autowired
+	private DeliverReceiptServiceImpl deliverReceiptService;
+	@Autowired
+	private DeliverMachineServiceImpl deliverMachineService;
 
 	@ApiModelProperty("获取所有上架入库单据")
 	@GetMapping("/")
@@ -129,7 +133,7 @@ public class UpShelfEnterStorageReceiptController {
 				machine.setStatusId(34);
 				machine.setUpShelfEnterStorageId(receiptId);
 				machine.setOperateEmpId(empId);
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 
 			if (machineService.updateBatchById(machines)) {
@@ -167,7 +171,7 @@ public class UpShelfEnterStorageReceiptController {
 			machine.setUpShelfEnterStorageId(0);
 
 			if (machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
 					logService.save(new Log(empId, "删除上架入库单中机器", "", LocalDateTime.now(), 0));
 					return RespBean.success("删除成功");
 				}
@@ -208,13 +212,15 @@ public class UpShelfEnterStorageReceiptController {
 				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("up_shelf_enter_storage_id", receiptId).set("status_id", 26).set("storage_location_id", upShelfEnterStorageReceipt.getStorageLocationId()))) {
 					List<MachineTrace> machineTraces = new ArrayList<>();
 					for (Machine machine : machines) {
-						MachineTrace machineTrace = new MachineTrace(machine.getNumber(), 26, receiptId, now, empId, machine.getComment(), upShelfEnterStorageReceipt.getStorageLocationId());
+						MachineTrace machineTrace = new MachineTrace(machine.getNumber(), 26, receiptId, now, empId, machine.getComment(), upShelfEnterStorageReceipt.getStorageLocationId(), machine.getIsUpShelf());
 						machineTrace.setStorageLocationId(upShelfEnterStorageReceipt.getStorageLocationId());
 						machineTraces.add(machineTrace);
 					}
 					if (machineTraceService.saveBatch(machineTraces)) {
-						logService.save(new Log(empId, "发布上架入库单", "上架入库单号为：" + receiptId, now, 0));
-						return RespBean.success("发布成功");
+						if (JudgeCompleteDeliverIntention.judgeIsComplete(machines, 7)) {
+							logService.save(new Log(empId, "发布上架入库单", "上架入库单号为：" + receiptId, now, 0));
+							return RespBean.success("发布成功");
+						}
 					}
 				}
 			}
@@ -252,7 +258,7 @@ public class UpShelfEnterStorageReceiptController {
 			for (Machine machine : machines) {
 				machine.setUpShelfEnterStorageId(0);
 				machine.setStatusId(machine.getPreviousStatusId());
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 			if (upShelfEnterStorageReceiptService.removeById(receiptId)) {
 				if (machines.size() == 0 || machineService.updateBatchById(machines)) {
@@ -271,4 +277,89 @@ public class UpShelfEnterStorageReceiptController {
 		}
 	}
 
+	@ApiOperation("创建、添加、发布入库单")
+	@PutMapping("/create-add-release")
+	@Transactional
+	public RespBean createAddRelease(@RequestBody String[] numbers, Integer upShelfEnterStorageReceiptId, Integer storageLocationId, Integer deliverReceiptId, Authentication authentication) {
+		LocalDateTime now = LocalDateTime.now();
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+
+		if (storageLocationId == null) {
+			return RespBean.error("没有选择库位");
+		}
+
+
+		try {
+			//如果没有入库单，则创建并发布入库单
+			if (upShelfEnterStorageReceiptId == null) {
+				UpShelfEnterStorageReceipt upShelfEnterStorageReceipt = new UpShelfEnterStorageReceipt();
+				upShelfEnterStorageReceipt.setCreateTime(now);
+				upShelfEnterStorageReceipt.setReleaseTime(now);
+				upShelfEnterStorageReceipt.setOperateEmpId(empId);
+				upShelfEnterStorageReceipt.setIsRelease(1);
+				upShelfEnterStorageReceipt.setStorageLocationId(storageLocationId);
+				if (upShelfEnterStorageReceiptService.save(upShelfEnterStorageReceipt)) {
+					upShelfEnterStorageReceiptId = upShelfEnterStorageReceipt.getId();
+				} else {
+					throw new RuntimeException("运行错误");
+				}
+			}
+
+			DeliverReceipt deliverReceipt = deliverReceiptService.getById(deliverReceiptId);
+			deliverReceipt.setStorageLocationId(storageLocationId);
+			deliverReceipt.setEnterStorageReceiptId(upShelfEnterStorageReceiptId);
+			if (!deliverReceiptService.update(deliverReceipt, new UpdateWrapper<DeliverReceipt>().eq("deliver_receipt_id", deliverReceiptId))) {
+				throw new RuntimeException("运行错误");
+			}
+
+			//接收并处理机器
+			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("number", numbers));
+			List<MachineTrace> machineTraces = new ArrayList<>();
+
+			QueryWrapper<DeliverMachine> deliverMachineQueryWrapper = new QueryWrapper<>();
+			for (Machine machine : machines) {
+
+				if (!machine.getDeliverReceiptId().equals(deliverReceiptId)) {
+					throw new RuntimeException("运行错误");
+				}
+
+				machine.setUpShelfEnterStorageId(upShelfEnterStorageReceiptId);
+				machine.setPreviousStatusId(machine.getStatusId());
+				machine.setStatusId(26);
+				machine.setDeliverReceiptId(0);
+				machine.setNeedCompleteDeliverReceiptId(0);
+				machine.setOperateEmpId(empId);
+
+
+				Map<String, Integer> queryMap = new HashMap<>();
+				queryMap.put("machine_id", machine.getId());
+				queryMap.put("deliver_receipt_id", deliverReceiptId);
+				deliverMachineQueryWrapper = deliverMachineQueryWrapper.or().allEq(queryMap);
+
+				MachineTrace machineTrace = new MachineTrace(machine.getNumber(), 26, upShelfEnterStorageReceiptId, now, empId, machine.getComment(), storageLocationId, machine.getIsUpShelf());
+				machineTraces.add(machineTrace);
+
+			}
+
+			List<DeliverMachine> deliverMachines = deliverMachineService.list(deliverMachineQueryWrapper);
+			for (DeliverMachine deliverMachine : deliverMachines) {
+				deliverMachine.setReceiveEmpId(empId);
+				deliverMachine.setStatus(2);
+				deliverMachine.setIsComplete(1);
+				deliverMachine.setReceiveDate(now);
+			}
+
+			if (machineService.updateBatchById(machines)) {
+				if (deliverMachineService.updateBatchById(deliverMachines)) {
+					if (machineTraceService.saveBatch(machineTraces)) {
+						return RespBean.success("操作成功", upShelfEnterStorageReceiptId);
+					}
+				}
+			}
+			throw new RuntimeException("操作失败");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("操作失败");
+		}
+	}
 }

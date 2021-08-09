@@ -25,6 +25,13 @@
     </el-tooltip>
 
     <div>
+
+      <span v-if="tableOperate === 'add' && extraNotShow.indexOf('footer') === -1">当前表格机器总数：
+      <el-tag>
+        {{ machines.length }}
+      </el-tag>
+      </span>
+
       <el-table :data="machines"
                 max-height="1000"
                 style="width: 100%">
@@ -289,6 +296,23 @@
                         v-model="scope.row.purchasePrice"></el-input>
               <span v-else>{{
                   scope.row.purchasePrice
+                }}</span>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            v-if="fieldIsShow['qualityInspector']"
+            prop="qualityInspector"
+            label="质检方"
+            width="50">
+          <template #default="scope">
+            <div>
+              <el-input maxlength="9"
+                        v-if="$store.state.machineTableField[tableName]['qualityInspector']['edit'] === 1 && tableOperate === 'add'"
+                        v-model="scope.row.qualityInspector"></el-input>
+              <span v-else>{{
+                  scope.row.qualityInspector
                 }}</span>
             </div>
           </template>
@@ -850,7 +874,7 @@
             </el-button>
 
             <el-button
-                v-if="isRelease === 0 || tableNameToMachineStatus[tableName] === scope.row.statusId || tableOperate === 'add'"
+                v-if="isRelease === 0 || (tableNameToMachineStatus[tableName] === scope.row.statusId && scope.row.deliverReceiptId === 0 && scope.row.operateEmpId === $store.state.userId) || tableOperate === 'add'"
                 size="mini"
                 type="danger"
                 @click="handleDelete(scope.row, scope.$index)">删除
@@ -902,7 +926,6 @@
       </el-table>
     </div>
 
-    <span v-if="tableOperate === 'add' && extraNotShow.indexOf('footer') === -1">当前表格机器总数：{{ machines.length }}</span>
 
     <div style="display: flex; justify-content: flex-end" v-if="paging">
       <el-pagination
@@ -964,6 +987,7 @@ export default {
         "outStorageBatch": false,
         "bagNumber": false,
         "imei": false,
+        "qualityInspector": false,
         "paijiBarcode": false,
         "categoryId": false,
         "brandId": false,
@@ -1012,7 +1036,7 @@ export default {
       }
     }
   },
-  props: ['machines', 'tableType', 'paging', 'tableName', 'tableOperate', 'extraNotShow', 'isRelease'],
+  props: ['machines', 'tableType', 'paging', 'tableName', 'tableOperate', 'extraNotShow', 'isRelease', 'receiptId'],
   mounted() {
     this.initFieldIsShow()
     this.initTableField()
@@ -1134,7 +1158,7 @@ export default {
     //  this.originalValue = {};
     //},
     handleDelete(row, index) {
-      if (index !== undefined) {
+      if (this.tableOperate === 'add' && index !== undefined) {
         this.machines.splice(index, 1);
         return
       }

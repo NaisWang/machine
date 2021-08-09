@@ -15,6 +15,7 @@
       </el-button>
     </div>
 
+
     <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加退货单</el-button>
     <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
 
@@ -122,14 +123,12 @@
               <el-button
                   size="mini"
                   type="danger"
-                  v-if=""
                   @click="eidt(scope.row)">修改
               </el-button>
 
               <el-button
                   size="mini"
                   type="danger"
-                  v-if=""
                   @click="handleDelete(scope.row)">删除
               </el-button>
             </span>
@@ -235,7 +234,7 @@ export default {
       this.initAllOrderInfo();
     },
     orderDetail(row) {
-      this.$emit('func', 1, row.marketOrder, row.isRelease)
+      this.$emit('func', 1, row.marketOrder, row.isRelease, row.operateEmpId)
     },
     addReceipt() {
       this.$emit('func', 2)

@@ -25,6 +25,12 @@
       </el-table-column>
 
       <el-table-column
+          prop="sku"
+          label="sku"
+          width="170">
+      </el-table-column>
+
+      <el-table-column
           prop="beforeStatusId"
           label="操作前的状态"
           width="170">
@@ -81,24 +87,30 @@
 
     <el-dialog
         v-if="Object.keys(nowEditMachine).length !== 0"
-        title="机器成色检测"
+        title="机器功能检测"
         :before-close="handleClose"
         :visible.sync="dialogVisible"
         width="90%">
       <MachineShowDetail :machines="[nowEditMachine]" :paging="false"
-                         :tableName="'qualityDesc'" table-operate="add"
-                         :extra-not-show="['qualityDesc', 'footer', 'operate']"></MachineShowDetail>
+                         :tableName="'featureDesc'" table-operate="add"
+                         :extra-not-show="['featureDesc', 'qualityDesc','paijiBarcode', 'footer', 'operate', 'comment']"></MachineShowDetail>
 
       <hr style="margin-top: 15px">
-      <h2 style="color: #409EFF">描述：</h2>
+      <h2 style="color: #409EFF">检测情况项：</h2>
+
       <el-form status-icon label-width="100px" class="demo-ruleForm">
-        <el-form-item label="功能检测情况"
+        <el-form-item label="成色检测情况"
                       style="margin: 0;">
           <el-tag
-              v-for="item in (nowEditMachine.featureDesc === null ? '' : nowEditMachine.featureDesc.split(','))"
+              v-for="item in (nowEditMachine.qualityDesc=== null ? '' : nowEditMachine.qualityDesc.split(','))"
               :key="item" v-if="item !== ''">
             {{ $store.state.machineIdToDesc[item] }}
           </el-tag>
+        </el-form-item>
+
+        <el-form-item label="机器状态"
+                      style="margin: 0;">
+          <el-tag>{{ $store.state.machineStatusCorr[nowEditMachine.statusId] }}</el-tag>
         </el-form-item>
 
         <el-form-item label="机器备注"
@@ -108,10 +120,10 @@
       </el-form>
 
       <hr style="margin-top: 15px">
-      <h2 style="color: #409EFF">成色情况检测：</h2>
+      <h2 style="color: #409EFF">功能情况检测：</h2>
       <template>
         <div
-            v-for="(group,index) in Object.keys($store.state.machineDesc[category[nowEditMachine['categoryId']]]['qualityInfos'])"
+            v-for="(group,index) in Object.keys($store.state.machineDesc[category[nowEditMachine['categoryId']]]['functionInfos'])"
             :key="index">
           <el-row>
             <el-col :span="2">
@@ -119,13 +131,13 @@
             </el-col>
             <el-col :span="22">
               <el-checkbox-group
-                  size="mini"
                   :max="1"
-                  v-model="nowEditMachine.editQualityDesc[index]">
+                  size="mini"
+                  v-model="nowEditMachine.editFeatureDesc[index]">
                 <el-checkbox
                     border
                     style="margin-right: 5px; margin-top: 1px; margin-left: 0"
-                    v-for="item in $store.state.machineDesc[category[nowEditMachine['categoryId']]]['qualityInfos'][group]"
+                    v-for="item in $store.state.machineDesc[category[nowEditMachine['categoryId']]]['functionInfos'][group]"
                     :key="item.id"
                     :label="item.id + ''">{{ item.value }}
                 </el-checkbox>
@@ -137,9 +149,12 @@
 
       <hr style="margin-top: 15px">
       <h2 style="color: #409EFF">其他信息设置：</h2>
-      <el-form label-width="80px">
-        <el-form-item label="备注">
-          <el-input v-model="nowEditMachine.editComment"></el-input>
+      <el-form label-width="100px">
+        <el-form-item label="备注" style="margin: 0">
+          <el-input v-model="nowEditMachine.editComment2"></el-input>
+        </el-form-item>
+        <el-form-item label="拍机堂条码" style="margin: 0;">
+          <el-input v-model="nowEditMachine.paijiBarcode"></el-input>
         </el-form-item>
       </el-form>
 
@@ -149,21 +164,27 @@
                 </span>
     </el-dialog>
 
-
+    <MachineShowDetailVertical v-if="showDetail.value" :machine="showDetailMachine"
+                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
   </div>
 </template>
 
 <script>
 import MachineShowDetail from "../../components/Machine/MachineShowDetail.vue";
-import {getMachine} from "../../api/machineApi";
+import {getMachine, modifyMachineFeature} from "../../api/machineApi";
 import {modifyMachineQuality} from "../../api/machineApi";
 import {dealMachineJudge} from "../../utils/dealMachineJudge";
 import {getOperateTrace} from "../../api/operateTraceApi";
+import {getMachineTrace} from "../../api/machineTraceApi";
+import MachineShowDetailVertical from "../../components/Machine/MachineShowDetailVertical.vue";
 
 export default {
   name: "功能检测",
   data() {
     return {
+      showDetail: {"value": false},
+      showDetailMachine: {},
+      showMachineTrace: {},
       allOperateMachines: [],
       test: null,
       numberInput: "",
@@ -197,7 +218,10 @@ export default {
       }
     },
     initOperateTrace() {
-      getOperateTrace(this.currentPage, this.size, {"operateEmpId": this.$store.state.userId}).then(resp => {
+      getOperateTrace(this.currentPage, this.size, {
+        "operateEmpId": this.$store.state.userId,
+        "operateType": 2
+      }).then(resp => {
         if (resp.data.code === 200) {
           this.allOperateMachines = resp.data.obj.data
           this.total = resp.data.obj.total
@@ -240,8 +264,8 @@ export default {
 
             getOperateTrace(1, 10, {
               "operateEmpId": this.$store.state.userId,
-              "number": this.numberInput,
-              "operateType": 1
+              "number": machine.number,
+              "operateType": 2
             }).then(resp => {
               if (resp.data.code === 200) {
                 if (resp.data.obj.total !== 0) {
@@ -252,13 +276,13 @@ export default {
                 }
               }
             }).then(() => {
-              dealMachineJudge(machine, this.$store, "qualityDetection").then(resp => {
+              dealMachineJudge(machine, this.$store, "featureDetection").then(resp => {
                 if (resp.code === -1) {
                   this.$message.error(resp.message);
                 } else if (resp.code === 1) {
-                  machine.editQualityDesc = []
+                  machine.editFeatureDesc = []
                   _this.nowEditMachine = machine
-                  _this.initQualityDesc(machine)
+                  _this.initFeatureDesc(machine)
                   _this.numberInput = ""
                   _this.dialogVisible = true
                 }
@@ -274,38 +298,42 @@ export default {
         })
       }
     },
-    initQualityDesc(data) {
-      let length = Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['qualityInfos']).length
-      if (data.qualityDesc === null) {
-        data.editQualityDesc = []
-        Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['qualityInfos']).forEach(item => {
-          data.editQualityDesc.push([])
+    initFeatureDesc(data) {
+      let length = Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['functionInfos']).length
+      if (data.featureDesc === null) {
+        data.editFeatureDesc = []
+        Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['functionInfos']).forEach(item => {
+          data.editFeatureDesc.push([])
         })
       } else {
-        let temp = data.qualityDesc.split(",")
-        data.editQualityDesc = []
+        let temp = data.featureDesc.split(",")
+        data.editFeatureDesc = []
         temp.forEach(item => {
           if (item === "") {
-            data.editQualityDesc.push([]);
+            data.editFeatureDesc.push([]);
           } else {
-            data.editQualityDesc.push([item]);
+            data.editFeatureDesc.push([item]);
           }
         })
-        for (let i = data.editQualityDesc.length; i < length; i++) {
-          data.editQualityDesc.push([]);
+        for (let i = data.editFeatureDesc.length; i < length; i++) {
+          data.editFeatureDesc.push([]);
         }
       }
       return true
     },
     submit() {
+      if (this.nowEditMachine.paijiBarcode === null || this.nowEditMachine.paijiBarcode.replaceAll(' ', '') === '') {
+        this.$message.error("请输入拍机堂条码");
+        return
+      }
       this.$confirm('是否确定要提交', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         let temp = JSON.parse(JSON.stringify(this.nowEditMachine))
-        temp.qualityDesc = temp.editQualityDesc.toString()
-        modifyMachineQuality(temp).then(resp => {
+        temp.featureDesc = temp.editFeatureDesc.toString()
+        modifyMachineFeature(temp).then(resp => {
           if (resp.data.code === 200) {
             this.$message.success("提交成功");
             this.numberInput = ""
@@ -314,19 +342,30 @@ export default {
             this.refresh()
           } else {
             this.$message.error("提交失败");
-            this.initQualityDesc(this.nowEditMachine)
+            this.initFeatureDesc(this.nowEditMachine)
           }
         })
-      }).catch(() => {
+      }).catch((e) => {
+        console.log(e)
         this.$message({
           type: 'info',
           message: '已取消提交'
         });
       });
     },
+    detail(row) {
+      getMachine(1, 10, {"number": row.number}).then(resp => {
+        this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
+        getMachineTrace({"number": row.number}).then(resp => {
+          this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
+          this.showDetail.value = true
+        })
+      })
+    }
   },
   components: {
-    MachineShowDetail
+    MachineShowDetail,
+    MachineShowDetailVertical
   }
 
 }

@@ -40,8 +40,9 @@ export function modifyMachineQuality(machine) {
     'id': machine.id,
     'number': machine.number,
     'qualityDesc': machine.qualityDesc.toString(),
-    'comment': machine.comment.toString() + (machine.editComment == null || machine.editComment.replaceAll(' ', '') === '') ? "" : '、' + machine.editComment.toString(),
-    'storageLocationId': machine.storageLocationId
+    'comment': machine.comment.toString() + (machine.editComment1 == null || machine.editComment1.replaceAll(' ', '') === '') ? "" : '、' + machine.editComment1.toString(),
+    'storageLocationId': machine.storageLocationId,
+    "isUpShelf": machine.isUpShelf
   }
 
   return myAxios({
@@ -61,7 +62,7 @@ export function modifyMachineFeature(machine) {
     'id': machine.id,
     'number': machine.number,
     'featureDesc': machine.featureDesc.toString(),
-    'comment': machine.comment.toString() + (machine.editComment == null || machine.editComment.replaceAll(' ', '') === '') ? "" : '、' + machine.editComment.toString(),
+    'comment': machine.comment.toString() + (machine.editComment2 == null || machine.editComment2.replaceAll(' ', '') === '') ? "" : '、' + machine.editComment2.toString(),
     'paijiBarcode': machine.editPaijiBarcode,
     'storageLocationId': machine.storageLocationId
   }
@@ -83,7 +84,9 @@ export function modifyFixItem(machine) {
     'needFix': machine.needFix.toString(),
     'comment': machine.comment.toString() + (machine.editComment == null || machine.editComment.replaceAll(' ', '') === '') ? "" : '、' + machine.editComment.toString(),
     'storageLocationId': machine.storageLocationId,
-    "statusId": machine.statusId
+    "statusId": machine.statusId,
+    "sku": machine.sku,
+    "isUpShelf": machine.isUpShelf
   }
 
   return myAxios({
@@ -116,21 +119,24 @@ export function modifyCanUpShelf(machines, type) {
 }
 
 /**
- * 机器维修完成
+ * 机器维修完成或维修中，如过type为0，表示维修完成，type为1，表示维修中
  */
-export function modifyFixComplete(machine) {
+export function modifyFixComplete(machine, type) {
   let data = {
+    'id': machine.id,
     'number': machine.number,
     'fixed': machine.fixed.toString(),
     'notFixed': machine.notFixed.toString(),
     'fixToBad': machine.fixToBad.toString(),
     'comment': machine.comment.toString() + (machine.editComment == null || machine.editComment.replaceAll(' ', '') === '') ? "" : '、' + machine.editComment.toString(),
     'storageLocationId': machine.storageLocationId,
-    "statusId": machine.statusId
+    "statusId": machine.statusId,
+    "sku": machine.sku,
+    "isUpShelf": machine.isUpShelf
   }
 
   return myAxios({
-    url: BASE_URL + '/modify/fixComplete',
+    url: BASE_URL + '/modify/fixComplete?type=' + type,
     method: 'put',
     data
   })
@@ -139,23 +145,24 @@ export function modifyFixComplete(machine) {
 /**
  * 机器上架
  */
-export function modifyMachineUpShelf(machine) {
+export function modifyMachineUpShelf(machine, type) {
   let data = []
 
   data = {
+    'id': machine.id,
     'number': machine.number,
-    'goodPrice': machine.editGoodPrice,
-    'onePrice': machine.editOnePrice,
-    'bidPrice': machine.editBidPrice,
-    'rankDesc': machine.editRankDesc == null ? "" : machine.editRankDesc.toString(),
-    'bagNumber': machine.editBagNumber == null ? "" : machine.editBagNumber.toString(),
-    'comment': machine.comment.toString() + (machine.editComment == null || machine.editComment.replaceAll(' ', '') === '') ? "" : '、' + machine.editComment.toString(),
+    'goodPrice': machine.goodPrice,
+    'onePrice': machine.onePrice,
+    'bidPrice': machine.bidPrice,
+    'rankDesc': machine.rankDesc,
+    'bagNumber': machine.bagNumber,
+    'comment': machine.comment.toString() + (machine.editComment3 == null || machine.editComment3.replaceAll(' ', '') === '') ? "" : '、' + machine.editComment3.toString(),
     "statusId": machine.statusId,
     'storageLocationId': machine.storageLocationId,
   }
 
   return myAxios({
-    url: BASE_URL + '/modify/upShelf',
+    url: BASE_URL + '/modify/upShelf?type=' + type,
     method: 'put',
     data
   })

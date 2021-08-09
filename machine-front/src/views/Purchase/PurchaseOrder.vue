@@ -14,7 +14,7 @@
     <PurchaseOrderReceiptDetail v-else-if="componentFlag === 1"
                                 @changeComponentFlag="changeComponentFlag"
                                 :receiptDetailNumber="receiptDetailNumber"
-                                :isRelease="isRelease"></PurchaseOrderReceiptDetail>
+                                :isRelease="isRelease" :operate-emp-id="operateEmpId"></PurchaseOrderReceiptDetail>
     <PurchaseOrderReceiptAdd v-else-if="componentFlag === 2"
                              @changeComponentFlag="changeComponentFlag"></PurchaseOrderReceiptAdd>
   </div>
@@ -31,14 +31,16 @@ export default {
     return {
       componentFlag: 0,
       receiptDetailNumber: undefined,
-      isRelease: 0
+      isRelease: 0,
+      operateEmpId: null
     }
   },
   methods: {
-    changeComponentFlag(flag, receiptDetailNumber, isRelease) {
+    changeComponentFlag(flag, receiptDetailNumber, isRelease, operateEmpId) {
       this.componentFlag = flag
       this.receiptDetailNumber = receiptDetailNumber
       this.isRelease = isRelease
+      this.operateEmpId = operateEmpId
     },
     toPurchaseOrder() {
       this.componentFlag = 0

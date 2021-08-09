@@ -151,7 +151,7 @@ public class PurchaseOrderReceiptController {
 					List<MachineTrace> machineTraces = new ArrayList<>();
 					//跟踪机器数据
 					for (Machine machine : machines) {
-						machineTraces.add(new MachineTrace(machine.getNumber(), 1, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+						machineTraces.add(new MachineTrace(machine.getNumber(), 1, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 					}
 					if (machineTraceService.saveBatch(machineTraces)) {
 						logService.save(new Log(empId, "发布采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
@@ -197,9 +197,9 @@ public class PurchaseOrderReceiptController {
 				if (machine.getComment() == null) {
 					machine.setComment("");
 				}
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
-			List<Machine> machineList = machineService.list(new QueryWrapper<Machine>().in("number", numbers));
+			List<Machine> machineList = machineService.list(new QueryWrapper<Machine>().in("number", numbers).ne("status_id", 13).ne("status_id", 24));
 			if (machineList.size() != 0) {
 				StringBuffer repeatNubmer = new StringBuffer();
 				for (Machine machine : machineList) {
@@ -207,6 +207,19 @@ public class PurchaseOrderReceiptController {
 				}
 				return RespBean.error("如下物品编码已经存在：" + repeatNubmer.toString());
 			}
+			List<Number> temp = new ArrayList<>();
+			temp.add(13);
+			temp.add(24);
+			List<Machine> machineList1 = machineService.list(new QueryWrapper<Machine>().in("number", numbers).in("status_id", temp));
+			if (machineList1.size() != 0) {
+				for (Machine machine : machineList1) {
+					machine.setNumber(machine.getNumber() + "-1");
+				}
+				if (!machineService.updateBatchById(machineList1)) {
+					throw new RuntimeException("运行错误");
+				}
+			}
+
 			if (machineService.saveBatch(Arrays.asList(machines))) {
 				if (machineTraceService.saveBatch(machineTraces)) {
 					logService.save(new Log(empId, "往采购单中添加机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));

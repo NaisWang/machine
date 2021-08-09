@@ -1,99 +1,10 @@
 <template>
   <div>
-    <div style="border: 1px solid #409eff; border-radius: 5px; box-sizing: border-box; padding: 5px; margin: 10px 0px"
-         class="machineDeliverDetail">
-      <el-row>
-        <el-col :span="8" style="margin-right: 10px;">
-          采购退货单号：
-          <el-input v-model="searchMachine.marketOrderId"
-                    disabled
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入物品编号进行搜索..."
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="8" style="margin-right: 10px;">
-          物品编号：
-          <el-input v-model="searchMachine.number"
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入物品编号进行搜索..."
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="8" style="margin-right: 10px;">
-          IMEI号：
-          <el-input v-model="searchMachine.imei"
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入IMEI号进行搜索..."
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="4" style="margin-right: 10px;">
-          品类：
-          <el-select clearable v-model="searchMachine.categoryId" size="mini" placeholder="品类">
-            <el-option
-                v-for="id in Object.keys($store.state.machineCategoryCorr).map(Number)"
-                :label="$store.state.machineCategoryCorr[id]"
-                :value="id"
-                :key="id">
-            </el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="3" style="margin-right: 10px;">
-          品牌：
-          <el-select clearable v-model="searchMachine.brandId" size="mini" placeholder="品牌">
-            <el-option
-                v-for="id in Object.keys($store.state.machineBrandCorr).map(Number)"
-                :label="$store.state.machineBrandCorr[id]"
-                :value="id"
-                :key="id">
-            </el-option>
-          </el-select>
-        </el-col>
-      </el-row>
-      <el-row style="margin-top: 15px;">
-        <el-col :span="4" style="margin-right: 10px;">
-          <div>购入渠道：</div>
-          <el-select clearable v-model="searchMachine.purchasingChannelId" size="mini" placeholder="购入渠道">
-            <el-option
-                v-for="id in Object.keys($store.state.machineChannelCorr).map(Number)"
-                :label="$store.state.machineChannelCorr[id]"
-                :value="id"
-                :key="id">
-            </el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="4" style="margin-right: 10px;">
-          <div>库位：</div>
-          <el-input v-model="searchMachine.stockLocation"
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入库位"
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="14" style="margin-right: 10px;">
-          <div>中标日期：</div>
-          <el-date-picker
-              v-model="bidDateScope"
-              type="daterange"
-              size="mini"
-              unlink-panels
-              value-format="yyyy-MM-dd"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期">
-          </el-date-picker>
-        </el-col>
-      </el-row>
-      <el-row style="margin-top: 10px;">
-        <el-col :span="7" :offset="17">
-          <el-button size="mini" @click="cancelAdvSearch">取消</el-button>
-          <el-button size="mini" icon="el-icon-search" type="primary" @click="initMachine">搜索</el-button>
-        </el-col>
-      </el-row>
-    </div>
+    <MachineSearch @searchMachines="initDeliverMachines" @cancelAdvSearch="cancelAdvSearch"
+                   :search-machine="searchMachine"></MachineSearch>
 
-    <AddMachineByScan v-if="isEdit === 0" :machines="machines" table-name="machineDeliver"
+    <AddMachineByScan v-if="isEdit === 0 && $store.state.userId === operateEmpId" :machines="machines"
+                      table-name="machineDeliver"
                       :receiptId="receiptDetailNumber" @initShow="initDeliverMachines"></AddMachineByScan>
 
     <div>
@@ -119,6 +30,16 @@
             <span v-if="scope.row.status === 0">待转交</span>
             <span v-else-if="scope.row.status === 1">转交中</span>
             <span v-else>已接收</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            prop="isComplete"
+            label="是否完成指标"
+            width="170">
+          <template #default="scope">
+            <el-tag type="danger" v-if="scope.row.isComplete === 0">没有</el-tag>
+            <el-tag v-else-if="scope.row.isComplete === 1">完成</el-tag>
           </template>
         </el-table-column>
 
@@ -170,7 +91,7 @@
             </el-button>
 
             <el-button
-                v-if="isEdit === 0 || scope.row.status === 1"
+                v-if="isEdit === 0 || (scope.row.status === 1 && scope.row.nowReceiptId === receiptDetailNumber)"
                 size="mini"
                 type="danger"
                 @click="handleDelete(scope.row)">删除
@@ -231,6 +152,7 @@ import {deleteDeliverMachine} from "../../../api/deliverMachineApi";
 import AddMachineByScan from "../AddMachineByScan.vue";
 import MachineShowDetailVertical from "../MachineShowDetailVertical.vue";
 import {getMachineTrace} from "../../../api/machineTraceApi";
+import MachineSearch from "../MachineSearch.vue";
 
 export default {
   name: "MachineDeliverDetail",
@@ -252,20 +174,24 @@ export default {
       addDeliverMachineInfo: {},
     }
   },
-  props: ['receiptDetailNumber', 'isEdit'],
+  props: ['receiptDetailNumber', 'isEdit', 'operateEmpId'],
   mounted() {
-    this.searchMachine.deliverReceiptId = this.receiptDetailNumber;
     this.initDeliverMachines();
-    initMachineCorr(this.$store)
   },
   methods: {
     initDeliverMachines() {
+      this.searchMachine.deliverReceiptId = this.receiptDetailNumber;
       getDeliverMachine(this.currentPage, this.size, this.searchMachine).then(resp => {
         if (resp.data.obj) {
           this.totol = resp.data.obj.total;
           this.machines = resp.data.obj.data;
         }
       })
+    },
+    cancelAdvSearch() {
+      this.searchMachine = {}
+      this.searchMachine.purchaseOrderId = this.receiptDetailNumber;
+      this.initDeliverMachines()
     },
     currentChange(currentPage) {
       this.currentPage = currentPage;
@@ -332,6 +258,7 @@ export default {
   components: {
     AddMachineByScan,
     MachineShowDetailVertical,
+    MachineSearch
   }
 }
 </script>

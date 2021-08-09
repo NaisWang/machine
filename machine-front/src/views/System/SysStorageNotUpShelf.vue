@@ -66,6 +66,7 @@ export default {
     }
   },
   mounted() {
+    this.refresh()
   },
   methods: {
     refresh(type) {

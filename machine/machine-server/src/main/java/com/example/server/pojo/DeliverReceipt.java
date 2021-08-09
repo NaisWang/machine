@@ -61,6 +61,10 @@ public class DeliverReceipt implements Serializable {
 	@TableField(exist = false)
 	private Integer notReceiveSum;
 
+	@ApiModelProperty(value = "完成指标总数")
+	@TableField(exist = false)
+	private Integer completeSum;
+
 	@ApiModelProperty(value = "操作人id")
 	@TableField("operate_emp_id")
 	private Integer operateEmpId;
@@ -72,6 +76,14 @@ public class DeliverReceipt implements Serializable {
 	@ApiModelProperty(value = "是否可以删除")
 	@TableField(exist = false)
 	private Integer isDelete;
+
+	@ApiModelProperty(value = "如果是库位调拨单据，则需要选择一个库位")
+	@TableField("storage_location_id")
+	private Integer storageLocationId;
+
+	@ApiModelProperty(value = "如果是库位调拨单据，则其对应的入库单据id")
+	@TableField("enter_storage_receipt_id")
+	private Integer enterStorageReceiptId;
 
 	@ApiModelProperty(value = "备注")
 	private String comment;

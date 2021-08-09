@@ -1,58 +1,9 @@
 <template>
   <div>
-    <div style="border: 1px solid #409eff; border-radius: 5px; box-sizing: border-box; padding: 5px; margin: 10px 0px">
-      <el-row>
-        <el-col :span="8" style="margin-right: 10px;">
-          采购单号：
-          <el-input v-model="searchMachine.purchaseOrderId"
-                    disabled
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入物品编号进行搜索..."
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="8" style="margin-right: 10px;">
-          物品编号：
-          <el-input v-model="searchMachine.number"
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入物品编号进行搜索..."
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="8" style="margin-right: 10px;">
-          IMEI号：
-          <el-input v-model="searchMachine.imei"
-                    size="mini"
-                    prefix-icon="el-icon-search"
-                    placeholder="请输入IMEI号进行搜索..."
-                    clearable></el-input>
-        </el-col>
-        <el-col :span="4" style="margin-right: 10px;">
-          品类：
-          <el-select clearable v-model="searchMachine.categoryId" size="mini" placeholder="品类">
-            <el-option
-                v-for="id in Object.keys($store.state.machineCategoryCorr).map(Number)"
-                :label="$store.state.machineCategoryCorr[id]"
-                :value="id"
-                :key="id">
-            </el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="3" style="margin-right: 10px;">
-          品牌：
-          <el-select clearable v-model="searchMachine.brandId" size="mini" placeholder="品牌">
-            <el-option
-                v-for="id in Object.keys($store.state.machineBrandCorr).map(Number)"
-                :label="$store.state.machineBrandCorr[id]"
-                :value="id"
-                :key="id">
-            </el-option>
-          </el-select>
-        </el-col>
-      </el-row>
-    </div>
+    <MachineSearch @searchMachines="initMachines" @cancelAdvSearch="cancelAdvSearch"
+                   :search-machine="searchMachine"></MachineSearch>
 
-    <div v-if="isRelease === 0">
+    <div v-if="isRelease === 0 && $store.state.userId === operateEmpId">
       <el-upload
           class="upload-demo"
           ref="upload"
@@ -76,7 +27,8 @@
     </div>
 
     <MachineShowDetail ref="child" :machines="machines" :paging="true" :tableName="'purchaseOrder'"
-                       :is-release="isRelease" :extra-not-show="[]"></MachineShowDetail>
+                       :is-release="isRelease" :extra-not-show="[]"
+                       :receipt-id="receiptDetailNumber"></MachineShowDetail>
 
 
     <el-dialog
@@ -246,6 +198,7 @@ import initMachineCorr from "../../../utils/machineCorr";
 import {getCorrIndexByName} from "../../../utils/machineCorr";
 import {addMachineToPurchaseReceipt} from "../../../api/purchaseOrderReceipt";
 import * as XLSX from "xlsx"
+import MachineSearch from "../../Machine/MachineSearch.vue";
 
 export default {
   name: "PurchaseOrderReceiptDetail",
@@ -267,16 +220,23 @@ export default {
       }, {"zh": "等级", "en": "rank"}, {"zh": "采购价", "en": "purchasePrice"}, {
         "zh": "描述",
         "en": "describe"
-      }, {"zh": "采购人员", "en": "purchaseEmpId"}, {"zh": "备注", "en": "comment"}],
+      }, {"zh": "采购人员", "en": "purchaseEmpId"}, {"zh": "备注", "en": "comment"}, {"zh": "质检方", "en": "qualityInspector"}],
     }
   },
-  props: ['receiptDetailNumber', 'isRelease'],
+  props: ['receiptDetailNumber', 'isRelease', 'operateEmpId'],
   mounted() {
-    this.searchMachine.purchaseOrderId = this.receiptDetailNumber;
-    this.$refs.child.initMachinesByApi(this.searchMachine)
-    initMachineCorr(this.$store)
+    this.initMachines();
   },
   methods: {
+    initMachines() {
+      this.searchMachine.purchaseOrderId = this.receiptDetailNumber;
+      this.$refs.child.initMachinesByApi(this.searchMachine)
+    },
+    cancelAdvSearch() {
+      this.searchMachine = {}
+      this.searchMachine.purchaseOrderId = this.receiptDetailNumber;
+      this.$refs.child.initMachinesByApi(this.searchMachine)
+    },
     handleChange(file, fileList) {
       this.fileList = [fileList[fileList.length - 1]]
       this.readWorkbookFromLocalFile(file)
@@ -287,12 +247,15 @@ export default {
     },
 
     addPurchaseOrderReceiptMachinesByExcel(machineExcelInfo, ExcelTitleIndexNumber) {
+      let ans1 = {code: 0, message: ""};
       let length = machineExcelInfo.length;
       let transform = {
         "categoryId": this.$store.state.machineCategoryCorr,
         "brandId": this.$store.state.machineBrandCorr,
         "purchaseEmpId": this.$store.state.employeeNameCorr
       }
+      console.log("fjksdfjaskfdjdaskfjaskj")
+      console.log(this.$store.state.machineBrandCorr);
       let checkoutFlag = true
       for (let i = 1; i < length; i++) {
         let machineInfo = {}
@@ -303,13 +266,14 @@ export default {
           Object.keys(transform).forEach(item => {
             let index
             try {
+
               index = getCorrIndexByName(transform[item], machineInfo[item].toLowerCase())
             } catch (e) {
               console.log(e)
-              console.log(machineInfo[item] + "ffff")
             }
             if (index === -1) {
-              this.$message.error(machineInfo[item] + "不存在")
+              ans1.code = 1
+              ans1.message += machineInfo[item] + '、';
               checkoutFlag = false
             }
             machineInfo[item] = index
@@ -322,8 +286,10 @@ export default {
       if (!checkoutFlag) {
         this.needAddMachine = []
       }
+      return ans1;
     },
     getMachineExcelTitleIndex(machineExcelTitleRow, ExcelTitleIndexNumber) {
+      let ans = {code: 0, message: ""}
       this.purchaseOrderReceiptField.forEach(item => {
         let index = -1;
         machineExcelTitleRow.forEach((item1, i) => {
@@ -333,11 +299,13 @@ export default {
           }
         })
         if (index === -1) {
-          this.$message.error("该文件中缺少" + item['zh'] + "列")
+          ans.code = 1;
+          ans.message += item['zh'] + '、';
           return
         }
         ExcelTitleIndexNumber[item['zh']] = index
       })
+      return ans;
     },
     readWorkbookFromLocalFile(file) {
       let _this = this;
@@ -356,8 +324,16 @@ export default {
           _this.$message.error("该表为空")
           return
         }
-        _this.getMachineExcelTitleIndex(jsonArr[0], ExcelTitleIndexNumber)
-        _this.addPurchaseOrderReceiptMachinesByExcel(jsonArr, ExcelTitleIndexNumber)
+        let ans = _this.getMachineExcelTitleIndex(jsonArr[0], ExcelTitleIndexNumber);
+        if (ans.code === 1) {
+          _this.$message.error("该表缺少如下列：" + ans.message);
+          return
+        }
+        let ans1 = _this.addPurchaseOrderReceiptMachinesByExcel(jsonArr, ExcelTitleIndexNumber)
+        if (ans1.code === 1) {
+          _this.$message.error("该表缺少如下值：" + ans1.message);
+          return
+        }
         _this.excelDialogVisible = true
       };
       reader.readAsBinaryString(f);
@@ -410,6 +386,7 @@ export default {
     },
   },
   components: {
+    MachineSearch,
     MachineShowDetail
   }
 }

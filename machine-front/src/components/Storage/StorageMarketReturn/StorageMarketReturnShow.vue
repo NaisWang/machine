@@ -125,14 +125,12 @@
               <el-button
                   size="mini"
                   type="danger"
-                  v-if=""
                   @click="eidt(scope.row)">修改
               </el-button>
 
               <el-button
                   size="mini"
                   type="danger"
-                  v-if=""
                   @click="handleDelete(scope.row)">删除
               </el-button>
             </span>
@@ -247,7 +245,7 @@ export default {
       this.initAllOrderInfo();
     },
     orderDetail(row) {
-      this.$emit('func', 1, row.id, row.isRelease)
+      this.$emit('func', 1, row.id, row.isRelease, row.operateEmpId)
     },
     //addStorageEnterReceipt() {
     //  this.$emit('func', 2)

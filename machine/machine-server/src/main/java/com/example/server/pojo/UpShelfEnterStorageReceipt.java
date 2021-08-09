@@ -48,6 +48,10 @@ public class UpShelfEnterStorageReceipt implements Serializable {
 	@ApiModelProperty(value = "备注")
 	private String comment;
 
+	@ApiModelProperty(value = "数量")
+	@TableField(exist = false)
+	private Integer sum;
+
 	@ApiModelProperty(value = "是否发布")
 	@TableField("is_release")
 	private Integer isRelease;

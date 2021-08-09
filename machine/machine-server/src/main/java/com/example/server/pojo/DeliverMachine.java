@@ -58,6 +58,9 @@ public class DeliverMachine implements Serializable {
 	@ApiModelProperty(value = "转交状态，0：转交中；1：已接收；2：拒收")
 	private Integer status;
 
+	@ApiModelProperty(value = "是否已完成")
+	private Integer isComplete;
+
 	@ApiModelProperty(value = "备注")
 	private String comment;
 

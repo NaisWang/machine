@@ -22,7 +22,8 @@ export function addMachineRecall(machines) {
       'number': machine.number,
       'preOperateEmpId': machine.operateEmpId,
       'statusId': machine.statusId,
-      'storageLocationId': machine.storageLocationId
+      'storageLocationId': machine.storageLocationId,
+      'isUpShelf': machine.isUpShelf,
     })
   })
 

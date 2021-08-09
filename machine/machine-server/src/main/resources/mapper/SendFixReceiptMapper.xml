@@ -18,7 +18,7 @@
   <select id="getSendFixReceipt" resultType="com.example.server.pojo.SendFixReceipt">
     select a.id,
            count(b.send_fix_machine_id is not null or null) as 'sum',
-           count(b.fix_status = 2)                          as 'receive_sum',
+           count(b.fix_status = 2 or null)                  as 'receive_sum',
            create_time,
            release_time,
            operate_emp_id,
@@ -28,6 +28,7 @@
            left join t_send_fix_machine as b
                      on a.id = b.receipt_id
     group by a.id
+    order by a.id desc
   </select>
 
 </mapper>

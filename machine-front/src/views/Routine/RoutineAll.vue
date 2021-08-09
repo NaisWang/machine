@@ -1,7 +1,11 @@
 <template>
   <div class="routineQuality">
+    <div>
+      <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
+    </div>
     <el-input clearable style="width: 89%" placeholder="请输入物品编号" @keydown.enter.native="addMachineByScan"
               v-model="numberInput"></el-input>
+
     <el-select style="width: 9%" v-model="searchMethod" placeholder="请选择">
       <el-option
           v-for="item in searchOptions"
@@ -10,9 +14,76 @@
           :value="item.value">
       </el-option>
     </el-select>
-    <MachineShowDetail :machines="scanMachine" :paging="false"
-                       @func="editMachine"
-                       :tableName="'qualityDesc'" table-operate="add" :extra-not-show="['comment']"></MachineShowDetail>
+
+    <el-table
+        :data="allOperateMachines"
+        style="width: 100%">
+      <el-table-column
+          prop="number"
+          label="物品编码"
+          width="170">
+      </el-table-column>
+
+      <el-table-column
+          prop="sku"
+          label="sku"
+          width="170">
+      </el-table-column>
+
+      <el-table-column
+          prop="beforeStatusId"
+          label="操作前的状态"
+          width="170">
+        <template #default="scope">
+          {{ $store.state.machineStatusCorr[scope.row.beforeStatusId] }}
+        </template>
+      </el-table-column>
+
+      <el-table-column
+          prop="afterStatusId"
+          label="操作后的状态"
+          width="170">
+        <template #default="scope">
+          {{ $store.state.machineStatusCorr[scope.row.afterStatusId] }}
+        </template>
+      </el-table-column>
+
+      <el-table-column
+          prop="storageLocationId"
+          label="库位"
+          width="170">
+        <template #default="scope">
+          {{ $store.state.subStorageLocationIdToNameCorr[scope.row.storageLocationId] }}
+        </template>
+      </el-table-column>
+
+      <el-table-column
+          prop="operateTime"
+          label="时间"
+          width="170">
+      </el-table-column>
+
+      <el-table-column label="操作" fixed="right">
+        <template #default="scope">
+          <el-button
+              size="mini"
+              type="success"
+              @click="detail(scope.row)">详情
+          </el-button>
+        </template>
+      </el-table-column>
+
+    </el-table>
+
+    <div style="display: flex; justify-content: flex-end">
+      <el-pagination
+          background
+          layout="sizes, prev, pager, next, ->, total"
+          @current-change="currentChange"
+          @size-change="sizeChange"
+          :total="total">
+      </el-pagination>
+    </div>
 
     <el-dialog
         v-if="Object.keys(nowEditMachine).length !== 0"
@@ -43,6 +114,11 @@
               :key="item" v-if="item !== ''">
             {{ $store.state.machineIdToDesc[item] }}
           </el-tag>
+        </el-form-item>
+
+        <el-form-item label="机器状态"
+                      style="margin: 0;">
+          <el-tag>{{ $store.state.machineStatusCorr[nowEditMachine.statusId] }}</el-tag>
         </el-form-item>
 
         <el-form-item label="机器备注"
@@ -88,15 +164,16 @@
           <h2 style="color: #409EFF">其他信息设置：</h2>
           <el-form label-width="80px">
             <el-form-item label="备注">
-              <el-input v-model="nowEditMachine.editComment"></el-input>
+              <el-input v-model="nowEditMachine.editComment1"></el-input>
             </el-form-item>
           </el-form>
 
-          <span class="dialog-footer" slot="footer">
-                  <el-button @click="cancel">取 消</el-button>
-                  <el-button type="primary" @click="hangUp" v-if="showHangUp">挂 起</el-button>
-                  <el-button type="primary" @click="submitQuality">提 交</el-button>
+          <div style="text-align: right; padding: 10px 20px 20px; box-sizing: border-box;">
+          <span style="text-align: right; padding: 10px 20px 20px;     box-sizing: border-box;">
+                  <el-button @click="handleClose">取 消</el-button>
+                  <el-button type="primary" @click="submit(1)">提 交</el-button>
                 </span>
+          </div>
         </el-tab-pane>
 
 
@@ -132,17 +209,16 @@
           <h2 style="color: #409EFF">其他信息设置：</h2>
           <el-form label-width="100px">
             <el-form-item label="备注" style="margin: 0">
-              <el-input v-model="nowEditMachine.editComment"></el-input>
+              <el-input v-model="nowEditMachine.editComment2"></el-input>
             </el-form-item>
             <el-form-item label="拍机堂条码" style="margin: 0;">
-              <el-input v-model="nowEditMachine.editPaijiBarcode"></el-input>
+              <el-input v-model="nowEditMachine.paijiBarcode"></el-input>
             </el-form-item>
           </el-form>
           <div style="text-align: right; padding: 10px 20px 20px; box-sizing: border-box;">
           <span style="text-align: right; padding: 10px 20px 20px;     box-sizing: border-box;">
-                  <el-button @click="cancel">取 消</el-button>
-                  <el-button type="primary" @click="hangUp" v-if="showHangUp">挂 起</el-button>
-                  <el-button type="primary" @click="submitFeature">提 交</el-button>
+                  <el-button @click="handleClose">取 消</el-button>
+                  <el-button type="primary" @click="submit(2)">提 交</el-button>
                 </span>
           </div>
         </el-tab-pane>
@@ -157,78 +233,87 @@
                           style="margin: 0;"
                           :show-message="false">
 
-              <el-input type="text" v-model="nowEditMachine.editGoodPrice" placeholder="请输入价格"></el-input>
+              <el-input type="text" v-model="nowEditMachine.goodPrice" placeholder="请输入价格"></el-input>
             </el-form-item>
-            <el-form-item :prop="'editOnePrice'"
+            <el-form-item :prop="'onePrice'"
                           label="一口价"
                           style="margin: 0;"
                           :show-message="false"
                           :rules="{ required: true,trigger: 'blur' }">
-              <el-input type="text" v-model="nowEditMachine.editOnePrice" placeholder="请输入价格"></el-input>
+              <el-input type="text" v-model="nowEditMachine.onePrice" placeholder="请输入价格"></el-input>
             </el-form-item>
-            <el-form-item :prop="'editBidPrice'"
+            <el-form-item :prop="'bidPrice'"
                           label="最高价"
                           style="margin: 0;"
                           :show-message="false"
                           :rules="{ required: true,trigger: 'blur' }">
-              <el-input type="text" v-model="nowEditMachine.editBidPrice" placeholder="请输入价格"></el-input>
+              <el-input type="text" v-model="nowEditMachine.bidPrice" placeholder="请输入价格"></el-input>
             </el-form-item>
-            <el-form-item :prop="'editRankDesc'"
+            <el-form-item :prop="'rankDesc'"
                           label="机器等级"
                           style="margin: 0;"
                           :show-message="false"
                           :rules="{ required: true,trigger: 'blur' }">
 
-              <el-input type="text" v-model="nowEditMachine.editRankDesc" placeholder="请输入机器等级检测"></el-input>
+              <el-input type="text" v-model="nowEditMachine.rankDesc" placeholder="请输入机器等级检测"></el-input>
             </el-form-item>
-            <el-form-item :prop="'editBagNumber'"
+            <el-form-item :prop="'bagNumber'"
                           label="袋子编码"
                           style="margin: 0;"
                           :show-message="false"
                           :rules="{ required: true,trigger: 'blur' }">
 
-              <el-input type="text" v-model="nowEditMachine.editBagNumber" placeholder="请输入袋子编码"></el-input>
+              <el-input type="text" v-model="nowEditMachine.bagNumber" placeholder="请输入袋子编码"></el-input>
             </el-form-item>
-            <el-form-item :prop="'editComment'"
+            <el-form-item :prop="'editComment3'"
                           label="备注"
                           style="margin: 0;"
                           :show-message="false">
-              <el-input type="text" v-model="nowEditMachine.editComment" placeholder="请输入备注"></el-input>
+              <el-input type="text" v-model="nowEditMachine.editComment3" placeholder="请输入备注"></el-input>
             </el-form-item>
           </el-form>
 
-          <span class="dialog-footer" slot="footer">
-                  <el-button @click="cancel">取 消</el-button>
-                  <el-button type="primary" @click="hangUp" v-if="showHangUp">挂 起</el-button>
-                  <el-button type="primary" @click="submitUpShelf">提 交</el-button>
+          <div style="text-align: right; padding: 10px 20px 20px; box-sizing: border-box;">
+          <span style="text-align: right; padding: 10px 20px 20px;     box-sizing: border-box;">
+                  <el-button @click="handleClose">取 消</el-button>
+                  <el-button type="primary" @click="submit(3,1)">提交并退回</el-button>
+                  <el-button v-if="nowEditMachine.isUpShelf === 0" type="primary" @click="submit(3,0)">提交并上架</el-button>
                 </span>
+          </div>
         </el-tab-pane>
 
       </el-tabs>
 
     </el-dialog>
 
+    <MachineShowDetailVertical v-if="showDetail.value" :machine="showDetailMachine"
+                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
 
   </div>
 </template>
 
 <script>
 import MachineShowDetail from "../../components/Machine/MachineShowDetail.vue";
-import {getMachine, modifyMachineFeature, modifyMachineUpShelf} from "../../api/machineApi";
+import {getMachine, modifyFixItem, modifyMachineFeature, modifyMachineUpShelf} from "../../api/machineApi";
 import {modifyMachineQuality} from "../../api/machineApi";
 import {dealMachineJudge} from "../../utils/dealMachineJudge";
+import {getOperateTrace} from "../../api/operateTraceApi";
+import MachineShowDetailVertical from "../../components/Machine/MachineShowDetailVertical.vue";
+import {getMachineTrace} from "../../api/machineTraceApi";
 
 export default {
-  name: "检测上架",
+  name: "确定维修项",
   data() {
     return {
-      scanMachine: [],
+      showDetail: {"value": false},
+      showDetailMachine: {},
+      showMachineTrace: {},
+      allOperateMachines: [],
       test: null,
       numberInput: "",
       dialogVisible: false,
       nowEditMachine: {},
       category: {1: 'phone', 2: 'tablet', 3: '手表'},
-      showHangUp: false,
       searchOptions: [{
         value: 'number',
         label: '物品编码'
@@ -239,34 +324,59 @@ export default {
         value: 'paijiBarCode',
         label: '拍机堂条码'
       }],
-      searchMethod: "number"
-    }
-  },
-  activated() {
-    console.log(this.$route.query)
-    if (this.$route.query.numberInput !== undefined) {
-      this.numberInput = this.$route.query.numberInput
-      this.addMachineByScan();
-      this.$route.query.numberInput = undefined;
+      searchMethod: "number",
+      currentPage: 1,
+      size: 10,
+      total: null,
+      activeName: "first",
     }
   },
   mounted() {
-    console.log(this.$route.query)
-    if (this.$route.query.numberInput !== undefined) {
-      this.numberInput = this.$route.query.numberInput
-      this.addMachineByScan();
-    }
+    this.refresh();
   },
   methods: {
+    refresh(type) {
+      this.initOperateTrace();
+      if (type === 1) {
+        this.$message.success("更新成功");
+      }
+    },
+    initActiveName() {
+      if (this.$store.state.empIdToRoleIdsCorr[this.$store.state.userId].indexOf(2) !== -1 || this.$store.state.empIdToRoleIdsCorr[this.$store.state.userId].indexOf(4) !== -1) {
+        this.activeName = "first"
+      } else if (this.$store.state.empIdToRoleIdsCorr[this.$store.state.userId].indexOf(3) !== -1 || this.$store.state.empIdToRoleIdsCorr[this.$store.state.userId].indexOf(4) !== -1) {
+        this.activeName = "second"
+      } else if (this.$store.state.empIdToRoleIdsCorr[this.$store.state.userId].indexOf(8) !== -1 || this.$store.state.empIdToRoleIdsCorr[this.$store.state.userId].indexOf(4) !== -1) {
+        this.activeName = "third"
+      }
+    },
+    initOperateTrace() {
+      getOperateTrace(this.currentPage, this.size, {
+        "operateEmpId": this.$store.state.userId
+      }).then(resp => {
+        if (resp.data.code === 200) {
+          this.allOperateMachines = resp.data.obj.data
+          this.total = resp.data.obj.total
+        }
+      })
+    },
+    currentChange(currentPage) {
+      this.currentPage = currentPage;
+      this.initOperateTrace()
+    },
+    sizeChange(size) {
+      this.size = size;
+      this.initOperateTrace()
+    },
     addMachineByScan() {
       if (this.numberInput !== "") {
         let search = {}
         if (this.searchMethod === 'number') {
-          search['number'] = this.showMachineDetailNumber
+          search['number'] = this.numberInput
         } else if (this.searchMethod === 'imei') {
-          search['imei'] = this.showMachineDetailNumber
+          search['imei'] = this.numberInput
         } else if (this.searchMethod === 'paijiBarCode') {
-          search['paijiBarcode'] = this.showMachineDetailNumber
+          search['paijiBarcode'] = this.numberInput
         }
         let _this = this
         getMachine(1, 10, search).then(resp => {
@@ -284,42 +394,42 @@ export default {
               return
             }
 
-            let ans = this.judgeIsSubmit(machine.number)
-            if (ans.type === -1) {
-              let _this = this
-              this.editMachine(ans.value);
-              setTimeout(function () {
-                _this.$message.error("该机器已经成色检测完毕，且提交了");
-              }, 50);
-              return
-            } else if (ans.type === 0) {
-              this.editMachine(ans.value);
-              return
-            }
-
-            dealMachineJudge(machine, this.$store, "qualityDetection").then(resp => {
-              if (resp.code === -1) {
-                this.$message.error(resp.message);
-              } else if (resp.code === 1) {
-
-                machine.editQualityDesc = []
-                machine.editFeatureDesc = []
-
-                _this.nowEditMachine = machine
-
-                _this.initQualityDesc(machine)
-                _this.initFeatureDesc(machine)
-
-                _this.numberInput = ""
-                _this.showHangUp = true
-                _this.dialogVisible = true
+            getOperateTrace(1, 10, {
+              "operateEmpId": this.$store.state.userId,
+              "number": machine.number,
+            }).then(resp => {
+              if (resp.data.code === 200) {
+                if (resp.data.obj.total !== 0) {
+                  let _this = this
+                  setTimeout(function () {
+                    _this.$message.error("该机器你已经提交过了");
+                  }, 50);
+                }
               }
-              if (resp.receiveDiagLog !== undefined) {
-                let _this = this
-                setTimeout(function () {
-                  _this.$notify(resp.receiveDiagLog)
-                }, 50);
-              }
+            }).then(() => {
+              dealMachineJudge(machine, this.$store, "fixConfirm").then(resp => {
+                if (resp.code === -1) {
+                  this.$message.error(resp.message);
+                } else if (resp.code === 1) {
+                  machine.editFeatureDesc = []
+                  machine.editQualityDesc = []
+
+                  _this.nowEditMachine = machine
+
+                  _this.initFeatureDesc(machine)
+                  _this.initQualityDesc(machine)
+
+                  _this.numberInput = ""
+                  this.initActiveName()
+                  _this.dialogVisible = true
+                }
+                if (resp.receiveDiagLog !== undefined) {
+                  let _this = this
+                  setTimeout(function () {
+                    _this.$notify(resp.receiveDiagLog)
+                  }, 50);
+                }
+              })
             })
           }
         })
@@ -371,187 +481,82 @@ export default {
       }
       return true
     },
-    //判断编号为number的机器是否已经添加到单据中
-    judgeIsSubmit(number) {
-      let ans = {type: 1}
-      this.scanMachine.forEach(item => {
-        if (item.number === number) {
-          if (item.operate !== undefined && item.operate.submitted === 1) {
-            ans = {type: -1, value: item}
-          } else {
-            ans = {type: 0, value: item}
-          }
-        }
-      })
-      return ans
-    },
-    submitQuality() {
+    submit(method, type) {
       this.$confirm('是否确定要提交', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        let temp = JSON.parse(JSON.stringify(this.nowEditMachine))
-        temp.qualityDesc = temp.editQualityDesc.toString()
-        modifyMachineQuality(temp).then(resp => {
-          if (resp.data.code === 200) {
-            this.$message.success("提交成功");
-            this.nowEditMachine.statusId = resp.data.obj.statusId;
-            this.nowEditMachine.operateEmpId = resp.data.obj.operateEmpId;
-            this.nowEditMachine.operateDate = resp.data.obj.operateDate;
-            this.nowEditMachine.comment = resp.data.obj.comment;
-
-            this.nowEditMachine.editComment = resp.data.obj.comment;
-
-            this.nowEditMachine.qualityDesc = temp.qualityDesc
-            this.nowEditMachine.operate = {}
-            this.nowEditMachine.operate.submitted = 1
-            this.nowEditMachine.operate.edit = 0
-            if (this.showHangUp) {
-              this.scanMachine.push(this.nowEditMachine)
+        if (method === 1) {
+          let temp = JSON.parse(JSON.stringify(this.nowEditMachine))
+          temp.qualityDesc = temp.editQualityDesc.toString()
+          modifyMachineQuality(temp).then(resp => {
+            if (resp.data.code === 200) {
+              this.$message.success("提交成功");
+              this.nowEditMachine.statusId = resp.data.obj.statusId
+              //this.numberInput = ""
+              //this.nowEditMachine = {}
+            } else {
+              this.$message.error("提交失败");
+              this.initQualityDesc(this.nowEditMachine)
             }
-            this.nowEditMachine = {}
-            this.dialogVisible = false
-          } else {
-            this.$message.error("提交失败");
-            this.initQualityDesc(this.nowEditMachine)
-          }
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消提交'
-        });
-      });
-    },
-    submitFeature() {
-      this.$confirm('是否确定要提交', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        let temp = JSON.parse(JSON.stringify(this.nowEditMachine))
-        temp.featureDesc = temp.editFeatureDesc.toString()
-        modifyMachineFeature(temp).then(resp => {
-          if (resp.data.code === 200) {
-            this.$message.success("提交成功");
-            this.nowEditMachine.statusId = resp.data.obj.statusId;
-            this.nowEditMachine.operateEmpId = resp.data.obj.operateEmpId;
-            this.nowEditMachine.operateDate = resp.data.obj.operateDate;
-            this.nowEditMachine.comment = resp.data.obj.comment;
-            this.nowEditMachine.paijiBarcode = resp.data.obj.paijiBarcode
-
-            this.nowEditMachine.editComment = ""
-            this.nowEditMachine.editPaijiBarcode = ""
-
-            this.nowEditMachine.featureDesc = temp.featureDesc
-            this.nowEditMachine.operate = {}
-            this.nowEditMachine.operate.submitted = 1
-            this.nowEditMachine.operate.edit = 0
-            if (this.showHangUp) {
-              this.scanMachine.push(this.nowEditMachine)
-            }
-            this.nowEditMachine = {}
-            this.dialogVisible = false
-          } else {
-            this.$message.error("提交失败");
-            this.initFeatureDesc(this.nowEditMachine)
-          }
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消提交'
-        });
-      });
-    },
-    submitUpShelf() {
-      this.$refs['form'].validate((valid) => {
-        if (valid) {
-          this.$confirm('是否确定要提交', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            modifyMachineUpShelf(this.nowEditMachine).then(resp => {
-              if (resp.data.code === 200) {
-                this.$message.success("提交成功");
-                this.nowEditMachine.statusId = resp.data.obj.statusId;
-                this.nowEditMachine.operateEmpId = resp.data.obj.operateEmpId;
-                this.nowEditMachine.operateDate = resp.data.obj.operateDate;
-
-                this.nowEditMachine.goodPrice = resp.data.obj.goodPrice;
-                this.nowEditMachine.onePrice = resp.data.obj.onePrice;
-                this.nowEditMachine.bidPrice = resp.data.obj.bidPrice;
-                this.nowEditMachine.rankDesc = resp.data.obj.rankDesc;
-                this.nowEditMachine.bagNumber = resp.data.obj.bagNumber;
-                this.nowEditMachine.comment = resp.data.obj.comment;
-
-                this.nowEditMachine.editGoodPrice = ""
-                this.nowEditMachine.editOnePrice = ""
-                this.nowEditMachine.editBidPrice = ""
-                this.nowEditMachine.editComment = ""
-                this.nowEditMachine.editRankDesc = ""
-                this.nowEditMachine.editBagNumber = ""
-
-
-                this.nowEditMachine.operate = {}
-                this.nowEditMachine.operate.submitted = 1
-                this.nowEditMachine.operate.edit = 0
-                if (this.showHangUp) {
-                  this.scanMachine.push(this.nowEditMachine)
-                }
-                this.nowEditMachine = {}
-                this.dialogVisible = false
-              } else {
-                this.$message.error("提交失败");
-              }
-            })
-          }).catch(() => {
-            this.$message({
-              type: 'info',
-              message: '已取消提交'
-            });
-          });
-        } else {
-          this.$message.error("输入有误");
-          return false;
-        }
-      });
-    },
-    handleClose(done) {
-      this.$confirm('确认关闭？')
-          .then(_ => {
-            done();
-            this.showHangUp = false
           })
-          .catch(_ => {
-          });
+        } else if (method === 2) {
+          let temp = JSON.parse(JSON.stringify(this.nowEditMachine))
+          temp.featureDesc = temp.editFeatureDesc.toString()
+          modifyMachineFeature(temp).then(resp => {
+            if (resp.data.code === 200) {
+              this.$message.success("提交成功");
+              this.nowEditMachine.statusId = resp.data.obj.statusId
+              //this.numberInput = ""
+              //this.nowEditMachine = {}
+            } else {
+              this.$message.error("提交失败");
+              this.initFeatureDesc(this.nowEditMachine)
+            }
+          })
+        } else if (method === 3) {
+          let temp = JSON.parse(JSON.stringify(this.nowEditMachine))
+          modifyMachineUpShelf(temp, type).then(resp => {
+            if (resp.data.code === 200) {
+              this.$message.success("提交成功");
+              this.nowEditMachine.statusId = resp.data.obj.statusId
+              this.refresh()
+              this.dialogVisible = false
+              this.numberInput = ""
+              this.nowEditMachine = {}
+            } else {
+              this.$message.error("提交失败");
+              this.initQualityDesc(this.nowEditMachine)
+            }
+          })
+        }
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消提交'
+        });
+      });
     },
-    hangUp() {
-      this.nowEditMachine.qualityDesc = this.nowEditMachine.editQualityDesc.toString();
-      this.nowEditMachine.operate = {}
-      this.nowEditMachine.operate.submitted = 0
-      this.nowEditMachine.operate.notSubmitted = 1
-      this.nowEditMachine.operate.edit = 1
-      this.scanMachine.push(this.nowEditMachine)
-      this.nowEditMachine = {}
+    detail(row) {
+      getMachine(1, 10, {"number": row.number}).then(resp => {
+        this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
+        getMachineTrace({"number": row.number}).then(resp => {
+          this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
+          this.showDetail.value = true
+        })
+      })
+    },
+    handleClose() {
       this.dialogVisible = false
-    },
-    editMachine(machine) {
-      this.nowEditMachine = machine
-      this.initQualityDesc(machine);
-      this.showHangUp = false
-      this.dialogVisible = true
-    },
-    cancel() {
-      this.nowEditMachine.qualityDesc = this.nowEditMachine.editQualityDesc.toString();
       this.nowEditMachine = {}
-      this.dialogVisible = false
+      this.numberInput = ""
+      this.refresh()
     }
   },
   components: {
-    MachineShowDetail
+    MachineShowDetail,
+    MachineShowDetailVertical
   }
 
 }

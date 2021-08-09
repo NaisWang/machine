@@ -3,11 +3,11 @@
     <div style="border: 1px solid #409eff; border-radius: 5px; box-sizing: border-box; padding: 5px; margin: 10px 0px">
       <el-row>
         <el-col :span="8" style="margin-right: 10px;">
-          入库单号：
+          外修单号：
           <el-input v-model="searchOrder.purchaseOrder"
                     size="mini"
                     prefix-icon="el-icon-search"
-                    placeholder="请输入采购单号进行搜索..."
+                    placeholder="请输入单号进行搜索..."
                     clearable></el-input>
         </el-col>
       </el-row>
@@ -15,7 +15,8 @@
       </el-button>
     </div>
 
-    <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加入库单</el-button>
+    <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加送外修单</el-button>
+    <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
 
     <div>
       外修取回:
@@ -150,7 +151,7 @@
     </div>
 
     <el-dialog
-        title="入库单信息"
+        title="送外修单信息"
         :visible.sync="addReceiptDialogVisible">
 
       <el-form ref="form" :model="newReceiptInfo" label-width="80px">
@@ -196,12 +197,18 @@ export default {
     }
   },
   mounted() {
-    this.initAllOrderInfo();
+    this.refresh();
   },
   components: {
     MachineEdit
   },
   methods: {
+    refresh(type) {
+      this.initAllOrderInfo();
+      if (type === 1) {
+        this.$message.success("刷新成功");
+      }
+    },
     initAllOrderInfo() {
       getFixSendReceipt(this.currentPage, this.size, this.searchOrder).then(resp => {
         if (resp.data.obj) {
@@ -295,6 +302,7 @@ export default {
       receiveMachine(this.receiveMachineNumber).then(resp => {
         if (resp.data.code === 200) {
           this.$message.success("取回成功");
+          this.receiveMachineNumber = ""
         }
       })
     }

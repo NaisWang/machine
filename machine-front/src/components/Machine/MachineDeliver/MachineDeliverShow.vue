@@ -28,6 +28,15 @@
         </el-table-column>
 
         <el-table-column
+            label="是否完成"
+            width="80">
+          <template #default="scope">
+            <el-tag type="danger" v-if="scope.row.completeSum !== scope.row.sum">没有</el-tag>
+            <el-tag v-else-if="scope.row.completeSum === scope.row.sum">完成</el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column
             prop="deliverReceiptId"
             label="转交订单单号"
             width="170">
@@ -45,8 +54,14 @@
         </el-table-column>
 
         <el-table-column
-            prop="deliverDate"
-            label="转交订单日期"
+            prop="createTime"
+            label="创建日期"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="releaseTime"
+            label="发布日期"
             width="170">
         </el-table-column>
 
@@ -59,6 +74,12 @@
         <el-table-column
             prop="notReceiveSum"
             label="转交未接收机器总数"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="completeSum"
+            label="完成指标数"
             width="170">
         </el-table-column>
 
@@ -244,6 +265,8 @@ export default {
         3: [2, 3],
         //成色检测
         4: [2],
+        //成色检测
+        12: [2],
         //功能检测
         5: [3],
         //上架
@@ -260,6 +283,8 @@ export default {
         7: [10],
         // 销退入库
         8: [10],
+        // 送外修
+        13: [13]
       },
       deliverTypeLaunchCorr: {
         // 转交单类型id - 能发起该转交单的角色id
@@ -269,6 +294,8 @@ export default {
         3: [2, 3, 4, 8, 10, 11],
         //成色检测
         4: [2, 3, 4, 8, 10, 11],
+        //成色检测(不上架)
+        12: [2, 3, 4, 8, 10, 11],
         //功能检测
         5: [2, 3, 4, 8, 10, 11],
         //上架
@@ -285,6 +312,8 @@ export default {
         7: [10, 11],
         // 销退入库
         8: [10, 11],
+        //送外修
+        13: [6]
       },
       //targetStorageLocationId: null,
       canSelectReceiveEmpIds: [],
@@ -342,7 +371,7 @@ export default {
       this.initAllOrderInfo();
     },
     orderDetail(row) {
-      this.$emit('func', 1, row.deliverReceiptId, row.enableEdit)
+      this.$emit('func', 1, row.deliverReceiptId, row.enableEdit, row.operateEmpId)
     },
     addReceipt() {
       this.addReceiptDialogVisible = true

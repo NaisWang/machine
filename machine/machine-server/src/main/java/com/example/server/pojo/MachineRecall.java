@@ -58,6 +58,10 @@ public class MachineRecall implements Serializable {
 	@TableField("storage_location_id")
 	private Integer storageLocationId;
 
+	@ApiModelProperty(value = "是否可以上架")
+	@TableField(exist = false)
+	private Integer isUpShelf;
+
 	@ApiModelProperty(value = "召回日期")
 	@TableField("recall_time")
 	private LocalDateTime recallTime;

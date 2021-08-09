@@ -92,3 +92,16 @@ export function deleteEnterStorageReceipt(receiptId) {
   })
 }
 
+// 创建、添加、发布入库单
+export function createAddReleaseEnterStorageReceipt(numbers, receiptId, storageLocationId, deliverReceiptId) {
+  let url = '/create-add-release?' + 'storageLocationId=' + storageLocationId + '&deliverReceiptId=' + deliverReceiptId
+  if (receiptId !== undefined) {
+    url += '&receiptId=' + receiptId
+  }
+
+  return myAxios({
+    url: BASE_URL + url,
+    method: 'put',
+    data: numbers
+  })
+}

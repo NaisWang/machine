@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.server.pojo.*;
 import com.example.server.service.impl.*;
+import com.example.server.utils.JudgeCompleteDeliverIntention;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
 import io.swagger.annotations.Api;
@@ -125,7 +126,7 @@ public class SendFixReceiptController {
 				List<MachineTrace> machineTraces = new ArrayList<>();
 				for (Machine machine : machines) {
 					machine.setStatusId(machine.getPreviousStatusId());
-					machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+					machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 				}
 				if (machineService.updateBatchById(machines)) {
 					if (!machineTraceService.saveBatch(machineTraces)) {
@@ -188,10 +189,13 @@ public class SendFixReceiptController {
 			List<MachineTrace> machineTraces = new ArrayList<>();
 			for (Machine machine : machines) {
 				machine.setStatusId(17);
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 			if (machineService.updateBatchById(machines)) {
 				if (machineTraceService.saveBatch(machineTraces)) {
+					if (!JudgeCompleteDeliverIntention.judgeIsComplete(machines, 13)) {
+						throw new RuntimeException("修改失败");
+					}
 					logService.save(new Log(empId, "发布外修单的信息", "单号为：" + receiptId, now, 0));
 					return RespBean.success("发布成功");
 				}

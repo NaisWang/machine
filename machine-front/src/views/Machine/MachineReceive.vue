@@ -10,7 +10,10 @@
 
     <MachineReceiveShow @func="ChangeComponentsFlag" v-if="componentFlag === 0"></MachineReceiveShow>
     <machine-receive-detail v-else-if="componentFlag === 1"
-                            :receiptDetailNumber="receiptDetailNumber"></machine-receive-detail>
+                            :receiptDetailNumber="receiptDetailNumber"
+                            :deliver-intention-id="deliverIntentionId"
+                            :storage-location-id="storageLocationId"
+                            :enter-storage-receipt-id="enterStorageReceiptId"></machine-receive-detail>
   </div>
 </template>
 
@@ -24,13 +27,19 @@ export default {
     return {
       componentFlag: 0,
       receiptDetailNumber: null,
+      deliverIntentionId: null,
+      enterStorageReceiptId: null,
+      storageLocationId: null,
       isEdit: 0
     }
   },
   methods: {
-    ChangeComponentsFlag(componentFlag, receiptDetailNumber) {
+    ChangeComponentsFlag(componentFlag, receiptDetailNumber, deliverIntentionId, enterStorageReceiptId, storageLocationId) {
       this.componentFlag = componentFlag
       this.receiptDetailNumber = receiptDetailNumber
+      this.deliverIntentionId = deliverIntentionId
+      this.enterStorageReceiptId = enterStorageReceiptId
+      this.storageLocationId = storageLocationId;
     },
     toEnterStorage() {
       this.componentFlag = 0

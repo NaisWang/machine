@@ -24,7 +24,10 @@
            receive_emp_ids,
            a.comment,
            operate_emp_id,
+           storage_location_id,
+           enter_storage_receipt_id,
            enable_edit,
+           count(b.is_complete = 1 or null)                as "complete_sum",
            count(b.deliver_receipt_id is not null or null) as "sum",
            count(b.status != 2 or null)                    as "not_receive_sum",
            case
@@ -36,6 +39,7 @@
                      on a.deliver_receipt_id = b.deliver_receipt_id
     where operate_emp_id = #{deliverReceipt.operateEmpId}
     group by a.deliver_receipt_id
+    order by a.deliver_receipt_id desc
   </select>
 
   <!-- 获取需要接收的转交单 -->
@@ -48,6 +52,9 @@
            a.comment,
            operate_emp_id,
            enable_edit,
+           storage_location_id,
+           enter_storage_receipt_id,
+           count(b.is_complete = 1 or null)                as "complete_sum",
            count(b.deliver_receipt_id is not null or null) as "sum",
            count(b.status != 2 or null)                    as "not_receive_sum"
     from t_deliver_receipt as a
@@ -59,7 +66,7 @@
       OR receive_emp_ids LIKE concat(concat('%,', #{empId}), ',%')
       OR receive_emp_ids = #{empId})
     group by a.deliver_receipt_id
-
+    order by a.deliver_receipt_id desc
   </select>
 
 </mapper>

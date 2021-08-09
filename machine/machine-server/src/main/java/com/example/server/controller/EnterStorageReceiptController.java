@@ -4,11 +4,9 @@ package com.example.server.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.server.pojo.*;
-import com.example.server.service.impl.EnterStorageReceiptServiceImpl;
-import com.example.server.service.impl.LogServiceImpl;
-import com.example.server.service.impl.MachineServiceImpl;
-import com.example.server.service.impl.MachineTraceServiceImpl;
+import com.example.server.service.impl.*;
 import com.example.server.utils.Corr;
+import com.example.server.utils.JudgeCompleteDeliverIntention;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,10 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -47,6 +42,10 @@ public class EnterStorageReceiptController {
 	private LogServiceImpl logService;
 	@Autowired
 	private MachineTraceServiceImpl machineTraceService;
+	@Autowired
+	private DeliverMachineServiceImpl deliverMachineService;
+	@Autowired
+	private DeliverReceiptServiceImpl deliverReceiptService;
 
 	@ApiModelProperty("获取所有入库单据")
 	@GetMapping("/")
@@ -141,13 +140,16 @@ public class EnterStorageReceiptController {
 					List<MachineTrace> machineTraces = new ArrayList<>();
 					//跟踪机器数据
 					for (Machine machine : machines) {
-						MachineTrace machineTrace = new MachineTrace(machine.getNumber(), 2, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId());
-						machineTrace.setStorageLocationId(enterStorageReceipt.getStorageLocationId());
+
+						MachineTrace machineTrace = new MachineTrace(machine.getNumber(), 2, receiptId, now, empId, machine.getComment(), enterStorageReceipt.getStorageLocationId(), machine.getIsUpShelf());
+
 						machineTraces.add(machineTrace);
 					}
 					if (machineTraceService.saveBatch(machineTraces)) {
-						logService.save(new Log(empId, "发布入库单", "入库单据id为" + enterStorageReceipt.getEnterStorageOrder() + "; 备注是：" + enterStorageReceipt.getComment(), now, 0));
-						return RespBean.success("发布成功");
+						if (JudgeCompleteDeliverIntention.judgeIsComplete(machines, 2)) {
+							logService.save(new Log(empId, "发布入库单", "入库单据id为" + enterStorageReceipt.getEnterStorageOrder() + "; 备注是：" + enterStorageReceipt.getComment(), now, 0));
+							return RespBean.success("发布成功");
+						}
 					}
 				}
 			}
@@ -182,17 +184,17 @@ public class EnterStorageReceiptController {
 			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("id", ids));
 			List<MachineTrace> machineTraceList = new ArrayList<>();
 
-			Integer[] legalStatusId = {1, 3, 4};
+			//Integer[] legalStatusId = {1, 3, 4};
 
 			for (Machine machine : machines) {
-				if (!Arrays.asList(legalStatusId).contains(machine.getStatusId())) {
-					return RespBean.error("数据有误！！！");
-				}
+				//if (!Arrays.asList(legalStatusId).contains(machine.getStatusId())) {
+				//		return RespBean.error("数据有误！！！");
+				//	}
 				machine.setPreviousStatusId(machine.getStatusId());
 				machine.setStatusId(20);
 				machine.setEnterStorageReceiptId(receiptId);
 				machine.setOperateEmpId(empId);
-				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 
 			if (machineService.updateBatchById(machines)) {
@@ -230,7 +232,7 @@ public class EnterStorageReceiptController {
 			machine.setStatusId(machine.getPreviousStatusId());
 			machine.setEnterStorageReceiptId(0);
 			if (machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
 					logService.save(new Log(empId, "删除入库单中添加机器", "入库单据id为" + enterStorageReceipt.getEnterStorageOrder() + "; 备注是：" + enterStorageReceipt.getComment(), now, 0));
 					return RespBean.success("删除成功");
 				}
@@ -322,7 +324,7 @@ public class EnterStorageReceiptController {
 			for (Machine machine : machines) {
 				machine.setPurchaseReturnReceiptId(0);
 				machine.setStatusId(machine.getPreviousStatusId());
-				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId()));
+				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 			if (enterStorageReceiptService.removeById(receiptId)) {
 				if (machines.size() == 0 || machineService.updateBatchById(machines)) {
@@ -341,4 +343,89 @@ public class EnterStorageReceiptController {
 		}
 	}
 
+	@ApiOperation("创建、添加、发布入库单")
+	@PutMapping("/create-add-release")
+	@Transactional
+	public RespBean createAddRelease(@RequestBody String[] numbers, Integer enterStorageReceiptId, Integer storageLocationId, Integer deliverReceiptId, Authentication authentication) {
+		LocalDateTime now = LocalDateTime.now();
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+
+		if (storageLocationId == null) {
+			return RespBean.error("没有选择库位");
+		}
+
+
+		try {
+			//如果没有入库单，则创建并发布入库单
+			if (enterStorageReceiptId == null) {
+				EnterStorageReceipt enterStorageReceipt = new EnterStorageReceipt();
+				enterStorageReceipt.setCreateTime(now);
+				enterStorageReceipt.setReleaseTime(now);
+				enterStorageReceipt.setOperateEmpId(empId);
+				enterStorageReceipt.setIsRelease(1);
+				enterStorageReceipt.setStorageLocationId(storageLocationId);
+				if (enterStorageReceiptService.save(enterStorageReceipt)) {
+					enterStorageReceiptId = enterStorageReceipt.getEnterStorageOrder();
+				} else {
+					throw new RuntimeException("运行错误");
+				}
+			}
+
+			DeliverReceipt deliverReceipt = deliverReceiptService.getById(deliverReceiptId);
+			deliverReceipt.setStorageLocationId(storageLocationId);
+			deliverReceipt.setEnterStorageReceiptId(enterStorageReceiptId);
+			if (!deliverReceiptService.update(deliverReceipt, new UpdateWrapper<DeliverReceipt>().eq("deliver_receipt_id", deliverReceiptId))) {
+				throw new RuntimeException("运行错误");
+			}
+
+			//接收并处理机器
+			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("number", numbers));
+			List<MachineTrace> machineTraces = new ArrayList<>();
+
+			QueryWrapper<DeliverMachine> deliverMachineQueryWrapper = new QueryWrapper<>();
+			for (Machine machine : machines) {
+
+				if (!machine.getDeliverReceiptId().equals(deliverReceiptId)) {
+					throw new RuntimeException("运行错误");
+				}
+
+				machine.setEnterStorageReceiptId(enterStorageReceiptId);
+				machine.setPreviousStatusId(machine.getStatusId());
+				machine.setStatusId(2);
+				machine.setDeliverReceiptId(0);
+				machine.setNeedCompleteDeliverReceiptId(0);
+				machine.setOperateEmpId(empId);
+
+
+				Map<String, Integer> queryMap = new HashMap<>();
+				queryMap.put("machine_id", machine.getId());
+				queryMap.put("deliver_receipt_id", deliverReceiptId);
+				deliverMachineQueryWrapper = deliverMachineQueryWrapper.or().allEq(queryMap);
+
+				MachineTrace machineTrace = new MachineTrace(machine.getNumber(), 2, enterStorageReceiptId, now, empId, machine.getComment(), storageLocationId, machine.getIsUpShelf());
+				machineTraces.add(machineTrace);
+
+			}
+
+			List<DeliverMachine> deliverMachines = deliverMachineService.list(deliverMachineQueryWrapper);
+			for (DeliverMachine deliverMachine : deliverMachines) {
+				deliverMachine.setReceiveEmpId(empId);
+				deliverMachine.setStatus(2);
+				deliverMachine.setIsComplete(1);
+				deliverMachine.setReceiveDate(now);
+			}
+
+			if (machineService.updateBatchById(machines)) {
+				if (deliverMachineService.updateBatchById(deliverMachines)) {
+					if (machineTraceService.saveBatch(machineTraces)) {
+						return RespBean.success("操作成功", enterStorageReceiptId);
+					}
+				}
+			}
+			throw new RuntimeException("操作失败");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("操作失败");
+		}
+	}
 }
