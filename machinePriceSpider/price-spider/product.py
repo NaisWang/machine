@@ -37,7 +37,6 @@ def keyword_5g(keyword, userIndex):
 		if res == -2:
 			return -2
 		if res != -1:
-			print("aa" + str(keyword))
 			return res
 
 		keyword = tempKeyWord
@@ -46,7 +45,6 @@ def keyword_5g(keyword, userIndex):
 		if res == -2:
 			return -2
 		if res != -1:
-			print("bb" + str(keyword))
 			return res
 
 		keyword = tempKeyWord
@@ -55,7 +53,6 @@ def keyword_5g(keyword, userIndex):
 		if res == -2:
 			return -2
 		if res != -1:
-			print("cc" + str(keyword))
 			return res
 
 	return -1
@@ -268,31 +265,31 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 		'Content-Type': 'application/json'
 	}
 	retry_count = 5
+	resp = ""
 	while retry_count > 0:
 		try:
 			resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
-			if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
-				headers['Chromosome'] = getChromsome()
-				retry_count -= 1
-				continue
-			res = access.token_is_invalid(resp['resultMessage'], userIndex)
-			if res == -2:
-				return -2
-			if res != 1:
-				return get_price(reportNo, 0)
-			if 'data' in resp:
+			if 'data' in resp and 'referencePrice' in resp['data']:
 				price = resp['data']['referencePrice']
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(price))
 				return {"price": price, "skuId": resp['data']['skuId']}
 			else:
+				if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
+					headers['Chromosome'] = getChromsome()
+					retry_count -= 1
+					continue
+				res = access.token_is_invalid(resp['resultMessage'], userIndex)
+				if res == -2:
+					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+															str("token失效"))
+					return -2
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(resp))
 				return {"price": -1, "skuId": -1}
 		except Exception as e:
 			retry_count -= 1
 	return {"price": -1, "skuId": -1}
-	print(resp)
 
 # 通过reptortNo获取价格
 def get_price(reportNo, userIndex):
@@ -357,7 +354,6 @@ def get_category_id():
 					return -1
 				return -1
 			else:
-				print(str(resp))
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(resp))
 				return -1
@@ -382,7 +378,6 @@ def get_brand(category):
 			resp = json.loads(
 				requests.post(url, headers=headers, data=json.dumps(data)).text)
 			if 'data' in resp:
-				print("fjdkjfd")
 				brands = resp['data']
 				#generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 				#										 str(brands))
@@ -406,13 +401,11 @@ def get_all_machine(categoryId, brandId, num):
 		'Content-Type': 'application/json',
 		'Content-Length':str(len(json.dumps(data).replace(' ','')))
 	}
-	print(data)
 	retry_count = 5
 	while retry_count > 0:
 		try:
 			resp = json.loads(
 				requests.post(url, headers=headers, data=json.dumps(data)).text)
-			print(resp)
 			if 'data' in resp:
 				res = resp['data'][0:num]
 				#generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
@@ -492,21 +485,20 @@ def get_desc(productId, userIndex):
 		try:
 			resp = json.loads(
 				requests.get(url, headers=headers).text)
-			print(resp)
-			if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
-				headers['Chromosome'] = getChromsome()
-				retry_count -= 1
-				continue
-			res = access.token_is_invalid(resp['resultMessage'], userIndex)
-			if res == -2:
-				return -2
-			if res != 1:
-				return get_desc(productId, 0)
-			if 'data' in resp:
+			if 'data' in resp and 'productInfos' in resp['data']:
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(resp['data']))
 				return resp['data']
 			else:
+				if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
+					headers['Chromosome'] = getChromsome()
+					retry_count -= 1
+					continue
+				res = access.token_is_invalid(resp['resultMessage'], userIndex)
+				if res == -2:
+					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+															str("token失效"))
+					return -2
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(resp))
 				return -1

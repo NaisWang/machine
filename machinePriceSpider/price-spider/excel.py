@@ -197,7 +197,8 @@ class userThread(threading.Thread):
 	def run(self):
 		global count
 		while count < self.xlrd_worksheet.nrows and search_price_flag == 1:
-			time.sleep(5)
+			time.sleep(4)
+			print(time.strftime('%H:%M:%S'),'hahaha')
 			# while count < self.xlrd_worksheet.nrows:
 			self.threadLock.acquire()
 			temp = 0
@@ -387,8 +388,11 @@ def judge_price_combination(desc, item):
 	return 1
 
 
+# 根据询价规则页面中的设置来价格查询规则
 def get_pricePropertyValues_one(quality, desc, pricePropertyList, paijiDescProertyIds):
 	pricePropertyLists = []
+	print("paijiCon")
+	print(str(paijiContrast.price_combination))
 	for item in paijiContrast.price_combination:
 		if quality in remove_space(item['grade']).lower().split("、"):
 			flag = judge_price_combination(desc, item)
@@ -569,7 +573,6 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 	if sku + desc + quality not in already_search.keys() or "flag" not in already_search.keys():
 		already_search[sku + desc + quality] = {}
 		productId = product.get_product_id(model, userIndex)
-		print("prodcuId:" + str(productId))
 		if productId == -2:
 			return
 		if productId != -1:
@@ -610,6 +613,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 					paijiDescProertyIds = get_desc_property_ids(paijiDesc)
 					pricePropertyLists = get_pricePropertyValues_one(quality, desc, pricePropertyList.copy(),
 																													 paijiDescProertyIds)
+
 					if len(pricePropertyLists) == 0:
 						pricePropertyLists = get_pricePropertyValues_two(pricePropertyList.copy())
 				else:
