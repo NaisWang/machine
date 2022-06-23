@@ -126,7 +126,7 @@ public class SendFixReceiptController {
 				List<MachineTrace> machineTraces = new ArrayList<>();
 				for (Machine machine : machines) {
 					machine.setStatusId(machine.getPreviousStatusId());
-					machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+					machineTraces.add(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 				}
 				if (machineService.updateBatchById(machines)) {
 					if (!machineTraceService.saveBatch(machineTraces)) {
@@ -189,7 +189,7 @@ public class SendFixReceiptController {
 			List<MachineTrace> machineTraces = new ArrayList<>();
 			for (Machine machine : machines) {
 				machine.setStatusId(17);
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+				machineTraces.add(new MachineTrace(machine.getId(),machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 			if (machineService.updateBatchById(machines)) {
 				if (machineTraceService.saveBatch(machineTraces)) {

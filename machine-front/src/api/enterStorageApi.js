@@ -16,6 +16,19 @@ export function getEnterStorageReceipt(currentPage, size, enterStorageReceipt) {
   })
 }
 
+//获取入库单中的机器
+export function getEnterStorageReceiptToMachine(currentPage, size,receiptId) {
+  let test = Object.assign({receiptId: receiptId}, {currentPage: currentPage, size: size})
+  return myAxios({
+    url: BASE_URL + '/machines',
+    method: 'get',
+    params: test,
+    paramsSerializer: function (params) {
+      return qs.stringify(params, {arrayFormat: 'repeat'})
+    }
+  })
+}
+
 // 添加入库单据
 //export function createEnterStorageReceipt(enterStorageReceipt, machine) {
 //  return myAxios({
@@ -63,6 +76,18 @@ export function createEnterStorageReceiptByOneKey(enterStorageReceipt, purchaseO
     data: {
       'enterStorageReceipt': JSON.stringify(enterStorageReceipt),
       'purchaseOrder': JSON.stringify(purchaseOrder)
+    }
+  })
+}
+
+// 一键库位调拨
+export function createEnterStorageReceiptByOneKeyTransfer(enterStorageReceipt, originEnterStorageReceipt) {
+  return myAxios({
+    url: BASE_URL + '/one-key-transfer/',
+    method: 'put',
+    data: {
+      'enterStorageReceipt': JSON.stringify(enterStorageReceipt),
+      'originEnterStorageReceipt': JSON.stringify(originEnterStorageReceipt)
     }
   })
 }

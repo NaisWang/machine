@@ -44,10 +44,11 @@ export function addMachineToMarketReturnReceipt(ids, receiptId) {
     data: ids
   })
 }
+
 // 删除销售退货订单订单中的机器
-export function deleteMachineForMarketReturnReceipt(id) {
+export function deleteMachineForMarketReturnReceipt(id, receiptId) {
   return myAxios({
-    url: BASE_URL + '/deleteMachine?id=' + id,
+    url: BASE_URL + '/deleteMachine?id=' + id + '&receiptId=' + receiptId,
     method: 'delete'
   })
 }

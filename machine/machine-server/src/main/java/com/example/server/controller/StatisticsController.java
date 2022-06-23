@@ -1,14 +1,17 @@
 package com.example.server.controller;
 
+import com.example.server.pojo.Employee;
 import com.example.server.pojo.MachineTrace;
 import com.example.server.pojo.Statistics;
 import com.example.server.service.impl.MachineTraceServiceImpl;
 import com.example.server.service.impl.OperateTraceServiceImpl;
 import com.example.server.utils.RespBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.Authenticator;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +50,14 @@ public class StatisticsController {
 	@GetMapping("/all")
 	public RespBean getAllStatistics(Integer[] empIds, Integer[] statusIds, Integer[] dateScope) {
 		List<Statistics> statistics = machineTraceService.getAllStatistics(empIds, statusIds, dateScope);
+		return RespBean.success("获取成功", statistics);
+	}
+
+	//获取本人的记录
+	@GetMapping("/one")
+	public RespBean getOneStatistics(Authentication authentication) {
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		List<Statistics> statistics = machineTraceService.getOneStatistics(empId);
 		return RespBean.success("获取成功", statistics);
 	}
 

@@ -134,6 +134,7 @@
       <template>
         <div
             v-for="(group,index) in Object.keys($store.state.machineDesc[category[nowEditMachine['categoryId']]]['functionInfos'])"
+            v-show="nowEditMachine['editFeatureDesc'][index].length !== 0"
             :key="index">
           <el-row>
             <el-col :span="2">
@@ -143,13 +144,12 @@
               <el-checkbox-group
                   :max="1"
                   size="mini"
-                  v-model="nowEditMachine.editFeatureDesc[index]">
+                  v-model="nowEditMachine['editNeedFix'][index]">
                 <el-checkbox
                     border
                     style="margin-right: 5px; margin-top: 1px; margin-left: 0"
-                    v-for="item in $store.state.machineDesc[category[nowEditMachine['categoryId']]]['functionInfos'][group]"
-                    :key="item.id"
-                    :label="item.id + ''">{{ item.value }}
+                    :label="nowEditMachine['editFeatureDesc'][index][0]">
+                  {{ $store.state.machineIdToDesc[nowEditMachine['editFeatureDesc'][index][0]] }}
                 </el-checkbox>
               </el-checkbox-group>
             </el-col>
@@ -172,7 +172,8 @@
     </el-dialog>
 
     <MachineShowDetailVertical v-if="showDetail.value" :machine="showDetailMachine"
-                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
 
   </div>
 </template>
@@ -185,6 +186,7 @@ import {dealMachineJudge} from "../../utils/dealMachineJudge";
 import {getOperateTrace} from "../../api/operateTraceApi";
 import MachineShowDetailVertical from "../../components/Machine/MachineShowDetailVertical.vue";
 import {getMachineTrace} from "../../api/machineTraceApi";
+import {getMachineDetection} from "../../api/machineDetection";
 
 export default {
   name: "确定维修项",
@@ -193,6 +195,7 @@ export default {
       showDetail: {"value": false},
       showDetailMachine: {},
       showMachineTrace: {},
+      showMachineDetection: {},
       allOperateMachines: [],
       test: null,
       numberInput: "",
@@ -289,8 +292,10 @@ export default {
                   this.$message.error(resp.message);
                 } else if (resp.code === 1) {
                   machine.editFeatureDesc = []
+                  machine.editNeedFix = []
                   _this.nowEditMachine = machine
                   _this.initFeatureDesc(machine)
+                  _this.initEditNeedFix(machine)
                   _this.numberInput = ""
                   _this.dialogVisible = true
                 }
@@ -306,15 +311,38 @@ export default {
         })
       }
     },
+    initEditNeedFix(data) {
+      let length = Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['qualityInfos']).length
+      if (data.needFix === null) {
+        data.editNeedFix = []
+        Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['qualityInfos']).forEach(item => {
+          data.editNeedFix.push([])
+        })
+      } else {
+        let temp = data.needFix.split(",")
+        data.editNeedFix = []
+        temp.forEach(item => {
+          if (item === "") {
+            data.editNeedFix.push([]);
+          } else {
+            data.editNeedFix.push([item]);
+          }
+        })
+        for (let i = data.editNeedFix.length; i < length; i++) {
+          data.editNeedFix.push([]);
+        }
+      }
+      return true
+    },
     initFeatureDesc(data) {
       let length = Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['functionInfos']).length
-      if (data.needFix === null) {
+      if (data.featureDesc === null) {
         data.editFeatureDesc = []
         Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['functionInfos']).forEach(item => {
           data.editFeatureDesc.push([])
         })
       } else {
-        let temp = data.needFix.split(",")
+        let temp = data.featureDesc.split(",")
         data.editFeatureDesc = []
         temp.forEach(item => {
           if (item === "") {
@@ -330,13 +358,17 @@ export default {
       return true
     },
     submit() {
+      let temp = JSON.parse(JSON.stringify(this.nowEditMachine))
+      temp.needFix = temp.editNeedFix.toString()
+      if (temp.needFix.replaceAll(',', '') === '') {
+        this.$message.error("你没有选择维修项!!!")
+        return
+      }
       this.$confirm('是否确定要提交', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        let temp = JSON.parse(JSON.stringify(this.nowEditMachine))
-        temp.needFix = temp.editFeatureDesc.toString()
         modifyFixItem(temp).then(resp => {
           if (resp.data.code === 200) {
             this.$message.success("提交成功");
@@ -357,11 +389,14 @@ export default {
       });
     },
     detail(row) {
-      getMachine(1, 10, {"number": row.number}).then(resp => {
+      getMachine(1, 10, {"id": row.machineId}).then(resp => {
         this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
-        getMachineTrace({"number": row.number}).then(resp => {
+        getMachineTrace({"machineId": row.machineId}).then(resp => {
           this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
-          this.showDetail.value = true
+          getMachineDetection({"machineId": row.machineId}).then(resp => {
+            this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+            this.showDetail.value = true
+          })
         })
       })
     }

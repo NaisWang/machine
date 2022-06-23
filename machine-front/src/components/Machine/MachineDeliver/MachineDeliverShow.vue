@@ -202,11 +202,12 @@
 
         <el-form-item label="接收人">
           <el-select v-model="newDeliverReceiptInfo.receiveEmpIds" multiple placeholder="请选择">
+            <el-option label='全选' value='全选' @click.native='selectAllEmpIds'></el-option>
             <el-option
                 v-for="item in canSelectReceiveEmpIds"
                 :key="item"
                 :label="$store.state.employeeNameCorr[item]"
-                :value="item">
+                :value="item+''">
             </el-option>
           </el-select>
         </el-form-item>
@@ -284,7 +285,11 @@ export default {
         // 销退入库
         8: [10],
         // 送外修
-        13: [13]
+        13: [13],
+        // 退回返修
+        14: [10],
+        // 返修
+        15: [6]
       },
       deliverTypeLaunchCorr: {
         // 转交单类型id - 能发起该转交单的角色id
@@ -303,7 +308,7 @@ export default {
         // 销售
         9: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
         // 维修
-        10: [1, 4, 5, 6, 8, 10, 11],
+        10: [4, 11],
         //退回
         11: [1, 2, 3, 8],
         //库存入库
@@ -313,7 +318,11 @@ export default {
         // 销退入库
         8: [10, 11],
         //送外修
-        13: [6]
+        13: [6],
+        // 退回返修
+        14: [1, 2, 3, 8],
+        // 返修
+        15: [4, 11]
       },
       //targetStorageLocationId: null,
       canSelectReceiveEmpIds: [],
@@ -371,7 +380,7 @@ export default {
       this.initAllOrderInfo();
     },
     orderDetail(row) {
-      this.$emit('func', 1, row.deliverReceiptId, row.enableEdit, row.operateEmpId)
+      this.$emit('func', 1, row.deliverReceiptId, row.enableEdit, row.operateEmpId, row.deliverIntentionId)
     },
     addReceipt() {
       this.addReceiptDialogVisible = true
@@ -478,6 +487,12 @@ export default {
       //    }
       //  })
       //}
+    },
+    selectAllEmpIds() {
+      this.newDeliverReceiptInfo.receiveEmpIds = []
+      this.canSelectReceiveEmpIds.forEach(item => {
+        this.newDeliverReceiptInfo.receiveEmpIds.push(item + '');
+      })
     },
     //receiveEmpChange() {
     //  if (this.newDeliverReceiptInfo.receiveEmpIds.length !== 0) {

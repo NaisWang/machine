@@ -68,7 +68,8 @@
     </div>
 
     <MachineShowDetailVertical v-if="showDetail.value" :machine="showDetailMachine"
-                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
   </div>
 </template>
 
@@ -78,6 +79,7 @@ import {getMachine} from "../../api/machineApi";
 import {addMachineRecall, getMachineRecall} from "../../api/machineRecall";
 import MachineShowDetailVertical from "../../components/Machine/MachineShowDetailVertical.vue";
 import {getMachineTrace} from "../../api/machineTraceApi";
+import {getMachineDetection} from "../../api/machineDetection";
 
 export default {
   name: "机器被召回",
@@ -85,6 +87,7 @@ export default {
     return {
       showDetail: {"value": false},
       showMachineTrace: {},
+      showMachineDetection: {},
       scanMachines: [],
       showDetailMachine: {},
       machines: [],
@@ -223,11 +226,14 @@ export default {
       });
     },
     detail(row) {
-      getMachine(1, 10, {"number": row.number}).then(resp => {
+      getMachine(1, 10, {"id": row.machineId}).then(resp => {
         this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
-        getMachineTrace({"number": row.number}).then(resp => {
+        getMachineTrace({"machineId": row.machineId}).then(resp => {
           this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
-          this.showDetail.value = true
+          getMachineDetection({"machineId": row.machineId}).then(resp => {
+            this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+            this.showDetail.value = true
+          })
         })
       })
     },

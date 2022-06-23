@@ -37,6 +37,9 @@ public class StorageLocation implements Serializable {
 	@ApiModelProperty(value = "库位名字")
 	private String name;
 
+	@ApiModelProperty(value = "操作人ids")
+	private String operateEmpIds;
+
 	@ApiModelProperty(value = "子库数")
 	@TableField(exist = false)
 	private Integer subStorageSum;

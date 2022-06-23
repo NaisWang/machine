@@ -3,13 +3,7 @@ import qs from 'qs'
 
 let BASE_URL = '/statistics'
 
-export function getStatistics(id) {
-  return myAxios({
-    url: BASE_URL + '/?id=' + id,
-    method: 'get'
-  })
-}
-
+// 获取所有数据
 export function getAllStatistics(empIds, statusIds, dateScope) {
   return myAxios({
     url: BASE_URL + '/all',
@@ -25,3 +19,10 @@ export function getAllStatistics(empIds, statusIds, dateScope) {
   })
 }
 
+// 获取登录者的数据
+export function getOneStatistics() {
+  return myAxios({
+    url: BASE_URL + '/one',
+    method: 'get',
+  })
+}

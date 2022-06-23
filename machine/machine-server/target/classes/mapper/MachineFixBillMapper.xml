@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.MachineFixBillMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.MachineFixBill">
+    <id column="id" property="id"/>
+    <result column="machine_id" property="machineId"/>
+    <result column="machine_number" property="machineNumber"/>
+    <result column="fix_price" property="fixPrice"/>
+    <result column="reparation" property="reparation"/>
+    <result column="time" property="time"/>
+    <result column="operate_emp_id" property="operateEmpId"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id
+    , machine_id, machine_number, fix_price, reparation, time, operate_emp_id
+  </sql>
+  <!--获取维修账单-->
+  <select id="getMachineFixBill" resultType="com.example.server.pojo.MachineFixBill">
+    select *
+    from t_machine_fix_bill
+  </select>
+
+</mapper>

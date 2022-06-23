@@ -6,9 +6,7 @@ import {getDeliverIntention} from "../api/deliverIntentionApi";
 import {getStorageLocation} from "../api/storageLocationApi";
 import {getRole} from "../api/roleApi";
 import {getEmpRole} from "../api/empRoleApi";
-import {getEmpStorageLocationCorr, getStorageLocationIdToEmpIdsCorr} from "../api/employeeApi";
 import {getSubStorageLocation} from "../api/subStorageLocationApi";
-import ro from "element-ui/src/locale/lang/ro";
 
 export function initialStoreInformation(store) {
   store.commit('initUserId', JSON.parse(window.sessionStorage.getItem('user'))['id'])
@@ -55,7 +53,9 @@ export function initialStoreInformation(store) {
 
   initRolesCorr(store).then(() => {
     initRoleIdToEmpIds(store).then(() => {
-      initSubStorageLocationToNameAndToEmpIdsAndToGateEmpId(store).then()
+      initSubStorageLocationToNameAndToEmpIdsAndToGateEmpId(store).then(() => {
+        initStorageLocation(store);
+      })
     })
   })
 }
@@ -68,19 +68,22 @@ export function judgeIsUpdate(store) {
   return false
 }
 
-//export function initStorageLocation(store) {
-//  getStorageLocation().then(resp => {
-//    let storageLocationCorr = {}
-//    let data = resp.data.obj
-//    data.forEach(item => {
-//      storageLocationCorr[item['id']] = item['name']
-//    })
-//    store.commit('initStorageLocationCorr', storageLocationCorr);
-//  })
-//}
+export function initStorageLocation(store) {
+  let storageLocationIdToEmpIds = {}
+
+  getStorageLocation().then(resp => {
+    let data = resp.data.obj;
+    data.forEach(item => {
+      storageLocationIdToEmpIds[item['id']] = item['operateEmpIds'] === null ? [] : item['operateEmpIds'].split(',');
+    })
+    store.commit('initStorageLocationIdToEmpIdsCorr', storageLocationIdToEmpIds);
+  })
+
+}
 
 export function initSubStorageLocationToNameAndToEmpIdsAndToGateEmpId(store) {
   return getSubStorageLocation().then(resp => {
+    let subStorageLocationIdToParentStorageLocationId = {}
     let subStorageLocationToNameCorr = {}
 
     let subStorageLocationIdToGateEmpIdCorr = {}
@@ -89,6 +92,8 @@ export function initSubStorageLocationToNameAndToEmpIdsAndToGateEmpId(store) {
 
     let data = resp.data.obj
     data.forEach(item => {
+      subStorageLocationIdToParentStorageLocationId[item['id']] = item['parentStorageLocationId']
+
       subStorageLocationToNameCorr[item['id']] = item['name']
       subStorageLocationIdToGateEmpIdCorr[item['id']] = item['gateEmpId']
 
@@ -110,11 +115,11 @@ export function initSubStorageLocationToNameAndToEmpIdsAndToGateEmpId(store) {
         })
       }
 
-
     })
     store.commit('initSubStorageLocationIdToNameCorr', subStorageLocationToNameCorr);
     store.commit('initSubStorageLocationIdToGateEmpIdCorr', subStorageLocationIdToGateEmpIdCorr);
     store.commit('initEmpIdToStorageLocationIdsForGateCorr', empIdToStorageLocationIdsForGateCorr);
+    store.commit('initSubStorageLocationIdToParentStorageLocationIdCorr', subStorageLocationIdToParentStorageLocationId);
   })
 }
 

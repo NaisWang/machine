@@ -39,6 +39,10 @@ public class MachineTrace implements Serializable {
 	@TableId(value = "id", type = IdType.AUTO)
 	private Integer id;
 
+	@ApiModelProperty(value = "机器id")
+	@TableField("machine_id")
+	private Integer machineId;
+
 	@ApiModelProperty(value = "物品编码")
 	private String number;
 
@@ -73,6 +77,12 @@ public class MachineTrace implements Serializable {
 	@ApiModelProperty(value = "备注")
 	private String comment;
 
+	@ApiModelProperty(value = "成色检测备注")
+	private String qualityComment;
+
+	@ApiModelProperty(value = "功能检测备注")
+	private String featureComment;
+
 	@ApiModelProperty(value = "库位")
 	@TableField("storage_location_id")
 	private Integer storageLocationId;
@@ -86,7 +96,8 @@ public class MachineTrace implements Serializable {
 	private Integer isRecall;
 
 
-	public MachineTrace(String number, Integer statusId, Integer receiptId, LocalDateTime time, Integer operateEmpId, String comment, Integer storageLocationId, Integer isUpShelf) {
+	public MachineTrace(Integer machineId, String number, Integer statusId, Integer receiptId, LocalDateTime time, Integer operateEmpId, String comment, Integer storageLocationId, Integer isUpShelf) {
+		this.machineId = machineId;
 		this.number = number;
 		this.statusId = statusId;
 		this.receiptId = receiptId;

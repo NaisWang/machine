@@ -59,23 +59,25 @@ public class MachineRecallController {
 	@Transactional
 	public RespBean addMachineRecall(@RequestBody MachineRecall[] machineRecalls, Authentication authentication) {
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();
-		List<String> numbers = new ArrayList<>();
+
+		List<Integer> machineIds = new ArrayList<>();
 
 		try {
 			LocalDateTime now = LocalDateTime.now();
 			List<MachineTrace> machineTraceList = new ArrayList<>();
 
 			for (MachineRecall machineRecall : machineRecalls) {
-				numbers.add(machineRecall.getNumber());
+
+				machineIds.add(machineRecall.getMachineId());
 				machineRecall.setNowOperateEmpId(empId);
 				machineRecall.setRecallTime(now);
 
-				MachineTrace machineTrace = new MachineTrace(machineRecall.getNumber(), machineRecall.getStatusId(), -1, now, machineRecall.getNowOperateEmpId(), "", machineRecall.getStorageLocationId(), machineRecall.getIsUpShelf());
+				MachineTrace machineTrace = new MachineTrace(machineRecall.getMachineId(), machineRecall.getNumber(), machineRecall.getStatusId(), -1, now, machineRecall.getNowOperateEmpId(), "", machineRecall.getStorageLocationId(), machineRecall.getIsUpShelf());
 				machineTrace.setIsRecall(1);
 				machineTraceList.add(machineTrace);
 			}
 
-			if (machineService.update(new Machine(), new UpdateWrapper<Machine>().in("number", numbers).set("operate_emp_id", empId))) {
+			if (machineService.update(new Machine(), new UpdateWrapper<Machine>().in("id", machineIds).set("operate_emp_id", empId))) {
 				if (machineRecallService.saveBatch(Arrays.asList(machineRecalls))) {
 					if (machineTraceService.saveBatch(machineTraceList)) {
 						return RespBean.success("添加成功");

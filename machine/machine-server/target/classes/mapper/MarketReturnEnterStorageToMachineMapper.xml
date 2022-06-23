@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.MarketReturnEnterStorageToMachineMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.MarketReturnEnterStorageToMachine">
+    <id column="id" property="id"/>
+    <result column="receipt_id" property="receiptId"/>
+    <result column="machine_number" property="machineNumber"/>
+    <result column="machine_sku" property="machineSku"/>
+    <result column="machine_id" property="machineId"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id
+    , receipt_id, machine_number, machine_sku, machine_id
+  </sql>
+  <!--获取消退入库中的机器-->
+  <select id="getMarketReturnEnterStorageReceipt"
+          resultType="com.example.server.pojo.MarketReturnEnterStorageToMachine">
+    select *
+    from t_market_return_enter_storage_to_machine
+    where receipt_id = #{receiptId}
+  </select>
+
+</mapper>

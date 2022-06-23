@@ -18,7 +18,9 @@ export function addStorageLocation(storageLocation) {
   })
 }
 
-export function modifyStorageLocation(storageLocation) {
+export function modifyStorageLocation(data) {
+  let storageLocation = JSON.parse(JSON.stringify(data));
+  storageLocation.operateEmpIds = storageLocation.editOperateEmpIds.length === 0 ? null : storageLocation.editOperateEmpIds.toString();
   return myAxios({
     url: BASE_URL + '/',
     method: 'put',

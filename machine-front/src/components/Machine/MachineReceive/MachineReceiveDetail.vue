@@ -18,7 +18,6 @@
 
 
     <div>
-
       <el-table
           :data="machines"
           style="width: 100%">
@@ -156,7 +155,8 @@
     </el-dialog>
 
     <MachineShowDetailVertical v-if="showDetail.value" :table-name="tableName" :machine="showDetailMachine"
-                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
   </div>
 </template>
 
@@ -173,6 +173,7 @@ import MachineShowDetail from "../MachineShowDetail.vue";
 import {createAddReleaseEnterStorageReceipt} from "../../../api/enterStorageApi";
 import {createAddReleaseMarketReturnEnterStorageReceipt} from "../../../api/marketReturnEnterStorageApi";
 import {createAddReleaseUpShelfEnterStorageReceipt} from "../../../api/upShelfEnterStorageApi";
+import {getMachineDetection} from "../../../api/machineDetection";
 
 export default {
   name: "MachineReceiveDetail",
@@ -181,6 +182,7 @@ export default {
       showDetail: {"value": false},
       showDetailMachine: {},
       showMachineTrace: {},
+      showMachineDetection: {},
       searchMachine: {},
       machines: [],
       currentPage: 1,
@@ -242,11 +244,14 @@ export default {
       this.initDeliverMachines();
     },
     detail(row) {
-      getMachine(1, 10, {"number": row.machineNumber}).then(resp => {
+      getMachine(1, 10, {"number": row.machineId}).then(resp => {
         this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
-        getMachineTrace({"number": row.machineNumber}).then(resp => {
+        getMachineTrace({"number": row.machineId}).then(resp => {
           this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
-          this.showDetail.value = true
+          getMachineDetection({"machineId": row.machineId}).then(resp => {
+            this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+            this.showDetail.value = true
+          })
         })
       })
     },

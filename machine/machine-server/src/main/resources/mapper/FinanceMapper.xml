@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.FinanceMapper">
+
+  <!-- 获取财务情况 -->
+  <select id="getFinance" resultType="com.example.server.pojo.Finance">
+    select (select sum(tm.purchase_price) as 'purchase_price'
+            from t_purchase_order_receipt_to_machine as a
+                   left join t_machine as tm on a.machine_id = tm.id)
+      as 'purchase_price', (select sum(purchase_price) as 'purchase_return_price'
+                            from t_machine
+                            where purchase_return_receipt_id != 0) as 'purchase_return_price'
+         , (
+    select sum(a.sell_price) as 'sell_price'
+    from t_market_order_receipt_to_machine as a) as 'sell_price',
+      (
+    select sum(tm.refund_price) as 'refund_price'
+    from t_market_return_receipt_to_machine as tm) as 'refund_price',
+      (
+    select sum(tm.fix_price) -sum(tm.reparation) as 'fix_price'
+    from t_machine_fix_bill as tm) as 'fix_price'
+  </select>
+
+</mapper>

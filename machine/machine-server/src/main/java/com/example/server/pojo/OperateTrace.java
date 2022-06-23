@@ -43,6 +43,10 @@ public class OperateTrace implements Serializable {
 	@NonNull
 	private String number;
 
+	@ApiModelProperty(value = "机器id")
+	@NonNull
+	private Integer machineId;
+
 	@ApiModelProperty(value = "机器物品编码")
 	@NonNull
 	private String sku;

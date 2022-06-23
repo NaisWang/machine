@@ -3,25 +3,21 @@ package com.example.server.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.example.server.pojo.MarketReturnReceiptToMachine;
+import com.example.server.service.impl.MarketReturnReceiptToMachineServiceImpl;
 import com.example.server.pojo.*;
 import com.example.server.service.impl.*;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
-import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -43,6 +39,8 @@ public class MarketReturnReceiptController {
 	private LogServiceImpl logService;
 	@Autowired
 	private MachineTraceServiceImpl machineTraceService;
+	@Autowired
+	private MarketReturnReceiptToMachineServiceImpl marketReturnReceiptToMachineService;
 
 
 	@ApiOperation("获取所有销售退货订单")
@@ -154,6 +152,7 @@ public class MarketReturnReceiptController {
 
 			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("id", ids));
 			List<MachineTrace> machineTraceList = new ArrayList<>();
+			List<MarketReturnReceiptToMachine> marketReturnReceiptToMachineList = new ArrayList<>();
 
 			for (Machine machine : machines) {
 				if (machine.getStatusId() != 13) {
@@ -163,13 +162,17 @@ public class MarketReturnReceiptController {
 				machine.setStatusId(27);
 				machine.setMarketReturnReceiptId(receiptId);
 				machine.setOperateEmpId(empId);
-				machineTraceList.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+				machineTraceList.add(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+
+				marketReturnReceiptToMachineList.add(new MarketReturnReceiptToMachine(null, receiptId, machine.getId(), machine.getNumber(), machine.getSku(), machine.getComment(), empId, now, machine.getSalePrice()));
 			}
 
 			if (machineService.updateBatchById(machines)) {
 				if (machineTraceService.saveBatch(machineTraceList)) {
-					logService.save(new Log(empId, "往销售退货单中添加机器", "", LocalDateTime.now(), 0));
-					return RespBean.success("添加成功");
+					if (marketReturnReceiptToMachineService.saveBatch(marketReturnReceiptToMachineList)) {
+						logService.save(new Log(empId, "往销售退货单中添加机器", "", LocalDateTime.now(), 0));
+						return RespBean.success("添加成功");
+					}
 				}
 			}
 			logService.save(new Log(empId, "往销售退货单中添加机器", "", LocalDateTime.now(), 1));
@@ -184,15 +187,12 @@ public class MarketReturnReceiptController {
 	@ApiOperation("删除销售退货订单中的机器")
 	@DeleteMapping("/deleteMachine")
 	@Transactional
-	public RespBean deleteMachine(Integer id, Authentication authentication) {
+	public RespBean deleteMachine(Integer id, Integer receiptId, Authentication authentication) {
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();
 		LocalDateTime now = LocalDateTime.now();
 		Machine machine = machineService.getById(id);
-		MarketReturnReceipt marketReturnReceipt = marketReturnReceiptService.getById(machine.getMarketOrderId());
+		MarketReturnReceipt marketReturnReceipt = marketReturnReceiptService.getById(receiptId);
 		try {
-			if (!empId.equals(marketReturnReceipt.getOperateEmpId())) {
-				return RespBean.error("你没有权限操作该单据");
-			}
 			if (marketReturnReceipt.getIsRelease() == 1) {
 				return RespBean.error("销售退货单已经提交");
 			}
@@ -201,9 +201,11 @@ public class MarketReturnReceiptController {
 			machine.setMarketReturnReceiptId(0);
 
 			if (machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
-					logService.save(new Log(empId, "删除销售退货单中添加机器", "", LocalDateTime.now(), 0));
-					return RespBean.success("删除成功");
+				if (machineTraceService.save(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
+					if (marketReturnReceiptToMachineService.remove(new QueryWrapper<MarketReturnReceiptToMachine>().eq("receipt_id", marketReturnReceipt.getMarketReturnOrder()).eq("machine_id", id))) {
+						logService.save(new Log(empId, "删除销售退货单中添加机器", "", LocalDateTime.now(), 0));
+						return RespBean.success("删除成功");
+					}
 				}
 			}
 			logService.save(new Log(empId, "删除销售退货单中添加机器", "", LocalDateTime.now(), 1));
@@ -242,7 +244,7 @@ public class MarketReturnReceiptController {
 				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("market_return_receipt_id", receiptId).set("status_id", 14))) {
 					List<MachineTrace> machineTraces = new ArrayList<>();
 					for (Machine machine : machines) {
-						machineTraces.add(new MachineTrace(machine.getNumber(), 14, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+						machineTraces.add(new MachineTrace(machine.getId(), machine.getNumber(), 14, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 					}
 					if (machineTraceService.saveBatch(machineTraces)) {
 						logService.save(new Log(empId, "发布销售退货单", "销售退货单号为：" + receiptId, now, 0));
@@ -282,13 +284,15 @@ public class MarketReturnReceiptController {
 			for (Machine machine : machines) {
 				machine.setStatusId(machine.getPreviousStatusId());
 				machine.setMarketReturnReceiptId(0);
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+				machineTraces.add(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 			if (marketReturnReceiptService.removeById(receiptId)) {
 				if (machines.size() == 0 || machineService.updateBatchById(machines)) {
 					if (machineTraceService.saveBatch(machineTraces)) {
-						logService.save(new Log(empId, "删除销售退货单", "销售退货单号为：" + receiptId, now, 0));
-						return RespBean.success("删除成功");
+						if (marketReturnReceiptToMachineService.remove(new QueryWrapper<MarketReturnReceiptToMachine>().eq("receipt_id", receiptId))) {
+							logService.save(new Log(empId, "删除销售退货单", "销售退货单号为：" + receiptId, now, 0));
+							return RespBean.success("删除成功");
+						}
 					}
 				}
 			}

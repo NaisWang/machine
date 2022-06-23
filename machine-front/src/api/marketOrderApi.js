@@ -4,7 +4,7 @@ import qs from 'qs'
 const BASE_URL = '/machine/market/order'
 
 /**
- *获取/搜索采购单中的所有机器信息, 分页
+ *获取/搜索销售单中的所有机器信息, 分页
  */
 export function getMarketOrderReceipt(currentPage, size, marketOrder, bidDateScope) {
   let test = Object.assign(marketOrder, {currentPage: currentPage, size: size, bidDateScope: bidDateScope})
@@ -17,6 +17,7 @@ export function getMarketOrderReceipt(currentPage, size, marketOrder, bidDateSco
     }
   })
 }
+
 
 //// 添加采购退货信息
 //export function createMarketOrderReceipt(marketOrderReceipt, machine) {
@@ -50,18 +51,18 @@ export function modifyMarketOrderReceipt(receipt) {
 }
 
 // 往销售单中添加机器
-export function addMachineToMarketOrderReceipt(ids, receiptId) {
+export function addMachineToMarketOrderReceipt(ids, receiptId, sellPrice) {
   return myAxios({
-    url: BASE_URL + '/addMachine?receiptId=' + receiptId,
+    url: BASE_URL + '/addMachine?receiptId=' + receiptId + '&sellPrice=' + sellPrice,
     method: 'put',
     data: ids
   })
 }
 
 // 删除销售订单订单中的机器
-export function deleteMachineForMarketOrderReceipt(id) {
+export function deleteMachineForMarketOrderReceipt(id, receiptId) {
   return myAxios({
-    url: BASE_URL + '/deleteMachine?id=' + id,
+    url: BASE_URL + '/deleteMachine?id=' + id + '&receiptId=' + receiptId,
     method: 'delete'
   })
 }

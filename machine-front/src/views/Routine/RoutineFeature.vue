@@ -63,6 +63,15 @@
           width="170">
       </el-table-column>
 
+      <el-table-column
+          prop="operateEmpId"
+          label="操作人"
+          width="170">
+        <template #default="scope">
+          {{ $store.state.employeeNameCorr[scope.row.operateEmpId] }}
+        </template>
+      </el-table-column>
+
       <el-table-column label="操作" fixed="right">
         <template #default="scope">
           <el-button
@@ -151,7 +160,7 @@
       <h2 style="color: #409EFF">其他信息设置：</h2>
       <el-form label-width="100px">
         <el-form-item label="备注" style="margin: 0">
-          <el-input v-model="nowEditMachine.editComment2"></el-input>
+          <el-input v-model="nowEditMachine.featureComment"></el-input>
         </el-form-item>
         <el-form-item label="拍机堂条码" style="margin: 0;">
           <el-input v-model="nowEditMachine.paijiBarcode"></el-input>
@@ -165,7 +174,8 @@
     </el-dialog>
 
     <MachineShowDetailVertical v-if="showDetail.value" :machine="showDetailMachine"
-                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
   </div>
 </template>
 
@@ -177,6 +187,7 @@ import {dealMachineJudge} from "../../utils/dealMachineJudge";
 import {getOperateTrace} from "../../api/operateTraceApi";
 import {getMachineTrace} from "../../api/machineTraceApi";
 import MachineShowDetailVertical from "../../components/Machine/MachineShowDetailVertical.vue";
+import {getMachineDetection} from "../../api/machineDetection";
 
 export default {
   name: "功能检测",
@@ -185,6 +196,7 @@ export default {
       showDetail: {"value": false},
       showDetailMachine: {},
       showMachineTrace: {},
+      showMachineDetection: {},
       allOperateMachines: [],
       test: null,
       numberInput: "",
@@ -354,11 +366,14 @@ export default {
       });
     },
     detail(row) {
-      getMachine(1, 10, {"number": row.number}).then(resp => {
+      getMachine(1, 10, {"id": row.machineId}).then(resp => {
         this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
-        getMachineTrace({"number": row.number}).then(resp => {
+        getMachineTrace({"machineId": row.machineId}).then(resp => {
           this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
-          this.showDetail.value = true
+          getMachineDetection({"machineId": row.machineId}).then(resp => {
+            this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+            this.showDetail.value = true
+          })
         })
       })
     }

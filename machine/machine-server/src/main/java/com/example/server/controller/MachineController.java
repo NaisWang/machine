@@ -4,13 +4,11 @@ package com.example.server.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.server.pojo.*;
-import com.example.server.service.impl.LogServiceImpl;
-import com.example.server.service.impl.MachineServiceImpl;
-import com.example.server.service.impl.MachineTraceServiceImpl;
-import com.example.server.service.impl.OperateTraceServiceImpl;
+import com.example.server.service.impl.*;
 import com.example.server.utils.JudgeCompleteDeliverIntention;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
+import com.sun.tools.jconsole.JConsoleContext;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -45,6 +43,10 @@ public class MachineController {
 	private MachineTraceServiceImpl machineTraceService;
 	@Autowired
 	private OperateTraceServiceImpl operateTraceService;
+	@Autowired
+	private MachineDetectionServiceImpl machineDetectionService;
+	@Autowired
+	private MachineFixBillServiceImpl machineFixBillService;
 
 
 	@ApiOperation("获取机器信息")
@@ -70,6 +72,19 @@ public class MachineController {
 		throw new RuntimeException("修改失败");
 	}
 
+	/**
+	 * 判断一个机器是否修好
+	 * 返回true，则说明维修成功
+	 */
+	private Boolean judgeFixSuccess(Machine machine) {
+		List<String> tempFeatureDesc = Arrays.asList(machine.getFeatureDesc().split(","));
+		List<String> featureDesc = new ArrayList<>(tempFeatureDesc);
+		String[] notFixed = machine.getNotFixed() == null ? new String[]{} : machine.getNotFixed().split(",");
+		for (String str : notFixed) {
+			featureDesc.remove(str);
+		}
+		return featureDesc.size() == 0;
+	}
 
 	@ApiOperation("更改机器成色检测描述")
 	@PutMapping("/modify/quality")
@@ -85,40 +100,54 @@ public class MachineController {
 			Machine machine1 = machineService.getById(machine.getId());
 			Integer nowStatusId = machine1.getStatusId();
 
+			addMachine.setOperateDate(now);
+			addMachine.setQualityDesc(machine.getQualityDesc());
+			addMachine.setIsUpShelf(machine.getIsUpShelf());
+			addMachine.setQualityComment(machine.getQualityComment());
+
 			if (nowStatusId == 10) {
 				addMachine.setStatusId(10);
-			} else if (nowStatusId == 9) {
-				addMachine.setStatusId(10);
+			} else if (nowStatusId == 9 || nowStatusId == 38) {
+				if (machine1.getFixTimes() != 0) {
+					if (judgeFixSuccess(machine1)) {
+						addMachine.setStatusId(10);
+						machineFixBillService.save(new MachineFixBill(null, machine1.getId(), machine1.getNumber(), machine1.getSku(), machine1.getFixPrice(), 0f, now, empId, "", 0));
+					} else {
+						addMachine.setStatusId(38);
+					}
+				} else {
+					addMachine.setStatusId(10);
+				}
 			} else {
 				addMachine.setStatusId(8);
 			}
 
-			addMachine.setOperateDate(now);
-			addMachine.setQualityDesc(machine.getQualityDesc());
-			addMachine.setIsUpShelf(machine.getIsUpShelf());
-			addMachine.setComment(machine.getComment());
 
 			if (machineService.update(addMachine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				MachineTrace machineTrace = new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId(), addMachine.getIsUpShelf());
+				MachineTrace machineTrace = new MachineTrace(machine.getId(), machine.getNumber(), addMachine.getStatusId(), -1, now, empId, machine1.getComment(), machine.getStorageLocationId(), addMachine.getIsUpShelf());
+				machineTrace.setFeatureComment(machine1.getFeatureComment());
+				machineTrace.setQualityComment(addMachine.getQualityComment());
 				if (machineTraceService.save(machineTrace)) {
-					if (operateTraceService.save(new OperateTrace(machine.getNumber(), machine1.getSku(), 1, nowStatusId, addMachine.getStatusId(), now, empId, machine.getStorageLocationId()))) {
-						List<Machine> machines = new ArrayList<>();
-						machines.add(machine1);
-						if (addMachine.getStatusId() == 10) {
-							if (!JudgeCompleteDeliverIntention.judgeIsComplete(machines, 3)) {
+					if (machineDetectionService.save(new MachineDetection(null, machine.getId(), addMachine.getStatusId(), machine.getNumber(), machine1.getQualityDesc(), machine1.getFeatureDesc(), machine1.getNeedFix(), empId, now, machine1.getComment(), addMachine.getQualityComment(), machine1.getFeatureComment(), machine1.getNeedFixComment()))) {
+						if (operateTraceService.save(new OperateTrace(machine.getNumber(), machine.getId(), machine1.getSku(), 1, nowStatusId, addMachine.getStatusId(), now, empId, machine.getStorageLocationId()))) {
+							List<Machine> machines = new ArrayList<>();
+							machines.add(machine1);
+							if (addMachine.getStatusId() == 10) {
+								if (!JudgeCompleteDeliverIntention.judgeIsComplete(machines, 3)) {
+									logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 0));
+									throw new RuntimeException("修改失败");
+								}
+							}
+							if (!JudgeCompleteDeliverIntention.judgeIsComplete(machines, 12)) {
 								logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 0));
 								throw new RuntimeException("修改失败");
 							}
+							if (!JudgeCompleteDeliverIntention.judgeIsComplete(machines, 4)) {
+								logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 0));
+								throw new RuntimeException("修改失败");
+							}
+							return RespBean.success("修改成功", addMachine);
 						}
-						if (!JudgeCompleteDeliverIntention.judgeIsComplete(machines, 12)) {
-							logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 0));
-							throw new RuntimeException("修改失败");
-						}
-						if (!JudgeCompleteDeliverIntention.judgeIsComplete(machines, 4)) {
-							logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 0));
-							throw new RuntimeException("修改失败");
-						}
-						return RespBean.success("修改成功", addMachine);
 					}
 				}
 			}
@@ -146,32 +175,49 @@ public class MachineController {
 			Machine machine1 = machineService.getById(machine.getId());
 			Integer nowStatusId = machine1.getStatusId();
 
+			addMachine.setOperateDate(now);
+			addMachine.setFeatureDesc(machine.getFeatureDesc());
+			addMachine.setFeatureComment(machine.getFeatureComment());
+			addMachine.setPaijiBarcode(machine.getPaijiBarcode());
+
+
 			if (nowStatusId == 10) {
 				addMachine.setStatusId(10);
-			} else if (nowStatusId == 8) {
-				addMachine.setStatusId(10);
+			} else if (nowStatusId == 8 || nowStatusId == 38) {
+				if (machine1.getFixTimes() != 0) {
+					addMachine.setNotFixed(machine1.getNotFixed());
+					if (judgeFixSuccess(addMachine)) {
+						addMachine.setStatusId(10);
+						machineFixBillService.save(new MachineFixBill(null, machine1.getId(), machine1.getNumber(), machine1.getSku(), machine1.getFixPrice(), 0f, now, empId, "", 0));
+					} else {
+						addMachine.setStatusId(38);
+					}
+				} else {
+					addMachine.setStatusId(10);
+				}
 			} else {
 				addMachine.setStatusId(9);
 			}
 
-			addMachine.setOperateDate(now);
-			addMachine.setFeatureDesc(machine.getFeatureDesc());
-			addMachine.setComment(machine.getComment());
-			addMachine.setPaijiBarcode(machine.getPaijiBarcode());
 			if (machineService.update(addMachine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId(), machine1.getIsUpShelf()))) {
-					if (operateTraceService.save(new OperateTrace(machine.getNumber(), machine1.getSku(), 2, nowStatusId, addMachine.getStatusId(), now, empId, machine.getStorageLocationId()))) {
-						List<Machine> machines = new ArrayList<>();
-						machines.add(machine1);
-						if (addMachine.getStatusId() == 10) {
-							if (!JudgeCompleteDeliverIntention.judgeIsComplete(machines, 3)) {
-								logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 0));
-								throw new RuntimeException("修改失败");
+				if (machineDetectionService.save(new MachineDetection(null, machine.getId(), addMachine.getStatusId(), machine1.getNumber(), machine1.getQualityDesc(), addMachine.getFeatureDesc(), machine1.getNeedFix(), empId, now, machine1.getComment(), machine1.getQualityComment(), addMachine.getFeatureComment(), machine1.getNeedFixComment()))) {
+					MachineTrace machineTrace = new MachineTrace(machine.getId(), machine.getNumber(), addMachine.getStatusId(), -1, now, empId, machine1.getComment(), machine.getStorageLocationId(), machine1.getIsUpShelf());
+					machineTrace.setFeatureComment(addMachine.getFeatureComment());
+					machineTrace.setQualityComment(machine1.getQualityComment());
+					if (machineTraceService.save(machineTrace)) {
+						if (operateTraceService.save(new OperateTrace(machine.getNumber(), machine.getId(), machine1.getSku(), 2, nowStatusId, addMachine.getStatusId(), now, empId, machine.getStorageLocationId()))) {
+							List<Machine> machines = new ArrayList<>();
+							machines.add(machine1);
+							if (addMachine.getStatusId() == 10) {
+								if (!JudgeCompleteDeliverIntention.judgeIsComplete(machines, 3)) {
+									logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 0));
+									throw new RuntimeException("修改失败");
+								}
 							}
-						}
-						if (JudgeCompleteDeliverIntention.judgeIsComplete(machines, 5)) {
-							logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 0));
-							return RespBean.success("修改成功", addMachine);
+							if (JudgeCompleteDeliverIntention.judgeIsComplete(machines, 5)) {
+								logService.save(new Log(empId, "更改机器成色检测描述", "机器id为" + machine.getId() + "机器成色检测设为" + machine.getQualityDesc(), now, 0));
+								return RespBean.success("修改成功", addMachine);
+							}
 						}
 					}
 				}
@@ -192,18 +238,24 @@ public class MachineController {
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();
 		LocalDateTime now = LocalDateTime.now();
 
+		Machine machine1 = machineService.getById(machine.getId());
+
 		try {
 			Machine addMachine = new Machine();
+
 			addMachine.setOperateEmpId(empId);
 			addMachine.setStatusId(32);
 			addMachine.setOperateDate(now);
 			addMachine.setNeedFix(machine.getNeedFix());
 			addMachine.setComment(machine.getComment());
+
 			if (machineService.update(addMachine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
-					if (operateTraceService.save(new OperateTrace(machine.getNumber(), machine.getSku(), 4, machine.getStatusId(), 32, now, empId, machine.getStorageLocationId()))) {
-						logService.save(new Log(empId, "确定机器维修项", "机器number为" + machine.getNumber(), now, 0));
-						return RespBean.success("修改成功", addMachine);
+				if (machineDetectionService.save(new MachineDetection(null, machine.getId(), addMachine.getStatusId(), machine1.getNumber(), machine1.getQualityDesc(), machine1.getFeatureDesc(), addMachine.getNeedFix(), empId, now, machine1.getComment(), machine1.getQualityComment(), machine1.getFeatureComment(), addMachine.getComment()))) {
+					if (machineTraceService.save(new MachineTrace(machine.getId(), machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
+						if (operateTraceService.save(new OperateTrace(machine.getNumber(), machine.getId(), machine.getSku(), 4, machine.getStatusId(), 32, now, empId, machine.getStorageLocationId()))) {
+							logService.save(new Log(empId, "确定机器维修项", "机器number为" + machine.getNumber(), now, 0));
+							return RespBean.success("修改成功", addMachine);
+						}
 					}
 				}
 			}
@@ -231,18 +283,22 @@ public class MachineController {
 			addMachine.setOperateEmpId(empId);
 			if (type == 0) {
 				addMachine.setStatusId(33);
+				Machine machine1 = machineService.getById(machine.getId());
+				addMachine.setFixTimes(machine1.getFixTimes() + 1);
 			} else if (type == 1) {
 				addMachine.setStatusId(16);
 			}
+
 			addMachine.setOperateDate(now);
 			addMachine.setFixed(machine.getFixed());
 			addMachine.setNotFixed(machine.getNotFixed());
 			addMachine.setFixToBad(machine.getFixToBad());
 			addMachine.setFixPrice(machine.getFixPrice());
 			addMachine.setComment(machine.getComment());
+
 			if (machineService.update(addMachine, new UpdateWrapper<Machine>().eq("number", machine.getNumber()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
-					if (operateTraceService.save(new OperateTrace(machine.getNumber(), machine.getSku(), 5, machine.getStatusId(), addMachine.getStatusId(), now, empId, machine.getStorageLocationId()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getId(), machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
+					if (operateTraceService.save(new OperateTrace(machine.getNumber(), machine.getId(), machine.getSku(), 5, machine.getStatusId(), addMachine.getStatusId(), now, empId, machine.getStorageLocationId()))) {
 						List<Machine> machines = new ArrayList<>();
 						Machine machine1 = machineService.getById(machine.getId());
 						machines.add(machine1);
@@ -299,8 +355,8 @@ public class MachineController {
 			addMachine.setBagNumber(machine.getBagNumber());
 			addMachine.setComment(machine.getComment());
 			if (machineService.update(addMachine, new UpdateWrapper<Machine>().eq("number", machine.getNumber()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId(), machine1.getIsUpShelf()))) {
-					if (operateTraceService.save(new OperateTrace(machine.getNumber(), machine1.getSku(), 3, machine.getStatusId(), addMachine.getStatusId(), now, empId, machine.getStorageLocationId()))) {
+				if (machineTraceService.save(new MachineTrace(machine.getId(), machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId(), machine1.getIsUpShelf()))) {
+					if (operateTraceService.save(new OperateTrace(machine.getNumber(), machine.getId(), machine1.getSku(), 3, machine.getStatusId(), addMachine.getStatusId(), now, empId, machine.getStorageLocationId()))) {
 						List<Machine> machines = new ArrayList<>();
 						machines.add(machine1);
 						if (JudgeCompleteDeliverIntention.judgeIsComplete(machines, 6)) {
@@ -339,7 +395,7 @@ public class MachineController {
 				addMachine.setStatusId(machine.getStatusId());
 				addMachines.add(addMachine);
 
-				MachineTrace machineTrace = new MachineTrace(machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId(), type);
+				MachineTrace machineTrace = new MachineTrace(machine.getId(), machine.getNumber(), addMachine.getStatusId(), -1, now, empId, addMachine.getComment(), machine.getStorageLocationId(), type);
 				machineTraces.add(machineTrace);
 			}
 

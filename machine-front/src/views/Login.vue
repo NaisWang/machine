@@ -78,7 +78,7 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
+<style scoped>
 .login-box {
   width: 350px;
   margin: 120px auto;

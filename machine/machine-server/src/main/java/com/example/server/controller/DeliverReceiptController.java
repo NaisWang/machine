@@ -189,7 +189,7 @@ public class DeliverReceiptController {
 			}
 			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("number", machineNumbers));
 			for (Machine machine : machines) {
-				MachineTrace machineTrace = new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf());
+				MachineTrace machineTrace = new MachineTrace( machine.getId(),machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf());
 
 				machine.setNeedCompleteDeliverReceiptId(receiptId);
 

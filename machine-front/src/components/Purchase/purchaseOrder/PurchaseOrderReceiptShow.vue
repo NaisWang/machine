@@ -241,16 +241,26 @@
         :before-close="handleClose">
       <div
           style="border: 1px solid #409eff; border-radius: 5px; box-sizing: border-box; padding: 5px; margin: 10px 0px">
-        <el-row>
-          <el-col :span="3" style="margin-right: 10px;">
-            备注：
+        <el-form>
+          <el-form-item label="库位">
+            <el-select clearable v-model="batchEnterStorageInfo.storageLocationId"
+                       size="mini" placeholder="库位">
+              <el-option
+                  v-for="id in $store.state.empIdToStorageLocationIdsForGateCorr[$store.state.userId]"
+                  :label="$store.state.subStorageLocationIdToNameCorr[id]"
+                  :value="id + ''"
+                  :key="id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="备注">
             <el-input v-model="batchEnterStorageInfo.comment"
                       size="mini"
-                      prefix-icon="el-icon-search"
                       placeholder="备注信息"
                       clearable></el-input>
-          </el-col>
-        </el-row>
+          </el-form-item>
+        </el-form>
       </div>
 
       <span slot="footer" class="dialog-footer">
@@ -283,7 +293,7 @@
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-                              <el-button @click="dialogVisible = false">取 消</el-button>
+                              <el-button @click="addReceiptDialogVisible = false">取 消</el-button>
                               <el-button type="primary" @click="addReceiptInfo">添 加</el-button>
                             </span>
     </el-dialog>
@@ -382,11 +392,11 @@ export default {
     },
     currentChange(currentPage) {
       this.currentPage = currentPage;
-      this.initMachine();
+      this.initAllOrderInfo()
     },
     sizeChange(size) {
       this.size = size;
-      this.initMachine();
+      this.initAllOrderInfo()
     },
     doSearch() {
       this.currentPage = 1
@@ -411,7 +421,10 @@ export default {
         createEnterStorageReceiptByOneKey(this.batchEnterStorageInfo, this.purchaseOrderForOneKey).then(resp => {
           this.purchaseOrderForOneKey = null
           if (resp.data.code === 200) {
-            this.$emit('func', 0);
+            //this.$emit('func', 0);
+            this.dialogVisible = false;
+            this.purchaseOrderForOneKey = null
+            this.initAllOrderInfo();
             this.$message.success("提交成功")
             return
           }

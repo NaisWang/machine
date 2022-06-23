@@ -34,6 +34,7 @@
       a.role_ids like concat('%,', #{roleId}, ',%') or a.role_ids like concat('%,', #{roleId}) or a.role_ids = #{roleId}
     </foreach>
     )
+    order by field(`name`, '首页', '采购管理', '库存管理', '日常工作','机器管理','机器维修','销售管理', '人事管理','客户管理','系统管理')
   </select>
 
 </mapper>

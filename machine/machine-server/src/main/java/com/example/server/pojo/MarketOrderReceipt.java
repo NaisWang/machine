@@ -54,6 +54,10 @@ public class MarketOrderReceipt implements Serializable {
 	@TableField(exist = false)
 	private Integer sum;
 
+	@ApiModelProperty(value = "渠道id")
+	@TableField("channel_id")
+	private Integer channelId;
+
 	@ApiModelProperty(value = "是否发布")
 	@TableField("is_release")
 	private Integer isRelease;

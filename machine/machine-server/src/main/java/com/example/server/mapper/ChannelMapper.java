@@ -1,5 +1,7 @@
 package com.example.server.mapper;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.server.pojo.Channel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -13,4 +15,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface ChannelMapper extends BaseMapper<Channel> {
 
+	/**
+	 * 获取渠道以及金钱
+	 */
+	IPage<Channel> getChannelAndMoney(Page<Channel> page, Channel channel);
 }

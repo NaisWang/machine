@@ -17,6 +17,19 @@ export function getUpShelfEnterStorage(currentPage, size, enterStorage) {
   })
 }
 
+// 获取上架入库单据中的机器
+export function getUpShelfEnterStorageToMachine(currentPage, size, receiptId) {
+  let test = Object.assign({receiptId: receiptId}, {currentPage: currentPage, size: size})
+  return myAxios({
+    url: BASE_URL + '/machines',
+    method: 'get',
+    params: test,
+    paramsSerializer: function (params) {
+      return qs.stringify(params, {arrayFormat: 'repeat'})
+    }
+  })
+}
+
 // 添加销退入库单
 export function createUpShelfEnterStorage(enterStorage) {
   return myAxios({

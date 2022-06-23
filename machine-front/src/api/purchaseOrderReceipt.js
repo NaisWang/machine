@@ -17,6 +17,19 @@ export function getPurchaseOrderInfo(currentPage, size, purchaseOrder) {
   })
 }
 
+//获取采购单中的机器
+export function getPurchaseOrderReceiptToMachine(currentPage, size, receiptId) {
+  let test = Object.assign({receiptId: receiptId}, {currentPage: currentPage, size: size})
+  return myAxios({
+    url: BASE_URL + '/machines',
+    method: 'get',
+    params: test,
+    paramsSerializer: function (params) {
+      return qs.stringify(params, {arrayFormat: 'repeat'})
+    }
+  })
+}
+
 // 获取采购单最大id
 export function getPurchaseOrderReceiptMaxId() {
   return myAxios({

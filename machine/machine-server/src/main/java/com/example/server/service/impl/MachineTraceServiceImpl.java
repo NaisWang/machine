@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author whz
@@ -31,5 +31,13 @@ public class MachineTraceServiceImpl extends ServiceImpl<MachineTraceMapper, Mac
 	@Override
 	public List<Statistics> getAllStatistics(Integer[] empIds, Integer[] statusIds, Integer[] dateScope) {
 		return machineTraceMapper.getAllStatistics(empIds, statusIds, dateScope);
+	}
+
+	/**
+	 * 获取当前登录者的数据
+	 */
+	@Override
+	public List<Statistics> getOneStatistics(Integer empId) {
+		return machineTraceMapper.getOneStatistics(empId);
 	}
 }

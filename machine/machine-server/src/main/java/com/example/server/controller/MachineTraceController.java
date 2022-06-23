@@ -33,8 +33,8 @@ public class MachineTraceController {
 	@GetMapping("/")
 	public RespBean getMachineTrace(MachineTrace machineTrace) {
 		QueryWrapper<MachineTrace> machineTraceQueryWrapper = new QueryWrapper<>();
-		if (machineTrace.getNumber() != null) {
-			machineTraceQueryWrapper.eq("number", machineTrace.getNumber());
+		if (machineTrace.getMachineId() != null) {
+			machineTraceQueryWrapper.eq("machine_id", machineTrace.getMachineId());
 		}
 		List<MachineTrace> machineTraces = machineTraceService.list(machineTraceQueryWrapper);
 		return RespBean.success("获取成功", machineTraces);

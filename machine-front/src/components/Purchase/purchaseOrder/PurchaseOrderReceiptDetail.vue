@@ -26,9 +26,85 @@
       <el-button @click="manualDialogVisible = true">手动添加机器</el-button>
     </div>
 
-    <MachineShowDetail ref="child" :machines="machines" :paging="true" :tableName="'purchaseOrder'"
-                       :is-release="isRelease" :extra-not-show="[]"
-                       :receipt-id="receiptDetailNumber"></MachineShowDetail>
+    <!--
+        <MachineShowDetail ref="child" :machines="machines" :paging="true" :tableName="'purchaseOrder'"
+                           :is-release="isRelease" :extra-not-show="[]"
+                           :receipt-id="receiptDetailNumber"></MachineShowDetail>
+    -->
+
+    <div>
+      <el-table
+          :data="machines"
+          style="width: 100%">
+        <el-table-column
+            type="selection"
+            width="55">
+        </el-table-column>
+
+        <el-table-column
+            prop="machineNumber"
+            label="物品编码"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="machineSku"
+            label="SKU"
+            width="170">
+        </el-table-column>
+
+        <el-table-column
+            prop="comment"
+            label="备注"
+            width="120">
+          <template #default="scope">
+            <el-popover
+                placement="top-start"
+                :width="200"
+                trigger="hover"
+                :content="scope.row.comment">
+              <template #reference>
+                <el-button style="width: 80px; text-overflow: ellipsis; overflow: hidden;" v-show="scope.row.comment">
+                  {{
+                    scope.row.comment
+                  }}
+                </el-button>
+                <el-button style="width: 80px" v-show="!scope.row.comment">无</el-button>
+              </template>
+              <el-input
+                  type="textarea"
+                  autosize
+                  @change="initUpdateMachine(scope.row, 'describe')"
+                  :disabled="!isEdit"
+                  :value="scope.row.comment"
+                  v-model="scope.row.comment">
+              </el-input>
+            </el-popover>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="操作" fixed="right">
+          <template #default="scope">
+            <el-button
+                size="mini"
+                type="success"
+                @click="detail(scope.row)">详情
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end">
+      <el-pagination
+          background
+          :current-page="currentPage"
+          layout="sizes, prev, pager, next, ->, total"
+          @current-change="currentChange"
+          @size-change="sizeChange"
+          :total="total">
+      </el-pagination>
+    </div>
 
 
     <el-dialog
@@ -43,7 +119,7 @@
                          table-operate="excel"></MachineShowDetail>
 
       <span slot="footer" class="dialog-footer">
-                  <el-button @click="dialogVisible = false">取 消</el-button>
+                  <el-button @click="excelDialogVisible = false">取 消</el-button>
                   <el-button type="primary" @click="addMachines('excel')">提 交</el-button>
                 </span>
     </el-dialog>
@@ -184,26 +260,38 @@
       </div>
 
       <span slot="footer" class="dialog-footer">
-                  <el-button @click="dialogVisible = false">取 消</el-button>
+                  <el-button @click="manualDialogVisible = false">取 消</el-button>
                   <el-button type="primary" @click="addMachines('manual')">提 交</el-button>
                 </span>
     </el-dialog>
+
+
+    <MachineShowDetailVertical v-if="showDetail.value" :machine="showDetailMachine"
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
 
   </div>
 </template>
 
 <script>
+import MachineShowDetailVertical from "../../Machine/MachineShowDetailVertical.vue";
 import MachineShowDetail from "../../Machine/MachineShowDetail.vue";
-import initMachineCorr from "../../../utils/machineCorr";
 import {getCorrIndexByName} from "../../../utils/machineCorr";
-import {addMachineToPurchaseReceipt} from "../../../api/purchaseOrderReceipt";
+import {addMachineToPurchaseReceipt, getPurchaseOrderReceiptToMachine} from "../../../api/purchaseOrderReceipt";
 import * as XLSX from "xlsx"
 import MachineSearch from "../../Machine/MachineSearch.vue";
+import {getMachine} from "../../../api/machineApi";
+import {getMachineTrace} from "../../../api/machineTraceApi";
+import {getMachineDetection} from "../../../api/machineDetection";
 
 export default {
   name: "PurchaseOrderReceiptDetail",
   data() {
     return {
+      showDetail: {"value": false},
+      showDetailMachine: {},
+      showMachineTrace: {},
+      showMachineDetection: {},
       searchMachine: {},
       needAddMachine: [],
       needAddMachineByManual: {},
@@ -211,6 +299,9 @@ export default {
       manualDialogVisible: false,
       machines: [],
       fileList: [],
+      currentPage: 1,
+      sizes: 10,
+      total: null,
       purchaseOrderReceiptField: [{"zh": "物品编号", "en": "number"}, {"zh": "IMEI", "en": "imei"}, {
         "zh": "品类",
         "en": "categoryId"
@@ -230,12 +321,25 @@ export default {
   methods: {
     initMachines() {
       this.searchMachine.purchaseOrderId = this.receiptDetailNumber;
-      this.$refs.child.initMachinesByApi(this.searchMachine)
+      //this.$refs.child.initMachinesByApi(this.searchMachine)
+      getPurchaseOrderReceiptToMachine(this.currentPage, this.sizes, this.receiptDetailNumber).then(resp => {
+        if (resp.data.code === 200) {
+          this.total = resp.data.obj.total;
+          this.machines = resp.data.obj.data;
+          if (this.machines === undefined) {
+            this.machines = []
+          }
+        }
+      })
     },
     cancelAdvSearch() {
       this.searchMachine = {}
       this.searchMachine.purchaseOrderId = this.receiptDetailNumber;
-      this.$refs.child.initMachinesByApi(this.searchMachine)
+      getPurchaseOrderReceiptToMachine(this.receiptDetailNumber).then(resp => {
+        if (resp.data.code === 200) {
+          this.machines = resp.data.obj;
+        }
+      })
     },
     handleChange(file, fileList) {
       this.fileList = [fileList[fileList.length - 1]]
@@ -245,7 +349,26 @@ export default {
       this.fileList = fileList;
       this.needAddMachine = []
     },
-
+    currentChange(currentPage) {
+      this.currentPage = currentPage;
+      this.initMachines();
+    },
+    sizeChange(size) {
+      this.sizes = size;
+      this.initMachines();
+    },
+    detail(row) {
+      getMachine(1, 10, {"id": row.machineId}).then(resp => {
+        this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
+        getMachineTrace({"machineId": row.machineId}).then(resp => {
+          this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
+          getMachineDetection({"machineId": row.machineId}).then(resp => {
+            this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+            this.showDetail.value = true
+          })
+        })
+      })
+    },
     addPurchaseOrderReceiptMachinesByExcel(machineExcelInfo, ExcelTitleIndexNumber) {
       let ans1 = {code: 0, message: ""};
       let length = machineExcelInfo.length;
@@ -371,7 +494,8 @@ export default {
                 this.needAddMachineByManual = {}
               }
               this.needAddMachine = []
-              this.$refs.child.initMachinesByApi(this.searchMachine)
+              //this.$refs.child.initMachinesByApi(this.searchMachine)
+              this.initMachines();
               this.excelDialogVisible = false;
               this.manualDialogVisible = false;
             }
@@ -387,7 +511,8 @@ export default {
   },
   components: {
     MachineSearch,
-    MachineShowDetail
+    MachineShowDetail,
+    MachineShowDetailVertical
   }
 }
 </script>

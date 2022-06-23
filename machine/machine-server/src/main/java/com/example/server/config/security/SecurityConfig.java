@@ -63,9 +63,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 						"/v2/api-docs/**",
 						"/captcha",
 						"ws/**",
-						"/machine/price/model-guarantee-battery/",
-						"/machine/price/model-contrast/",
-						"/machine/price/field"
+						"/machine/price/**"
 				);
 	}
 

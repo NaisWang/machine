@@ -73,5 +73,4 @@ public class PurchaseReturnReceipt implements Serializable {
 	@ApiModelProperty(value = "备注")
 	private String comment;
 
-
 }

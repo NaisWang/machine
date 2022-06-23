@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -47,6 +44,8 @@ public class UpShelfEnterStorageReceiptController {
 	private DeliverReceiptServiceImpl deliverReceiptService;
 	@Autowired
 	private DeliverMachineServiceImpl deliverMachineService;
+	@Autowired
+	private UpShelfEnterStorageReceiptToMachineServiceImpl upShelfEnterStorageReceiptToMachineService;
 
 	@ApiModelProperty("获取所有上架入库单据")
 	@GetMapping("/")
@@ -55,6 +54,15 @@ public class UpShelfEnterStorageReceiptController {
 																								UpShelfEnterStorageReceipt upShelfEnterStorageReceipt) {
 		System.out.println(upShelfEnterStorageReceipt);
 		RespPageBean respPageBean = upShelfEnterStorageReceiptService.getUpShelfEnterStorageReceipt(currentPage, size, upShelfEnterStorageReceipt);
+		return RespBean.success("获取成功", respPageBean);
+	}
+
+	@ApiModelProperty("获取所有上架入库单据中的机器")
+	@GetMapping("/machines")
+	public RespBean getUpShelfEnterStorageReceiptToMachine(@RequestParam(defaultValue = "1") Integer currentPage,
+																												 @RequestParam(defaultValue = "10") Integer size,
+																												 Integer receiptId) {
+		RespPageBean respPageBean = upShelfEnterStorageReceiptToMachineService.getUpShelfEnterStorageReceiptToMachine(currentPage, size, receiptId);
 		return RespBean.success("获取成功", respPageBean);
 	}
 
@@ -123,6 +131,7 @@ public class UpShelfEnterStorageReceiptController {
 
 			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("id", ids));
 			List<MachineTrace> machineTraces = new ArrayList<>();
+			List<UpShelfEnterStorageReceiptToMachine> upShelfEnterStorageReceiptToMachines = new ArrayList<>();
 
 			for (Machine machine : machines) {
 				//状态判断
@@ -133,13 +142,17 @@ public class UpShelfEnterStorageReceiptController {
 				machine.setStatusId(34);
 				machine.setUpShelfEnterStorageId(receiptId);
 				machine.setOperateEmpId(empId);
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+				machineTraces.add(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+
+				upShelfEnterStorageReceiptToMachines.add(new UpShelfEnterStorageReceiptToMachine(null, receiptId, machine.getId(), machine.getNumber(), machine.getSku()));
 			}
 
 			if (machineService.updateBatchById(machines)) {
 				if (machineTraceService.saveBatch(machineTraces)) {
-					logService.save(new Log(empId, "往上架入库单中添加机器", "", LocalDateTime.now(), 0));
-					return RespBean.success("添加成功");
+					if (upShelfEnterStorageReceiptToMachineService.saveBatch(upShelfEnterStorageReceiptToMachines)) {
+						logService.save(new Log(empId, "往上架入库单中添加机器", "", LocalDateTime.now(), 0));
+						return RespBean.success("添加成功");
+					}
 				}
 			}
 			logService.save(new Log(empId, "往上架入库单中添加机器", "", LocalDateTime.now(), 1));
@@ -154,12 +167,12 @@ public class UpShelfEnterStorageReceiptController {
 	@ApiOperation("删除上架入库单中的机器")
 	@DeleteMapping("/deleteMachine/")
 	@Transactional
-	public RespBean deleteMachine(Integer id, Authentication authentication) {
+	public RespBean deleteMachine(Integer id, Integer receiptId, Authentication authentication) {
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();
 		LocalDateTime now = LocalDateTime.now();
 		Machine machine = machineService.getById(id);
 		try {
-			UpShelfEnterStorageReceipt upShelfEnterStorageReceipt = upShelfEnterStorageReceiptService.getById(machine.getUpShelfEnterStorageId());
+			UpShelfEnterStorageReceipt upShelfEnterStorageReceipt = upShelfEnterStorageReceiptService.getById(receiptId);
 			if (!empId.equals(upShelfEnterStorageReceipt.getOperateEmpId())) {
 				return RespBean.error("你没有权限操作该单据");
 			}
@@ -171,9 +184,11 @@ public class UpShelfEnterStorageReceiptController {
 			machine.setUpShelfEnterStorageId(0);
 
 			if (machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
-					logService.save(new Log(empId, "删除上架入库单中机器", "", LocalDateTime.now(), 0));
-					return RespBean.success("删除成功");
+				if (machineTraceService.save(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
+					if (upShelfEnterStorageReceiptToMachineService.remove(new QueryWrapper<UpShelfEnterStorageReceiptToMachine>().eq("receipt_id", receiptId).eq("machine_id", id))) {
+						logService.save(new Log(empId, "删除上架入库单中机器", "", LocalDateTime.now(), 0));
+						return RespBean.success("删除成功");
+					}
 				}
 			}
 			logService.save(new Log(empId, "删除上架入库单中机器", "", LocalDateTime.now(), 1));
@@ -212,7 +227,7 @@ public class UpShelfEnterStorageReceiptController {
 				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("up_shelf_enter_storage_id", receiptId).set("status_id", 26).set("storage_location_id", upShelfEnterStorageReceipt.getStorageLocationId()))) {
 					List<MachineTrace> machineTraces = new ArrayList<>();
 					for (Machine machine : machines) {
-						MachineTrace machineTrace = new MachineTrace(machine.getNumber(), 26, receiptId, now, empId, machine.getComment(), upShelfEnterStorageReceipt.getStorageLocationId(), machine.getIsUpShelf());
+						MachineTrace machineTrace = new MachineTrace(machine.getId(), machine.getNumber(), 26, receiptId, now, empId, machine.getComment(), upShelfEnterStorageReceipt.getStorageLocationId(), machine.getIsUpShelf());
 						machineTrace.setStorageLocationId(upShelfEnterStorageReceipt.getStorageLocationId());
 						machineTraces.add(machineTrace);
 					}
@@ -258,13 +273,15 @@ public class UpShelfEnterStorageReceiptController {
 			for (Machine machine : machines) {
 				machine.setUpShelfEnterStorageId(0);
 				machine.setStatusId(machine.getPreviousStatusId());
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+				machineTraces.add(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 			if (upShelfEnterStorageReceiptService.removeById(receiptId)) {
-				if (machines.size() == 0 || machineService.updateBatchById(machines)) {
-					if (machineTraceService.saveBatch(machineTraces)) {
-						logService.save(new Log(empId, "删除上架入库单", "上架入库单号为：" + receiptId, now, 0));
-						return RespBean.success("删除成功");
+				if (upShelfEnterStorageReceiptToMachineService.remove(new QueryWrapper<UpShelfEnterStorageReceiptToMachine>().eq("receipt_id", receiptId))) {
+					if (machines.size() == 0 || machineService.updateBatchById(machines)) {
+						if (machineTraceService.saveBatch(machineTraces)) {
+							logService.save(new Log(empId, "删除上架入库单", "上架入库单号为：" + receiptId, now, 0));
+							return RespBean.success("删除成功");
+						}
 					}
 				}
 			}
@@ -315,6 +332,7 @@ public class UpShelfEnterStorageReceiptController {
 			//接收并处理机器
 			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("number", numbers));
 			List<MachineTrace> machineTraces = new ArrayList<>();
+			List<UpShelfEnterStorageReceiptToMachine> upShelfEnterStorageReceiptToMachines = new ArrayList<>();
 
 			QueryWrapper<DeliverMachine> deliverMachineQueryWrapper = new QueryWrapper<>();
 			for (Machine machine : machines) {
@@ -330,13 +348,14 @@ public class UpShelfEnterStorageReceiptController {
 				machine.setNeedCompleteDeliverReceiptId(0);
 				machine.setOperateEmpId(empId);
 
+				upShelfEnterStorageReceiptToMachines.add(new UpShelfEnterStorageReceiptToMachine(null, upShelfEnterStorageReceiptId, machine.getId(), machine.getNumber(), machine.getSku()));
 
 				Map<String, Integer> queryMap = new HashMap<>();
 				queryMap.put("machine_id", machine.getId());
 				queryMap.put("deliver_receipt_id", deliverReceiptId);
 				deliverMachineQueryWrapper = deliverMachineQueryWrapper.or().allEq(queryMap);
 
-				MachineTrace machineTrace = new MachineTrace(machine.getNumber(), 26, upShelfEnterStorageReceiptId, now, empId, machine.getComment(), storageLocationId, machine.getIsUpShelf());
+				MachineTrace machineTrace = new MachineTrace(machine.getId(), machine.getNumber(), 26, upShelfEnterStorageReceiptId, now, empId, machine.getComment(), storageLocationId, machine.getIsUpShelf());
 				machineTraces.add(machineTrace);
 
 			}
@@ -352,7 +371,9 @@ public class UpShelfEnterStorageReceiptController {
 			if (machineService.updateBatchById(machines)) {
 				if (deliverMachineService.updateBatchById(deliverMachines)) {
 					if (machineTraceService.saveBatch(machineTraces)) {
-						return RespBean.success("操作成功", upShelfEnterStorageReceiptId);
+						if (upShelfEnterStorageReceiptToMachineService.saveBatch(upShelfEnterStorageReceiptToMachines)) {
+							return RespBean.success("操作成功", upShelfEnterStorageReceiptId);
+						}
 					}
 				}
 			}

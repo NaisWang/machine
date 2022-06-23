@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.MarketReturnReceiptToMachineMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.MarketReturnReceiptToMachine">
+    <id column="id" property="id"/>
+    <result column="receipt_id" property="receiptId"/>
+    <result column="machine_id" property="machineId"/>
+    <result column="machine_number" property="machineNumber"/>
+    <result column="machine_sku" property="machineSku"/>
+    <result column="comment" property="comment"/>
+    <result column="operate_emp_id" property="operateEmpId"/>
+    <result column="operate_time" property="operateTime"/>
+    <result column="refund_price" property="refundPrice"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id
+    , receipt_id, machine_id, machine_number, machine_sku, comment, operate_emp_id, operate_time, refund_price
+  </sql>
+
+  <!--获取销售退货单中的机器-->
+  <select id="getMarketReturnReceiptToMachine"
+          resultType="com.example.server.pojo.MarketReturnReceiptToMachine">
+    select *
+    from t_market_return_receipt_to_machine
+    where receipt_id = #{receiptId}
+  </select>
+
+</mapper>

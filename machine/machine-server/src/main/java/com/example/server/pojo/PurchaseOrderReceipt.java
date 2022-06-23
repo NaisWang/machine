@@ -91,5 +91,4 @@ public class PurchaseOrderReceipt implements Serializable {
 	@TableField(exist = false)
 	private Integer isDelete;
 
-
 }

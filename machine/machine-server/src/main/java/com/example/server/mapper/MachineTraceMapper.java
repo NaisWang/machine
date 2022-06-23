@@ -22,4 +22,9 @@ public interface MachineTraceMapper extends BaseMapper<MachineTrace> {
 	 * 获取所有数据
 	 */
 	List<Statistics> getAllStatistics(@Param("empIds") Integer[] empIds, @Param("statusIds") Integer[] statusIds, @Param("dateScope") Integer[] dateScope);
+
+	/**
+	 * 获取当前登录者的数据
+	 */
+	List<Statistics> getOneStatistics(Integer empId);
 }

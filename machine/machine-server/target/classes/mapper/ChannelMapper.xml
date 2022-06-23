@@ -2,15 +2,46 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.server.mapper.ChannelMapper">
 
-    <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.example.server.pojo.Channel">
-        <id column="id" property="id" />
-        <result column="name" property="name" />
-    </resultMap>
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.Channel">
+    <id column="id" property="id"/>
+    <result column="name" property="name"/>
+  </resultMap>
 
-    <!-- 通用查询结果列 -->
-    <sql id="Base_Column_List">
-        id, name
-    </sql>
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id
+    , name
+  </sql>
+
+  <!--获取渠道以及金钱-->
+  <select id="getChannelAndMoney" resultType="com.example.server.pojo.Channel">
+    select tc.id, tc.name, purchase_order.purchase_sum_price, market_order.market_sell_price, market_return.market_refund_price
+    from t_channel as tc
+           left join
+         (
+           select por.purchase_channel_id, sum(portm.purchase_price) as purchase_sum_price
+           from t_purchase_order_receipt as por
+                  left join t_purchase_order_receipt_to_machine as portm
+                            on por.purchase_order = portm.receipt_id
+           group by por.purchase_channel_id
+         ) as purchase_order on tc.id = purchase_order.purchase_channel_id
+           left join
+         (
+           select mor.channel_id, sum(mortom.sell_price) as market_sell_price
+           from t_market_order_receipt as mor
+                  left join t_market_order_receipt_to_machine as mortom
+                            on mor.market_order = mortom.receipt_id
+           group by mor.channel_id
+         ) as market_order on tc.id = market_order.channel_id
+           left join
+         (
+           select mrr.channel_id, sum(mrrtm.refund_price) as 'market_refund_price'
+           from t_market_return_receipt as mrr
+                  left join t_market_return_receipt_to_machine as mrrtm
+                            on mrr.market_return_order = mrrtm.receipt_id
+           group by mrr.channel_id
+         ) as market_return on tc.id = market_return.channel_id
+  </select>
 
 </mapper>

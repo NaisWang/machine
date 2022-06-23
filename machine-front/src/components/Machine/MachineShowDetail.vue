@@ -880,21 +880,6 @@
                 @click="handleDelete(scope.row, scope.$index)">删除
             </el-button>
 
-            <el-button
-                v-if="isRelease === 1 && tableName === 'purchaseReturn' && scope.row.statusId !== 4"
-                :disabled="scope.row.statusId === 24"
-                size="mini"
-                type="danger"
-                @click="returnSuccess(scope.row)">退货成功
-            </el-button>
-
-            <el-button
-                v-if="isRelease === 1 && tableName === 'purchaseReturn' && scope.row.statusId !== 24"
-                :disabled="scope.row.statusId === 4"
-                size="mini"
-                type="danger"
-                @click="returnError(scope.row)">退货失败
-            </el-button>
 
             <el-button
                 v-if="isRelease === 0 && tableName === 'purchaseOrder'"
@@ -941,7 +926,8 @@
                  @initShow="initMachinesByApi"></MachineEdit>
 
     <MachineShowDetailVertical v-if="showDetail.value" :table-name="tableName" :machine="showDetailMachine"
-                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
 
   </div>
 </template>
@@ -958,11 +944,11 @@ import {
   purchaseReturnSuccess
 } from "../../api/purchaseReturnApi";
 import {deleteMachineForMarketOrderReceipt} from "../../api/marketOrderApi";
-import {deleteMachineForMarketReturnReceipt} from "../../api/marketReturnReceiptApi";
 import {deleteMachineForMarketReturnEnterStorageReceipt} from "../../api/marketReturnEnterStorageApi";
 import {deleteMachineForUpShelfEnterStorage} from "../../api/upShelfEnterStorageApi";
 import {getMachineTrace} from "../../api/machineTraceApi";
 import MachineShowDetailVertical from "./MachineShowDetailVertical.vue";
+import {getMachineDetection} from "../../api/machineDetection";
 
 export default {
   name: "MachineShowDetail",
@@ -972,6 +958,7 @@ export default {
       showDetail: {"value": false},
       showDetailMachine: {},
       showMachineTrace: {},
+      showMachineDetection: {},
       editShow: {"value": false},
       editMachine: {},
       searchMachine: {},
@@ -1189,22 +1176,8 @@ export default {
               this.initMachinesByApi(this.searchMachine);
             }
           })
-        } else if (this.tableName === 'marketOrder') {
-          deleteMachineForMarketOrderReceipt(row.id).then(resp => {
-            if (resp.data.code === 200) {
-              this.$message.success("删除成功");
-              this.initMachinesByApi(this.searchMachine);
-            }
-          })
-        } else if (this.tableName === 'marketReturn') {
-          deleteMachineForMarketReturnReceipt(row.id).then(resp => {
-            if (resp.data.code === 200) {
-              this.$message.success("删除成功");
-              this.initMachinesByApi(this.searchMachine);
-            }
-          })
         } else if (this.tableName === 'marketReturnEnterStorage') {
-          deleteMachineForMarketReturnEnterStorageReceipt(row.id).then(resp => {
+          deleteMachineForMarketReturnEnterStorageReceipt(row.id, this.receiptId).then(resp => {
             if (resp.data.code === 200) {
               this.$message.success("删除成功");
               this.initMachinesByApi(this.searchMachine);
@@ -1229,50 +1202,15 @@ export default {
       this.editMachine = JSON.parse(JSON.stringify(row))
       this.editShow.value = true;
     },
-    returnSuccess(row) {
-      this.$confirm('是否确定采购退货成功', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        purchaseReturnSuccess(row.number).then(resp => {
-          if (resp.data.code === 200) {
-            this.$message.success("操作成功");
-            this.initMachinesByApi(this.searchMachine);
-          }
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        });
-      });
-    },
-    returnError(row) {
-      this.$confirm('是否确定采购退货失败', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        purchaseReturnError(row.number).then(resp => {
-          if (resp.data.code === 200) {
-            this.$message.success("操作成功");
-            this.initMachinesByApi(this.searchMachine);
-          }
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        });
-      });
-    },
     detail(row) {
       this.showDetailMachine = JSON.parse(JSON.stringify(row));
-      getMachineTrace({"number": row.number}).then(resp => {
+      getMachineTrace({"machineId": row.id}).then(resp => {
         this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
+        getMachineDetection({"machineId": row.id}).then(resp => {
+          this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+          this.showDetail.value = true
+        })
       })
-      this.showDetail.value = true
     },
   }
 }

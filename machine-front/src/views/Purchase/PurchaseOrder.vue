@@ -4,7 +4,7 @@
       <el-breadcrumb separator="/" style="margin-bottom: 15px">
         <el-breadcrumb-item><a @click="toPurchaseOrder">采购单</a></el-breadcrumb-item>
         <el-breadcrumb-item v-if="componentFlag === 0">采购单</el-breadcrumb-item>
-        <el-breadcrumb-item v-else-if="componentFlag === 1">采购单详情</el-breadcrumb-item>
+        <el-breadcrumb-item v-else-if="componentFlag === 1">采购单详情 （采购单号：{{ receiptDetailNumber }})</el-breadcrumb-item>
         <el-breadcrumb-item v-else-if="componentFlag === 2">添加采购单</el-breadcrumb-item>
       </el-breadcrumb>
     </template>

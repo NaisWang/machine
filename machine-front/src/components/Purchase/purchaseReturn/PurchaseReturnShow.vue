@@ -19,11 +19,13 @@
     <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加采购退货单</el-button>
     <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
 
-    <div>
-      退货失败:
-      <el-input clearable placeholder="请输入物品编号" @keydown.enter.native="returnFail"
-                v-model="numberInput"></el-input>
-    </div>
+    <!--
+        <div>
+          退货失败:
+          <el-input clearable placeholder="请输入物品编号" @keydown.enter.native="returnFail"
+                    v-model="numberInput"></el-input>
+        </div>
+    -->
 
     <div>
       <el-table

@@ -4,10 +4,7 @@ package com.example.server.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.server.pojo.*;
-import com.example.server.service.impl.LogServiceImpl;
-import com.example.server.service.impl.MachineServiceImpl;
-import com.example.server.service.impl.MachineTraceServiceImpl;
-import com.example.server.service.impl.PurchaseOrderReceiptServiceImpl;
+import com.example.server.service.impl.*;
 import com.example.server.utils.Corr;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
@@ -53,6 +50,8 @@ public class PurchaseOrderReceiptController {
 	private LogServiceImpl logService;
 	@Autowired
 	private MachineTraceServiceImpl machineTraceService;
+	@Autowired
+	private PurchaseOrderReceiptToMachineServiceImpl purchaseOrderReceiptToMachineService;
 
 
 	@ApiOperation("获取采购单信息")
@@ -62,6 +61,15 @@ public class PurchaseOrderReceiptController {
 																							PurchaseOrderReceipt purchaseOrder) {
 		RespPageBean purchaseOrder1 = machineService.getPurchaseOrder(currentPage, size, purchaseOrder);
 		return RespBean.success("获取成功", purchaseOrder1);
+	}
+
+	@ApiOperation("获取采购单据中的机器")
+	@GetMapping("/machines")
+	public RespBean getPurchaseOrderReceiptToMachine(@RequestParam(defaultValue = "1") Integer currentPage,
+																									 @RequestParam(defaultValue = "10") Integer size,
+																									 Integer receiptId) {
+		RespPageBean respPageBean = purchaseOrderReceiptToMachineService.getPurchaseOrderReceiptToMachine(currentPage, size, receiptId);
+		return RespBean.success("获取成功", respPageBean);
 	}
 
 	//@ApiOperation("创建采购单")
@@ -123,6 +131,82 @@ public class PurchaseOrderReceiptController {
 		}
 	}
 
+	@ApiOperation("往采购单中添加机器")
+	@PutMapping("/addMachine")
+	@Transactional
+	public RespBean addMachine(@RequestBody Machine[] machines, Integer receiptId, Authentication authentication) {
+		if (receiptId == 0) {
+			return RespBean.error("数据错误");
+		}
+		Integer empId = ((Employee) authentication.getPrincipal()).getId();
+		PurchaseOrderReceipt purchaseOrderReceipt = purchaseOrderReceiptService.getById(receiptId);
+		LocalDateTime now = LocalDateTime.now();
+		List<MachineTrace> machineTraces = new ArrayList<>();
+		try {
+			if (!empId.equals(purchaseOrderReceipt.getOperateEmpId())) {
+				return RespBean.error("你没有权限操作该单据");
+			}
+			if (purchaseOrderReceipt.getIsRelease() == 1) {
+				return RespBean.error("该转交单已经发布了");
+			}
+
+			List<PurchaseOrderReceiptToMachine> purchaseOrderReceiptToMachines = new ArrayList<>();
+
+			//判断是否含有相同number的机器
+			List<String> numbers = new ArrayList<>();
+			for (Machine machine : machines) {
+				numbers.add(machine.getNumber());
+				machine.setStatusId(21);
+				machine.setPurchaseOrderId(receiptId);
+				machine.setOperateEmpId(empId);
+				if (machine.getComment() == null) {
+					machine.setComment("");
+				}
+
+			}
+			List<Machine> machineList = machineService.list(new QueryWrapper<Machine>().in("number", numbers).ne("status_id", 13).ne("status_id", 24));
+			if (machineList.size() != 0) {
+				StringBuffer repeatNubmer = new StringBuffer();
+				for (Machine machine : machineList) {
+					repeatNubmer.append(machine.getNumber() + '、');
+				}
+				return RespBean.error("如下物品编码已经存在：" + repeatNubmer.toString());
+			}
+			List<Number> temp = new ArrayList<>();
+			temp.add(13);
+			temp.add(24);
+			List<Machine> machineList1 = machineService.list(new QueryWrapper<Machine>().in("number", numbers).in("status_id", temp));
+			if (machineList1.size() != 0) {
+				for (Machine machine : machineList1) {
+					machine.setNumber(machine.getNumber() + "-1");
+				}
+				if (!machineService.updateBatchById(machineList1)) {
+					throw new RuntimeException("运行错误");
+				}
+			}
+
+			if (machineService.saveBatch(Arrays.asList(machines))) {
+				for (Machine machine : machines) {
+					purchaseOrderReceiptToMachines.add(new PurchaseOrderReceiptToMachine(null, receiptId, machine.getId(), machine.getNumber(), machine.getSku(), machine.getPurchasePrice()));
+					machineTraces.add(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+				}
+				if (purchaseOrderReceiptToMachineService.saveBatch(purchaseOrderReceiptToMachines)) {
+					if (machineTraceService.saveBatch(machineTraces)) {
+						logService.save(new Log(empId, "往采购单中添加机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
+						return RespBean.success("添加成功");
+					}
+				}
+			}
+
+			logService.save(new Log(empId, "往采购单中添加机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
+			throw new RuntimeException("添加失败");
+		} catch (Exception e) {
+			e.printStackTrace();
+			logService.save(new Log(empId, "往采购单中添加机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
+			throw new RuntimeException("添加失败");
+		}
+	}
+
 	@ApiOperation("发布采购单")
 	@GetMapping("/release")
 	@Transactional
@@ -151,7 +235,7 @@ public class PurchaseOrderReceiptController {
 					List<MachineTrace> machineTraces = new ArrayList<>();
 					//跟踪机器数据
 					for (Machine machine : machines) {
-						machineTraces.add(new MachineTrace(machine.getNumber(), 1, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+						machineTraces.add(new MachineTrace(machine.getId(), machine.getNumber(), 1, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 					}
 					if (machineTraceService.saveBatch(machineTraces)) {
 						logService.save(new Log(empId, "发布采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
@@ -168,72 +252,6 @@ public class PurchaseOrderReceiptController {
 		}
 	}
 
-	@ApiOperation("往采购单中添加机器")
-	@PutMapping("/addMachine")
-	@Transactional
-	public RespBean addMachine(@RequestBody Machine[] machines, Integer receiptId, Authentication authentication) {
-		if (receiptId == 0) {
-			return RespBean.error("数据错误");
-		}
-		Integer empId = ((Employee) authentication.getPrincipal()).getId();
-		PurchaseOrderReceipt purchaseOrderReceipt = purchaseOrderReceiptService.getById(receiptId);
-		LocalDateTime now = LocalDateTime.now();
-		List<MachineTrace> machineTraces = new ArrayList<>();
-		try {
-			if (!empId.equals(purchaseOrderReceipt.getOperateEmpId())) {
-				return RespBean.error("你没有权限操作该单据");
-			}
-			if (purchaseOrderReceipt.getIsRelease() == 1) {
-				return RespBean.error("该转交单已经发布了");
-			}
-
-			//判断是否含有相同number的机器
-			List<String> numbers = new ArrayList<>();
-			for (Machine machine : machines) {
-				numbers.add(machine.getNumber());
-				machine.setStatusId(21);
-				machine.setPurchaseOrderId(receiptId);
-				machine.setOperateEmpId(empId);
-				if (machine.getComment() == null) {
-					machine.setComment("");
-				}
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
-			}
-			List<Machine> machineList = machineService.list(new QueryWrapper<Machine>().in("number", numbers).ne("status_id", 13).ne("status_id", 24));
-			if (machineList.size() != 0) {
-				StringBuffer repeatNubmer = new StringBuffer();
-				for (Machine machine : machineList) {
-					repeatNubmer.append(machine.getNumber() + '、');
-				}
-				return RespBean.error("如下物品编码已经存在：" + repeatNubmer.toString());
-			}
-			List<Number> temp = new ArrayList<>();
-			temp.add(13);
-			temp.add(24);
-			List<Machine> machineList1 = machineService.list(new QueryWrapper<Machine>().in("number", numbers).in("status_id", temp));
-			if (machineList1.size() != 0) {
-				for (Machine machine : machineList1) {
-					machine.setNumber(machine.getNumber() + "-1");
-				}
-				if (!machineService.updateBatchById(machineList1)) {
-					throw new RuntimeException("运行错误");
-				}
-			}
-
-			if (machineService.saveBatch(Arrays.asList(machines))) {
-				if (machineTraceService.saveBatch(machineTraces)) {
-					logService.save(new Log(empId, "往采购单中添加机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
-					return RespBean.success("添加成功");
-				}
-			}
-			logService.save(new Log(empId, "往采购单中添加机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
-			throw new RuntimeException("添加失败");
-		} catch (Exception e) {
-			e.printStackTrace();
-			logService.save(new Log(empId, "往采购单中添加机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
-			throw new RuntimeException("添加失败");
-		}
-	}
 
 	@ApiOperation("删除采购单中未提交的机器")
 	@DeleteMapping("/deleteMachine")
@@ -251,9 +269,11 @@ public class PurchaseOrderReceiptController {
 		//}
 
 		if (machineService.removeById(id)) {
-			if (machineTraceService.remove(new QueryWrapper<MachineTrace>().eq("number", machine.getNumber()))) {
-				logService.save(new Log(empId, "往采购单中未提交的机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
-				return RespBean.success("删除成功");
+			if (purchaseOrderReceiptToMachineService.remove(new QueryWrapper<PurchaseOrderReceiptToMachine>().eq("receipt_id", purchaseOrderReceipt.getPurchaseOrder()).eq("machine_id", id))) {
+				if (machineTraceService.remove(new QueryWrapper<MachineTrace>().eq("number", machine.getNumber()))) {
+					logService.save(new Log(empId, "往采购单中未提交的机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
+					return RespBean.success("删除成功");
+				}
 			}
 		}
 		logService.save(new Log(empId, "往采购单中未提交的机器", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 1));
@@ -274,15 +294,17 @@ public class PurchaseOrderReceiptController {
 			if (!empId.equals(purchaseOrderReceipt.getOperateEmpId())) {
 				return RespBean.error("你没有权限操作该单据");
 			}
-			if (purchaseOrderReceipt.getIsDelete() == 1) {
-				return RespBean.error("该采购单中的机器已经发生变化, 无法再删除");
-			}
+			//if (purchaseOrderReceipt.getIsDelete() == 1) {
+			//	return RespBean.error("该采购单中的机器已经发生变化, 无法再删除");
+			//}
 			if (purchaseOrderReceiptService.removeById(receiptId)) {
-				List<Machine> machines = machineService.list(new QueryWrapper<Machine>().eq("purchase_order_id", purchaseOrderReceipt.getPurchaseOrder()));
-				if (machineService.remove(new QueryWrapper<Machine>().eq("purchase_order_id", purchaseOrderReceipt.getPurchaseOrder()))) {
-					if (machineTraceService.remove(new QueryWrapper<MachineTrace>().eq("receipt_id", purchaseOrderReceipt.getPurchaseOrder()))) {
-						logService.save(new Log(empId, "删除采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
-						return RespBean.success("删除成功");
+				if (purchaseOrderReceiptToMachineService.remove(new QueryWrapper<PurchaseOrderReceiptToMachine>().eq("receipt_id", receiptId))) {
+					List<Machine> machines = machineService.list(new QueryWrapper<Machine>().eq("purchase_order_id", purchaseOrderReceipt.getPurchaseOrder()));
+					if (machineService.remove(new QueryWrapper<Machine>().eq("purchase_order_id", purchaseOrderReceipt.getPurchaseOrder()))) {
+						if (machineTraceService.remove(new QueryWrapper<MachineTrace>().eq("receipt_id", purchaseOrderReceipt.getPurchaseOrder()))) {
+							logService.save(new Log(empId, "删除采购单", "采购单据id为" + purchaseOrderReceipt.getPurchaseOrder() + "; 采购渠道为：" + Corr.channelCorr.get(purchaseOrderReceipt.getPurchaseChannelId()) + "; 备注是：" + purchaseOrderReceipt.getComment(), now, 0));
+							return RespBean.success("删除成功");
+						}
 					}
 				}
 			}

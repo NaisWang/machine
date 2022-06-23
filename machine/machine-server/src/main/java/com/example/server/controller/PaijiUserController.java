@@ -22,7 +22,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/machine/price/paiji-user")
-public class PaijiUserController {
+class classPaijiUserController {
 
 	@Autowired
 	private PaijiUserServiceImpl paijiUserService;

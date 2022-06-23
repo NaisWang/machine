@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.mapper.EnterStorageReceiptToMachineMapper">
+
+  <!-- 通用查询映射结果 -->
+  <resultMap id="BaseResultMap" type="com.example.server.pojo.EnterStorageReceiptToMachine">
+    <id column="id" property="id"/>
+    <result column="receipt_id" property="receiptId"/>
+    <result column="machine_number" property="machineNumber"/>
+  </resultMap>
+
+  <!-- 通用查询结果列 -->
+  <sql id="Base_Column_List">
+    id
+    , receipt_id, machine_number
+  </sql>
+
+  <!--获取入库单中的机器-->
+  <select id="getEnterStorageReceiptToMachine"
+          resultType="com.example.server.pojo.EnterStorageReceiptToMachine">
+    select *
+    from t_enter_storage_receipt_to_machine
+    where receipt_id = #{receiptId}
+  </select>
+
+</mapper>

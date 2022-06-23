@@ -18,8 +18,9 @@ export function getAllPurchaseOrder(currentPage, size, purchaseOrder, bidDateSco
   })
 }
 
+
 /**
- * 修改采购单中的数据
+ * 修改采购单中的数
  */
 export function modifyMachine(purchaseOrder) {
   return myAxios({

@@ -205,14 +205,14 @@ export default {
       searchOrder: {},
       allOrderInfo: [],
       currentPage: 1,
-      size: 10,
+      sizes: 10,
       total: null,
       newReceiptInfo: {},
       addReceiptDialogVisible: false
     }
   },
   mounted() {
-    this.release();
+    this.refresh();
   },
   components: {
     MachineEdit
@@ -225,7 +225,7 @@ export default {
       }
     },
     initAllOrderInfo() {
-      marketReturnEnterStorageApi.getMarketReturnEnterStorageReceipt(this.currentPage, this.size, this.searchOrder).then(resp => {
+      marketReturnEnterStorageApi.getMarketReturnEnterStorageReceipt(this.currentPage, this.sizes, this.searchOrder).then(resp => {
         if (resp.data.obj) {
           this.allOrderInfo = resp.data.obj.data
           this.total = resp.data.obj.total
@@ -241,7 +241,7 @@ export default {
       this.initAllOrderInfo();
     },
     sizeChange(size) {
-      this.size = size;
+      this.sizes = size;
       this.initAllOrderInfo();
     },
     orderDetail(row) {
@@ -274,6 +274,7 @@ export default {
         });
       });
     },
+
     release(row) {
       if (row.sum === 0) {
         this.$message.error("该销售退货单为空，不能发布");

@@ -16,7 +16,7 @@
     </div>
 
 
-    <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加退货单</el-button>
+    <el-button type="primary" icon="el-icon-plus" @click="addReceiptDialogVisible = true">添加销售单</el-button>
     <el-button type="primary" icon="el-icon-refresh" @click="refresh(1)">刷 新</el-button>
 
     <div>
@@ -47,6 +47,17 @@
         </el-table-column>
 
         <el-table-column
+            prop="channelId"
+            label="销售渠道"
+            width="130">
+          <template #default="scope">
+              <span>{{
+                  $store.state.machineChannelCorr[scope.row.channelId]
+                }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column
             prop="sum"
             label="销售总数"
             width="170">
@@ -60,7 +71,7 @@
 
         <el-table-column
             prop="purchaseSumPrice"
-            label="购买金额"
+            label="采购金额"
             width="170">
         </el-table-column>
 
@@ -123,7 +134,7 @@
               <el-button
                   size="mini"
                   type="danger"
-                  @click="eidt(scope.row)">修改
+                  @click="edit(scope.row)">修改
               </el-button>
 
               <el-button
@@ -155,10 +166,21 @@
                  @initShow="initAllOrderInfo"></MachineEdit>
 
     <el-dialog
-        title="采购退货单信息"
+        title="销售单信息"
         :visible.sync="addReceiptDialogVisible">
 
       <el-form ref="form" :model="newReceiptInfo" label-width="80px">
+
+        <el-form-item label="销售渠道">
+          <el-select clearable v-model="newReceiptInfo.channelId" size="mini" placeholder="采购渠道">
+            <el-option
+                v-for="id in Object.keys($store.state.machineChannelCorr).map(Number)"
+                :label="$store.state.machineChannelCorr[id]"
+                :value="id"
+                :key="id">
+            </el-option>
+          </el-select>
+        </el-form-item>
 
         <el-form-item label="备注">
           <el-input type="text" v-model="newReceiptInfo.comment" size="mini"></el-input>
@@ -259,7 +281,7 @@ export default {
         });
       });
     },
-    eidt(row) {
+    edit(row) {
       this.editShow.value = true
       this.editReceipt = JSON.parse(JSON.stringify(row))
     },

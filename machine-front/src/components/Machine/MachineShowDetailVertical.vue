@@ -134,15 +134,15 @@
               </template>
             </el-table-column>
 
-            <el-table-column
-                prop="isUpShelf"
-                label="是否可以上架"
-                width="180">
-              <template #default="scope">
-                <span v-if="scope.row.isUpShelf=== 0">可以</span>
-                <span v-else-if="scope.row.isUpShelf === 1">不可用</span>
-              </template>
-            </el-table-column>
+            <!--            <el-table-column-->
+            <!--                prop="isUpShelf"-->
+            <!--                label="是否可以上架"-->
+            <!--                width="180">-->
+            <!--              <template #default="scope">-->
+            <!--                <span v-if="scope.row.isUpShelf=== 0">可以</span>-->
+            <!--                <span v-else-if="scope.row.isUpShelf === 1">不可用</span>-->
+            <!--              </template>-->
+            <!--            </el-table-column>-->
 
             <el-table-column
                 prop="isRecall"
@@ -173,6 +173,99 @@
                 label="备注"
                 width="180">
             </el-table-column>
+
+            <el-table-column
+                prop="qualityComment"
+                label="成色检测备注"
+                width="180">
+            </el-table-column>
+
+            <el-table-column
+                prop="featureComment"
+                label="功能检测备注"
+                width="180">
+            </el-table-column>
+
+          </el-table>
+        </el-tab-pane>
+
+        <el-tab-pane label="机器检测" name="machineDetection">
+          <el-table
+              :data="machineDetection"
+              style="width: 100%">
+
+            <el-table-column
+                prop="machineStatusId"
+                label="机器状态"
+                width="180">
+              <template #default="scope">
+                <span>{{ $store.state.machineStatusCorr[scope.row.machineStatusId] }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+                prop="qualityDesc"
+                label="成色检测"
+                width="180">
+              <template #default="scope">
+                <span>
+                        <el-tag
+                            v-for="item in (scope.row.qualityDesc=== null ? '' : scope.row.qualityDesc.split(','))"
+                            :key="item" v-if="item !== ''">
+                        {{ $store.state.machineIdToDesc[item] }}
+                        </el-tag>
+                </span>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+                prop="featureDesc"
+                label="功能检测"
+                width="180">
+              <template #default="scope">
+                <span>
+                        <el-tag
+                            v-for="item in (scope.row.featureDesc === null ? '' : scope.row.featureDesc.split(','))"
+                            :key="item" v-if="item !== ''">
+                        {{ $store.state.machineIdToDesc[item] }}
+                        </el-tag>
+                </span>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+                prop="operateTime"
+                label="时间"
+                width="180">
+            </el-table-column>
+
+            <el-table-column
+                prop="operateEmpId"
+                label="操作人"
+                width="180">
+              <template #default="scope">
+                <span>{{ $store.state.employeeNameCorr[scope.row.operateEmpId] }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+                prop="comment"
+                label="备注"
+                width="180">
+            </el-table-column>
+
+            <el-table-column
+                prop="qualityComment"
+                label="成色检测备注"
+                width="180">
+            </el-table-column>
+
+            <el-table-column
+                prop="featureComment"
+                label="功能检测备注"
+                width="180">
+            </el-table-column>
+
           </el-table>
         </el-tab-pane>
       </el-tabs>
@@ -233,12 +326,15 @@ export default {
         "fixed": "已维修好的项",
         "notFixed": "没有维修好的项",
         "fixToBad": "修坏的项",
+        "fixTimes": "维修次数",
         "comment": "备注",
+        "qualityComment": "成色检测备注",
+        "featureComment": "功能检测备注",
       },
       activeName: "machineProperty"
     }
   },
-  props: ['tableName', 'machine', 'machineTrace', 'showDetail'],
+  props: ['tableName', 'machine', 'machineTrace', 'showDetail', 'machineDetection'],
   mounted() {
     this.initMachineTable()
   },

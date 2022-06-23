@@ -31,6 +31,16 @@ export default new Vuex.Store({
     //机器转交类别对应表
     deliverIntentionCorr: {},
 
+    //storageLocationCorr: {},
+    // 子库id - 父库id
+    subStorageLocationIdToParentStorageLocationId: {},
+
+    //总库位id - 可以员工ids的对应关系
+    storageLocationIdToEmpIdsCorr: {},
+
+    // 员工id - 可以操作的大库ids
+    empIdToStorageLocationIds: {},
+
     //子库位id - 库位名对应关系
     subStorageLocationIdToNameCorr: {},
 
@@ -38,14 +48,6 @@ export default new Vuex.Store({
 
     // 员工id - 身为库管门卫的的库位ids
     empIdToStorageLocationIdsForGateCorr: {},
-
-    //storageLocationCorr: {},
-
-    //库位id - 员工ids的对应关系
-    storageLocationIdToEmpIdsCorr: {},
-
-    //员工id - 库位id对应关系
-    empIdToStorageLocationIdCorr: {},
 
     // 角色id-角色名对应关系
     rolesCorr: {},
@@ -133,9 +135,6 @@ export default new Vuex.Store({
       state.empIdToRoleIdsCorr = data
     },
 
-    initEmpIdToStorageLocationIdCorr(state, data) {
-      state.empIdToStorageLocationIdCorr = data
-    },
 
     initStorageLocationIdToEmpIdsCorr(state, data) {
       state.storageLocationIdToEmpIdsCorr = data
@@ -150,6 +149,10 @@ export default new Vuex.Store({
     initEmpIdToStorageLocationIdsForGateCorr(state, data) {
       state.empIdToStorageLocationIdsForGateCorr = data
     },
+
+    initSubStorageLocationIdToParentStorageLocationIdCorr(state, data) {
+      state.subStorageLocationIdToParentStorageLocationId = data
+    }
 
   },
 })

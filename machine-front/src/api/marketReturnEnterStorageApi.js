@@ -16,6 +16,19 @@ export function getMarketReturnEnterStorageReceipt(currentPage, size, marketRetu
   })
 }
 
+// 获取入库单据中的机器
+export function getMarketReturnEnterStorageReceiptToMachine(currentPage, size, receiptId) {
+  let test = Object.assign({receiptId: receiptId}, {currentPage: currentPage, size: size})
+  return myAxios({
+    url: BASE_URL + '/machines',
+    method: 'get',
+    params: test,
+    paramsSerializer: function (params) {
+      return qs.stringify(params, {arrayFormat: 'repeat'})
+    }
+  })
+}
+
 // 添加入库单据
 //export function createEnterStorageReceipt(enterStorageReceipt, machine) {
 //  return myAxios({
@@ -48,9 +61,9 @@ export function addMachineToMarketReturnEnterStorageReceipt(ids, receiptId) {
 }
 
 // 删除销退入库单中的机器
-export function deleteMachineForMarketReturnEnterStorageReceipt(id) {
+export function deleteMachineForMarketReturnEnterStorageReceipt(id, receiptId) {
   return myAxios({
-    url: BASE_URL + '/deleteMachine/?id=' + id,
+    url: BASE_URL + '/deleteMachine/?id=' + id + '&receiptId=' + receiptId,
     method: 'delete',
   })
 }

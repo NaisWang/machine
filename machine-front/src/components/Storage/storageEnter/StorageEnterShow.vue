@@ -130,6 +130,13 @@
             </el-button>
 
             <el-button
+                v-if="scope.row.isTransfer === 0"
+                size="mini"
+                @click="addReceiptDialogVisible=true;transferEnterStorageReceiptDialogVisible=true;transferReceiptInfo=scope.row">
+              一键库位调拨
+            </el-button>
+
+            <el-button
                 v-if="scope.row.isDelete === 0"
                 size="mini"
                 type="danger"
@@ -155,6 +162,7 @@
           :total="total">
       </el-pagination>
     </div>
+
 
     <el-dialog
         title="入库单信息"
@@ -182,16 +190,19 @@
 
       <span slot="footer" class="dialog-footer">
                               <el-button @click="addReceiptDialogVisible = false">取 消</el-button>
-                              <el-button type="primary" @click="addReceiptInfo">添 加</el-button>
+                              <el-button type="primary" v-if="!transferEnterStorageReceiptDialogVisible"
+                                         @click="addReceiptInfo">添 加</el-button>
+                              <el-button type="primary" v-else @click="oneKeyTransfer">调 拨</el-button>
                             </span>
     </el-dialog>
+
   </div>
 </template>
 
 <script>
 import * as enterStorageApi from "../../../api/enterStorageApi"
 import {
-  createEnterStorageReceipt, deleteEnterStorageReceipt,
+  createEnterStorageReceipt, createEnterStorageReceiptByOneKeyTransfer, deleteEnterStorageReceipt,
   deleteMachineForEnterStorageReceipt,
   releaseEnterStorageReceipt
 } from "../../../api/enterStorageApi";
@@ -209,7 +220,9 @@ export default {
       size: 10,
       total: null,
       newReceiptInfo: {},
-      addReceiptDialogVisible: false
+      addReceiptDialogVisible: false,
+      transferEnterStorageReceiptDialogVisible: false,
+      transferReceiptInfo: {}
     }
   },
   mounted() {
@@ -267,6 +280,36 @@ export default {
             this.$message.success("创建成功");
             this.initAllOrderInfo();
             this.addReceiptDialogVisible = false;
+            this.newReceiptInfo = {}
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消添加'
+        });
+      });
+    },
+    oneKeyTransfer() {
+      if (this.newReceiptInfo.storageLocationId === "" || this.newReceiptInfo.storageLocationId === undefined) {
+        this.$message.error("需要选择库位!!");
+        return
+      }
+      this.$confirm('是否确定要一键库位调拨', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.transferEnterStorageReceiptDialogVisible = false
+        createEnterStorageReceiptByOneKeyTransfer(this.newReceiptInfo, this.transferReceiptInfo.enterStorageOrder).then(resp => {
+          console.log("aaaa")
+          if (resp.data.code === 200) {
+            this.$message.success("创建成功");
+            this.initAllOrderInfo();
+            this.addReceiptDialogVisible = false;
+            this.newReceiptInfo = {}
+          } else {
+            this.$message.error("提交失败")
           }
         })
       }).catch(() => {
@@ -321,8 +364,7 @@ export default {
           message: '已取消发布'
         });
       });
-
-    }
+    },
   }
 }
 </script>

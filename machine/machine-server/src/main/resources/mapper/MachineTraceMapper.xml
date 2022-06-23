@@ -17,7 +17,8 @@
 
   <!-- 通用查询结果列 -->
   <sql id="Base_Column_List">
-    id, number, imei, paiji_barcode, status_id, receipt_id, time, operate_emp_id, comment
+    id
+    , number, imei, paiji_barcode, status_id, receipt_id, time, operate_emp_id, comment
   </sql>
 
   <!-- 获取所有数据 -->
@@ -242,5 +243,23 @@
     order by operate_emp_id
   </select>
 
+  <!-- 获取当前登录者的数据 -->
+  <select id="getOneStatistics" resultType="com.example.server.pojo.Statistics">
+    select a.operate_emp_id, a.status_id, ifnull(b.sum, 0) as 'sum'
+    from (
+           select tm.id as 'operate_emp_id', tms.id as 'status_id'
+           from t_employee as tm
+                  join t_machine_status as tms
+                       on 1 = 1
+                         and tm.id = #{empId}
+         ) as a
+           left join (select operate_emp_id, status_id, count(distinct number) as 'sum'
+                      from t_machine_trace
+                      where 1 = 1
+                        and DATEDIFF(time, NOW()) = 0
+                      group by operate_emp_id, status_id) as b
+                     on a.operate_emp_id = b.operate_emp_id and a.status_id = b.status_id
+    having sum != 0
+  </select>
 
 </mapper>

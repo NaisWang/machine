@@ -63,6 +63,15 @@
           width="170">
       </el-table-column>
 
+      <el-table-column
+          prop="operateEmpId"
+          label="操作人"
+          width="170">
+        <template #default="scope">
+          {{ $store.state.employeeNameCorr[scope.row.operateEmpId] }}
+        </template>
+      </el-table-column>
+
       <el-table-column label="操作" fixed="right">
         <template #default="scope">
           <el-button
@@ -195,7 +204,8 @@
     </el-dialog>
 
     <MachineShowDetailVertical v-if="showDetail.value" :machine="showDetailMachine"
-                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
 
   </div>
 </template>
@@ -216,6 +226,7 @@ export default {
       showDetail: {"value": false},
       showDetailMachine: {},
       showMachineTrace: {},
+      showMachineDetection: {},
       allOperateMachines: [],
       test: null,
       numberInput: "",
@@ -358,7 +369,10 @@ export default {
         this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
         getMachineTrace({"number": row.number}).then(resp => {
           this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
-          this.showDetail.value = true
+          getMachineDetection({"machineId": row.machineId}).then(resp => {
+            this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+            this.showDetail.value = true
+          })
         })
       })
     }

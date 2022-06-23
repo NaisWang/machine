@@ -16,6 +16,19 @@ export function getPurchaseReturnReceipt(currentPage, size, purchaseReturnReceip
   })
 }
 
+// 获取采购退货单中机器
+export function getPurchaseReturnReceiptToMachine(currentPage, size, receiptId) {
+  let test = Object.assign({receiptId: receiptId}, {currentPage: currentPage, size: size})
+  return myAxios({
+    url: BASE_URL + '/machines',
+    method: 'get',
+    params: test,
+    paramsSerializer: function (params) {
+      return qs.stringify(params, {arrayFormat: 'repeat'})
+    }
+  })
+}
+
 // 添加采购退货信息
 export function createPurchaseReturnReceipt(purchaseReturnReceipt) {
   return myAxios({
@@ -68,17 +81,17 @@ export function releasePurchaseReturnReceipt(receiptId) {
 }
 
 // 设置退货成功
-export function purchaseReturnSuccess(number) {
+export function purchaseReturnSuccess(machineId, receiptId) {
   return myAxios({
-    url: BASE_URL + '/returnSuccess?number=' + number,
+    url: BASE_URL + '/returnSuccess?machineId=' + machineId + '&receiptId=' + receiptId,
     method: 'get'
   })
 }
 
 // 设置退货失败
-export function purchaseReturnError(number) {
+export function purchaseReturnError(machineId, receiptId) {
   return myAxios({
-    url: BASE_URL + '/returnError?number=' + number,
+    url: BASE_URL + '/returnError?machineId=' + machineId + '&receiptId=' + receiptId,
     method: 'get'
   })
 }

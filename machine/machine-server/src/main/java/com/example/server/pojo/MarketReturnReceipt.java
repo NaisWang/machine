@@ -58,6 +58,10 @@ public class MarketReturnReceipt implements Serializable {
 	@TableField("is_release")
 	private Integer isRelease;
 
+	@ApiModelProperty(value = "渠道")
+	@TableField("channel_id")
+	private Integer channelId;
+
 	@ApiModelProperty(value = "备注")
 	private String comment;
 

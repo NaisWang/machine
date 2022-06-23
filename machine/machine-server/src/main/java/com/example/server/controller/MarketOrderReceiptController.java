@@ -5,10 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.server.pojo.*;
-import com.example.server.service.impl.LogServiceImpl;
-import com.example.server.service.impl.MachineServiceImpl;
-import com.example.server.service.impl.MachineTraceServiceImpl;
-import com.example.server.service.impl.MarketOrderReceiptServiceImpl;
+import com.example.server.service.impl.*;
 import com.example.server.utils.JudgeCompleteDeliverIntention;
 import com.example.server.utils.RespBean;
 import com.example.server.utils.RespPageBean;
@@ -17,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
+import org.apache.ibatis.annotations.Update;
 import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -49,6 +47,8 @@ public class MarketOrderReceiptController {
 	private LogServiceImpl logService;
 	@Autowired
 	private MachineTraceServiceImpl machineTraceService;
+	@Autowired
+	private MarketOrderReceiptToMachineServiceImpl marketOrderReceiptToMachineService;
 
 	@ApiOperation("获取所有销售订单")
 	@GetMapping("/")
@@ -66,6 +66,7 @@ public class MarketOrderReceiptController {
 		RespPageBean respPageBean = marketOrderReceiptService.getMarketOrderReceipt(currentPage, size, marketOrderReceipt);
 		return RespBean.success("获取成功", respPageBean);
 	}
+
 
 	//@ApiModelProperty("创建销售订单")
 	//@PutMapping("/")
@@ -148,7 +149,7 @@ public class MarketOrderReceiptController {
 	@ApiOperation("往销售订单中添加机器")
 	@PutMapping("/addMachine")
 	@Transactional
-	public RespBean addMachine(@RequestBody Integer[] ids, Integer receiptId, Authentication authentication) {
+	public RespBean addMachine(@RequestBody Integer[] ids, Integer receiptId, Float sellPrice, Authentication authentication) {
 		if (receiptId == 0) {
 			return RespBean.error("数据错误");
 		}
@@ -165,24 +166,32 @@ public class MarketOrderReceiptController {
 				return RespBean.error("该销售单已经发布了");
 			}
 
+			List<MarketOrderReceiptToMachine> marketOrderReceiptToMachines = new ArrayList<>();
+
 			List<Machine> machines = machineService.list(new QueryWrapper<Machine>().in("id", ids));
 			List<MachineTrace> machineTraces = new ArrayList<>();
 
 			for (Machine machine : machines) {
-				if (machine.getStatusId() != 26) {
-					return RespBean.error("该机器的状态不是已上架、待出库状态！");
-				}
+				//if (machine.getStatusId() != 26) {
+				//	return RespBean.error("该机器的状态不是已上架、待出库状态！");
+				//}
 				machine.setPreviousStatusId(machine.getStatusId());
 				machine.setStatusId(25);
 				machine.setMarketOrderId(receiptId);
 				machine.setOperateEmpId(empId);
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+				machine.setSalePrice(sellPrice);
+
+				machineTraces.add(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+
+				marketOrderReceiptToMachines.add(new MarketOrderReceiptToMachine(null, receiptId, machine.getId(), machine.getNumber(), machine.getSku(), machine.getComment(), empId, now, sellPrice));
 			}
 
 			if (machineService.updateBatchById(machines)) {
 				if (machineTraceService.saveBatch(machineTraces)) {
-					logService.save(new Log(empId, "往销售订单货单中添加机器", "", LocalDateTime.now(), 0));
-					return RespBean.success("添加成功");
+					if (marketOrderReceiptToMachineService.saveBatch(marketOrderReceiptToMachines)) {
+						logService.save(new Log(empId, "往销售订单货单中添加机器", "", LocalDateTime.now(), 0));
+						return RespBean.success("添加成功");
+					}
 				}
 			}
 			logService.save(new Log(empId, "往销售订单货单中添加机器", "", LocalDateTime.now(), 1));
@@ -197,11 +206,11 @@ public class MarketOrderReceiptController {
 	@ApiOperation("删除销售订单中的机器")
 	@DeleteMapping("/deleteMachine")
 	@Transactional
-	public RespBean deleteMachine(Integer id, Authentication authentication) {
+	public RespBean deleteMachine(Integer id, Integer receiptId, Authentication authentication) {
 		Integer empId = ((Employee) authentication.getPrincipal()).getId();
 		LocalDateTime now = LocalDateTime.now();
 		Machine machine = machineService.getById(id);
-		MarketOrderReceipt marketOrderReceipt = marketOrderReceiptService.getById(machine.getMarketOrderId());
+		MarketOrderReceipt marketOrderReceipt = marketOrderReceiptService.getById(receiptId);
 		try {
 
 			if (!empId.equals(marketOrderReceipt.getOperateEmpId())) {
@@ -212,11 +221,14 @@ public class MarketOrderReceiptController {
 			}
 			machine.setStatusId(machine.getPreviousStatusId());
 			machine.setMarketOrderId(0);
+			machine.setSalePrice(0f);
 
 			if (machineService.update(machine, new UpdateWrapper<Machine>().eq("id", machine.getId()))) {
-				if (machineTraceService.save(new MachineTrace(machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
-					logService.save(new Log(empId, "删除销售订单货单中机器", "", LocalDateTime.now(), 0));
-					return RespBean.success("删除成功");
+				if (machineTraceService.save(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), -1, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()))) {
+					if (marketOrderReceiptToMachineService.remove(new QueryWrapper<MarketOrderReceiptToMachine>().eq("receipt_id", marketOrderReceipt.getMarketOrder()).eq("machine_id", id))) {
+						logService.save(new Log(empId, "删除销售订单货单中机器", "", LocalDateTime.now(), 0));
+						return RespBean.success("删除成功");
+					}
 				}
 			}
 			logService.save(new Log(empId, "删除销售订单货单中机器", "", LocalDateTime.now(), 1));
@@ -257,7 +269,7 @@ public class MarketOrderReceiptController {
 				if (machineService.update(new Machine(), new UpdateWrapper<Machine>().eq("market_order_id", receiptId).set("status_id", 13).set("storage_location_id", null))) {
 					List<MachineTrace> machineTraces = new ArrayList<>();
 					for (Machine machine : machines) {
-						machineTraces.add(new MachineTrace(machine.getNumber(), 13, receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+						machineTraces.add(new MachineTrace(machine.getId(), machine.getNumber(), 13, receiptId, now, empId, machine.getComment(), null, machine.getIsUpShelf()));
 					}
 					if (machineTraceService.saveBatch(machineTraces)) {
 						if (JudgeCompleteDeliverIntention.judgeIsComplete(machines, 9)) {
@@ -300,13 +312,16 @@ public class MarketOrderReceiptController {
 			for (Machine machine : machines) {
 				machine.setMarketOrderId(0);
 				machine.setStatusId(machine.getPreviousStatusId());
-				machineTraces.add(new MachineTrace(machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
+				machine.setSalePrice(0f);
+				machineTraces.add(new MachineTrace(machine.getId(), machine.getNumber(), machine.getStatusId(), receiptId, now, empId, machine.getComment(), machine.getStorageLocationId(), machine.getIsUpShelf()));
 			}
 			if (marketOrderReceiptService.removeById(receiptId)) {
 				if (machines.size() == 0 || machineService.updateBatchById(machines)) {
 					if (machineTraceService.saveBatch(machineTraces)) {
-						logService.save(new Log(empId, "删除销售单", "销售单号为：" + receiptId, now, 0));
-						return RespBean.success("删除成功");
+						if (marketOrderReceiptToMachineService.remove(new QueryWrapper<MarketOrderReceiptToMachine>().eq("receipt_id", receiptId))) {
+							logService.save(new Log(empId, "删除销售单", "销售单号为：" + receiptId, now, 0));
+							return RespBean.success("删除成功");
+						}
 					}
 				}
 			}

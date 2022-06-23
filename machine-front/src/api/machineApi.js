@@ -40,7 +40,7 @@ export function modifyMachineQuality(machine) {
     'id': machine.id,
     'number': machine.number,
     'qualityDesc': machine.qualityDesc.toString(),
-    'comment': machine.comment.toString() + (machine.editComment1 == null || machine.editComment1.replaceAll(' ', '') === '') ? "" : '、' + machine.editComment1.toString(),
+    'qualityComment': machine.qualityComment.toString(),
     'storageLocationId': machine.storageLocationId,
     "isUpShelf": machine.isUpShelf
   }
@@ -62,10 +62,12 @@ export function modifyMachineFeature(machine) {
     'id': machine.id,
     'number': machine.number,
     'featureDesc': machine.featureDesc.toString(),
-    'comment': machine.comment.toString() + (machine.editComment2 == null || machine.editComment2.replaceAll(' ', '') === '') ? "" : '、' + machine.editComment2.toString(),
-    'paijiBarcode': machine.editPaijiBarcode,
+    'featureComment': machine.featureComment.toString(),
+    'paijiBarcode': machine.paijiBarcode,
     'storageLocationId': machine.storageLocationId
   }
+
+  console.log(data.comment)
 
   return myAxios({
     url: BASE_URL + '/modify/feature',
@@ -132,7 +134,8 @@ export function modifyFixComplete(machine, type) {
     'storageLocationId': machine.storageLocationId,
     "statusId": machine.statusId,
     "sku": machine.sku,
-    "isUpShelf": machine.isUpShelf
+    "isUpShelf": machine.isUpShelf,
+    "fixPrice": machine.fixPrice
   }
 
   return myAxios({

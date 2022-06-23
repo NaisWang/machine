@@ -42,6 +42,9 @@ public class MachineRecall implements Serializable {
 	@ApiModelProperty(value = "机器number")
 	private String number;
 
+	@ApiModelProperty(value = "机器id")
+	private Integer machineId;
+
 	@ApiModelProperty(value = "从何处召回")
 	@TableField("pre_operate_emp_id")
 	private Integer preOperateEmpId;

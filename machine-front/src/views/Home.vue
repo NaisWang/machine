@@ -74,7 +74,8 @@
     </el-container>
 
     <MachineShowDetailVertical v-if="showDetail.value" :table-name="'storageSearch'" :machine="showDetailMachine"
-                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
 
   </div>
 </template>
@@ -84,6 +85,7 @@ import * as tab from "../utils/tab"
 import {getMachineTrace} from "../api/machineTraceApi";
 import {getMachine} from "../api/machineApi";
 import MachineShowDetailVertical from "../components/Machine/MachineShowDetailVertical.vue";
+import {getMachineDetection} from "../api/machineDetection";
 
 export default {
   name: "Home",
@@ -92,6 +94,7 @@ export default {
       showDetail: {"value": false},
       showDetailMachine: {},
       showMachineTrace: {},
+      showMachineDetection: {},
       user: JSON.parse(window.sessionStorage.getItem("user")),
       isCollapse: true,
       showMachineDetailNumber: "",
@@ -181,10 +184,13 @@ export default {
             return
           }
           this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
-          getMachineTrace({'number': this.showDetailMachine['number']}).then(resp => {
+          getMachineTrace({'machineId': this.showDetailMachine['id']}).then(resp => {
             this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
-            this.showDetail.value = true
-            this.showMachineDetailNumber = ""
+            getMachineDetection({"machineId": this.showDetailMachine['id']}).then(resp => {
+              this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+              this.showDetail.value = true
+              this.showMachineDetailNumber = ""
+            })
           })
         })
       }
@@ -198,7 +204,7 @@ export default {
 };
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .homeHeader {
   background: #409eff;
   display: flex;
@@ -206,23 +212,22 @@ export default {
   justify-content: space-between;
   box-sizing: border-box;
 
-  .title {
-    font-size: 30px;
-    color: white;
-  }
-
-  .userInfo {
-    cursor: pointer;
-  }
 }
 
-.el-dropdown-link {
-  img {
-    width: 48px;
-    height: 48px;
-    border-radius: 24px;
-    margin-left: 8px;
-  }
+.homeHeader .title {
+  font-size: 30px;
+  color: white;
+}
+
+.homeHeader .userInfo {
+  cursor: pointer;
+}
+
+.el-dropdown-link img {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  margin-left: 8px;
 }
 
 .homeWelcome {

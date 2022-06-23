@@ -19,6 +19,7 @@ export function addMachineRecall(machines) {
   let data = []
   machines.forEach(machine => {
     data.push({
+      'machineId': machine.id,
       'number': machine.number,
       'preOperateEmpId': machine.operateEmpId,
       'statusId': machine.statusId,

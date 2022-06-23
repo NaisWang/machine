@@ -10,14 +10,14 @@
 
   <!-- 通用查询结果列 -->
   <sql id="Base_Column_List">
-    id, name
+    id
+    , name,operate_emp_ids
   </sql>
 
   <!-- 获取库位   -->
   <select id="getStorageLocation" resultType="com.example.server.pojo.StorageLocation">
     select a.*,
-           count(DISTINCT (b.id is not null or null)) as 'subStorageSum',
-           count(tm.id is not null or null)           as 'machineSum'
+           count(DISTINCT (b.id is not null or null)) as 'subStorageSum', count(tm.id is not null or null) as 'machineSum'
     from t_storage_location as a
            left join t_sub_storage_location as b
                      on a.id = b.parent_storage_location_id

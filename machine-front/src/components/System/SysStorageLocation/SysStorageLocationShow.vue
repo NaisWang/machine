@@ -32,6 +32,19 @@
             width="170">
         </el-table-column>
 
+        <el-table-column
+            prop="operateEmpIds"
+            label="操作人"
+            width="170">
+          <template #default="scope">
+            <el-tag v-for="item in  scope.row.operateEmpIds === null ? [] : scope.row.operateEmpIds.split(',')"
+                    :key="item">{{
+                $store.state.employeeNameCorr[item]
+              }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
         <el-table-column label="操作" fixed="right">
           <template #default="scope">
             <el-button
@@ -66,6 +79,18 @@
         <el-form-item label="备注" :prop="'comment'">
           <el-input type="text" v-model="nowEditStorage.comment" size="mini"></el-input>
         </el-form-item>
+
+        <el-form-item label="操作人" :prop="'operateEmpIds'">
+          <el-select clearable v-model="nowEditStorage.editOperateEmpIds" multiple size="mini">
+            <el-option
+                v-for="id in Object.keys($store.state.employeeNameCorr).map(Number)"
+                :label="$store.state.employeeNameCorr[id]"
+                :value="id + ''"
+                :key="id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
       </el-form>
       <span slot="footer" class="dialog-footer">
                               <el-button @click="nowEditStorageDialogVisible = false">取 消</el-button>
@@ -83,6 +108,17 @@
         <el-form-item label="名称" :prop="'name'" :rules="{ required: true,trigger: 'blur' }"
                       :show-message="false">
           <el-input type="text" v-model="newReceiptInfo.name" size="mini"></el-input>
+        </el-form-item>
+
+        <el-form-item label="操作人" :prop="'operateEmpIds'">
+          <el-select clearable v-model="nowEditStorage.operateEmpIds" multiple size="mini">
+            <el-option
+                v-for="id in Object.keys($store.state.employeeNameCorr).map(Number)"
+                :label="$store.state.employeeNameCorr[id]"
+                :value="id + ''"
+                :key="id">
+            </el-option>
+          </el-select>
         </el-form-item>
 
         <!--        <el-form-item label="库管门卫" :prop="'gateEmpId'" :rules="{ required: true,trigger: 'blur' }"-->
@@ -200,7 +236,9 @@ export default {
 
     },
     edit(row) {
+      row.editOperateEmpIds = []
       this.nowEditStorage = JSON.parse(JSON.stringify(row))
+      this.nowEditStorage.editOperateEmpIds = this.nowEditStorage.operateEmpIds === null ? [] : this.nowEditStorage.operateEmpIds.split(",");
       this.nowEditStorageDialogVisible = true;
     },
   }

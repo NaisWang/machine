@@ -229,7 +229,7 @@ export default {
             }
 
             let machine = resp.data.obj.data[0]
-
+            console.log(this.operateName)
             dealMachineJudge(machine, this.$store, this.operateName).then(resp => {
               if (resp.code === -1) {
                 this.$message.error(resp.message);

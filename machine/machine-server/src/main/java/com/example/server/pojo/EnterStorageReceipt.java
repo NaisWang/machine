@@ -74,4 +74,8 @@ public class EnterStorageReceipt implements Serializable {
 	@TableField(exist = false)
 	private Integer isDelete;
 
+	@ApiModelProperty(value = "是否可以一键库位调拨")
+	@TableField(exist = false)
+	private Integer isTransfer;
+
 }

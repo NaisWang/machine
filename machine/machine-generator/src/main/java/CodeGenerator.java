@@ -57,7 +57,7 @@ public class CodeGenerator {
 
 		// 数据源配置
 		DataSourceConfig dsc = new DataSourceConfig();
-		dsc.setUrl("jdbc:mysql://localhost:3306/machine?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai");
+		dsc.setUrl("jdbc:mysql://1.117.40.114:3306/englishExampleSentence?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai");
 		dsc.setDriverName("com.mysql.jdbc.Driver");
 		dsc.setUsername("root");
 		dsc.setPassword("whz1152957995");
@@ -139,7 +139,7 @@ public class CodeGenerator {
 		strategy.setInclude(scanner("表名，多个英文逗号分割").split(","));
 		strategy.setControllerMappingHyphenStyle(true);
 		// 表前缀
-		strategy.setTablePrefix("t_");
+		//strategy.setTablePrefix("MBI_");
 		mpg.setStrategy(strategy);
 		mpg.setTemplateEngine(new FreemarkerTemplateEngine());
 		mpg.execute();

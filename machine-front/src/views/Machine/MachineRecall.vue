@@ -97,7 +97,8 @@
     </el-dialog>
 
     <MachineShowDetailVertical v-if="showDetail.value" :machine="showDetailMachine"
-                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
 
   </div>
 </template>
@@ -115,6 +116,7 @@ export default {
     return {
       showDetail: {"value": false},
       showMachineTrace: {},
+      showMachineDetection: {},
       showDetailMachine: {},
       scanMachines: [],
       machines: [],
@@ -202,8 +204,12 @@ export default {
               return
             }
 
+            console.log(this.$store.state.empIdToStorageLocationIdsForGateCorr[this.$store.state.userId])
+            console.log("aaaa")
+            console.log(machine.storageLocationId)
+
             if (this.$store.state.empIdToStorageLocationIdsForGateCorr[this.$store.state.userId].indexOf(machine.storageLocationId) === -1) {
-              this.$message.error("这机器现位于" + this.$store.state.storageLocationIdToEmpIdsCorr[machine.storageLocationId] + ",而你不能管理这个库位的机器");
+              this.$message.error("这机器现位于" + this.$store.state.subStorageLocationIdToNameCorr[machine.storageLocationId] + ",而你不能管理这个库位的机器");
               return
             }
 
@@ -254,11 +260,14 @@ export default {
       });
     },
     detail(row) {
-      getMachine(1, 10, {"number": row.number}).then(resp => {
+      getMachine(1, 10, {"id": row.machineId}).then(resp => {
         this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
-        getMachineTrace({"number": row.number}).then(resp => {
+        getMachineTrace({"machineId": row.machineId}).then(resp => {
           this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
-          this.showDetail.value = true
+          getMachineDetection({"machineId": row.machineId}).then(resp => {
+            this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+            this.showDetail.value = true
+          })
         })
       })
     },

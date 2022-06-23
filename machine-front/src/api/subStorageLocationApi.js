@@ -16,6 +16,7 @@ export function getSubStorageLocation(parentStorageLocationId) {
 
 export function addSubStorageLocation(data) {
   let subStorageLocation = JSON.parse(JSON.stringify(data));
+  subStorageLocation.gateEmpId = subStorageLocation.gateEmpId.toString();
   return myAxios({
     url: BASE_URL + '/',
     method: 'post',

@@ -5,6 +5,7 @@
 
     <AddMachineByScan v-if="isEdit === 0 && $store.state.userId === operateEmpId" :machines="machines"
                       table-name="machineDeliver"
+                      :operate-name="'machineDeliver-' + deliverIntentionId"
                       :receiptId="receiptDetailNumber" @initShow="initDeliverMachines"></AddMachineByScan>
 
     <div>
@@ -114,7 +115,8 @@
 
 
     <MachineShowDetailVertical v-if="showDetail.value" :table-name="tableName" :machine="showDetailMachine"
-                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
 
 
     <!--    <el-dialog-->
@@ -153,6 +155,8 @@ import AddMachineByScan from "../AddMachineByScan.vue";
 import MachineShowDetailVertical from "../MachineShowDetailVertical.vue";
 import {getMachineTrace} from "../../../api/machineTraceApi";
 import MachineSearch from "../MachineSearch.vue";
+import {getMachineDetection} from "../../../api/machineDetection";
+import {dealMachineJudge} from "../../../utils/dealMachineJudge";
 
 export default {
   name: "MachineDeliverDetail",
@@ -162,6 +166,7 @@ export default {
       showDetailMachine: {},
       showMachineTrace: {},
       searchMachine: {},
+      showMachineDetection: {},
       machines: [],
       currentPage: 1,
       size: 10,
@@ -172,9 +177,15 @@ export default {
       showMachineTable: false,
       addDeliverMachinesInfo: [],
       addDeliverMachineInfo: {},
+      deliverIntentionIdToName: {
+        //退回返修
+        14: "deliverMachineToReturnFix",
+        // 返修
+        15: "deliverMachineToFix"
+      }
     }
   },
-  props: ['receiptDetailNumber', 'isEdit', 'operateEmpId'],
+  props: ['receiptDetailNumber', 'isEdit', 'operateEmpId', 'deliverIntentionId'],
   mounted() {
     this.initDeliverMachines();
   },
@@ -204,27 +215,6 @@ export default {
     addMachine() {
       this.dialogVisible = true
     },
-    addMachineByScan() {
-      if (this.numberInput !== "") {
-        let _this = this.$refs
-        getMachine(1, 10, {"number": this.numberInput}).then(resp => {
-          if (resp.data.obj) {
-            if (resp.data.obj.total === 0) {
-              this.$message.error("没有物品编号为:" + this.numberInput + "的机器")
-              return
-            }
-            if (resp.data.obj.data[0]['deliverMachineId'] !== 0) {
-              this.$message.error("该机器正处于转交中!!!")
-              return
-            }
-            this.addMachineInfo = resp.data.obj.data[0]
-            this.showMachineTable = true
-            this.numberInput = ""
-            _this.child.initMachineTable()
-          }
-        })
-      }
-    },
     handleDelete(row) {
       this.$confirm('是否确定要删除', '提示', {
         confirmButtonText: '确定',
@@ -246,11 +236,14 @@ export default {
       });
     },
     detail(row) {
-      getMachine(1, 10, {"number": row.machineNumber}).then(resp => {
+      getMachine(1, 10, {"id": row.machineId}).then(resp => {
         this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
-        getMachineTrace({"number": row.machineNumber}).then(resp => {
+        getMachineTrace({"machineId": row.machineId}).then(resp => {
           this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
-          this.showDetail.value = true
+          getMachineDetection({"machineId": row.machineId}).then(resp => {
+            this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+            this.showDetail.value = true
+          })
         })
       })
     }

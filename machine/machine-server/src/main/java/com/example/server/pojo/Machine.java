@@ -209,13 +209,17 @@ public class Machine implements Serializable {
 	@TableField("fixed")
 	private String fixed;
 
-	@ApiModelProperty(value = "未修好的项")
+	@ApiModelProperty(value = "不能修好的项")
 	@TableField("not_fixed")
 	private String notFixed;
 
 	@ApiModelProperty(value = "修坏项")
 	@TableField("fix_to_bad")
 	private String fixToBad;
+
+	@ApiModelProperty(value = "维修次数")
+	@TableField("fix_times")
+	private Integer fixTimes;
 
 	@ApiModelProperty(value = "对应转机机器表中的id")
 	@TableField("deliver_receipt_id")
@@ -233,4 +237,15 @@ public class Machine implements Serializable {
 	@TableField("comment")
 	private String comment;
 
+	@ApiModelProperty(value = "成色检测备注")
+	@TableField("quality_comment")
+	private String qualityComment;
+
+	@ApiModelProperty(value = "功能检测备注")
+	@TableField("feature_comment")
+	private String featureComment;
+
+	@ApiModelProperty(value = "确定维修项备注")
+	@TableField("need_fix_comment")
+	private String needFixComment;
 }

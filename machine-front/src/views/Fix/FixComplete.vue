@@ -133,6 +133,11 @@
           </el-tag>
         </el-form-item>
 
+        <el-form-item label="维修次数"
+                      style="margin: 0;">
+          <el-input disabled :value="nowEditMachine.fixTimes"></el-input>
+        </el-form-item>
+
         <el-form-item label="机器备注"
                       style="margin: 0;">
           <el-input disabled :value="nowEditMachine.comment"></el-input>
@@ -147,7 +152,9 @@
           <template>
             <div
                 v-for="(group,index) in Object.keys($store.state.machineDesc[category[nowEditMachine['categoryId']]]['functionInfos'])"
-                :key="index">
+                :key="index"
+                v-show="nowEditMachine['editNeedFix'][index].length !== 0"
+            >
               <el-row>
                 <el-col :span="2">
                   <span style="margin-right: 8px; font-size: 10px; font-weight: bold;">{{ group }}</span>
@@ -160,15 +167,40 @@
                     <el-checkbox
                         border
                         style="margin-right: 5px; margin-top: 1px; margin-left: 0"
-                        v-for="item in $store.state.machineDesc[category[nowEditMachine['categoryId']]]['functionInfos'][group]"
                         :key="item.id"
-                        :label="item.id + ''">{{ item.value }}
+                        :label="nowEditMachine['editNeedFix'][index][0]">
+                      {{ $store.state.machineIdToDesc[nowEditMachine['editNeedFix'][index][0]] }}
                     </el-checkbox>
                   </el-checkbox-group>
                 </el-col>
               </el-row>
             </div>
           </template>
+
+          <!--            <div
+                          v-for="(group,index) in Object.keys($store.state.machineDesc[category[nowEditMachine['categoryId']]]['functionInfos'])"
+                          :key="index">
+                        <el-row>
+                          <el-col :span="2">
+                            <span style="margin-right: 8px; font-size: 10px; font-weight: bold;">{{ group }}</span>
+                          </el-col>
+                          <el-col :span="22">
+                            <el-checkbox-group
+                                size="mini"
+                                :max="1"
+                                v-model="nowEditMachine[item.editProp][index]">
+                              <el-checkbox
+                                  border
+                                  style="margin-right: 5px; margin-top: 1px; margin-left: 0"
+                                  v-for="item in $store.state.machineDesc[category[nowEditMachine['categoryId']]]['functionInfos'][group]"
+                                  :key="item.id"
+                                  :label="item.id + ''">{{ item.value }}
+                              </el-checkbox>
+                            </el-checkbox-group>
+                          </el-col>
+                        </el-row>
+                      </div>
+                    </template>-->
         </el-tab-pane>
       </el-tabs>
 
@@ -191,7 +223,8 @@
     </el-dialog>
 
     <MachineShowDetailVertical v-if="showDetail.value" :machine="showDetailMachine"
-                               :machine-trace="showMachineTrace" :show-detail="showDetail"></MachineShowDetailVertical>
+                               :machine-trace="showMachineTrace" :machine-detection="showMachineDetection"
+                               :show-detail="showDetail"></MachineShowDetailVertical>
 
   </div>
 </template>
@@ -212,6 +245,7 @@ export default {
       showDetail: {"value": false},
       showDetailMachine: {},
       showMachineTrace: {},
+      showMachineDetection: {},
       allOperateMachines: [],
       test: null,
       numberInput: "",
@@ -220,8 +254,8 @@ export default {
       category: {1: 'phone', 2: 'tablet', 3: '手表'},
       tabs: [
         {'label': "已修好项", 'prop': 'fixed', 'editProp': 'editFixed'},
-        {'label': "未修好项", 'prop': 'notFixed', 'editProp': 'editNotFixed'},
-        {'label': "修坏项", 'prop': 'fixToBad', 'editProp': 'editFixToBad'},
+        {'label': "不能修好项", 'prop': 'notFixed', 'editProp': 'editNotFixed'},
+        //{'label': "修坏项", 'prop': 'fixToBad', 'editProp': 'editFixToBad'},
       ],
       activeName: 'fixed',
       searchOptions: [{
@@ -302,7 +336,7 @@ export default {
                 }
               }
             }).then(() => {
-              dealMachineJudge(machine, this.$store, "fixConfirm").then(resp => {
+              dealMachineJudge(machine, this.$store, "addMachineToFixComplete").then(resp => {
                 if (resp.code === -1) {
                   this.$message.error(resp.message);
                 } else if (resp.code === 1) {
@@ -311,6 +345,7 @@ export default {
                   machine.editFixToBad = []
                   _this.nowEditMachine = machine
                   _this.initFeatureDesc(machine)
+                  _this.initEditNeedFix(_this.nowEditMachine)
                   _this.numberInput = ""
                   _this.dialogVisible = true
                 }
@@ -325,6 +360,29 @@ export default {
           }
         })
       }
+    },
+    initEditNeedFix(data) {
+      let length = Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['qualityInfos']).length
+      if (data.needFix === null) {
+        data.editNeedFix = []
+        Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['qualityInfos']).forEach(item => {
+          data.editNeedFix.push([])
+        })
+      } else {
+        let temp = data.needFix.split(",")
+        data.editNeedFix = []
+        temp.forEach(item => {
+          if (item === "") {
+            data.editNeedFix.push([]);
+          } else {
+            data.editNeedFix.push([item]);
+          }
+        })
+        for (let i = data.editNeedFix.length; i < length; i++) {
+          data.editNeedFix.push([]);
+        }
+      }
+      return true
     },
     initFeatureDesc(data) {
       let length = Object.keys(this.$store.state.machineDesc[this.category[this.nowEditMachine['categoryId']]]['functionInfos']).length
@@ -381,11 +439,14 @@ export default {
       });
     },
     detail(row) {
-      getMachine(1, 10, {"number": row.number}).then(resp => {
+      getMachine(1, 10, {"id": row.machineId}).then(resp => {
         this.showDetailMachine = JSON.parse(JSON.stringify(resp.data.obj.data[0]));
-        getMachineTrace({"number": row.number}).then(resp => {
+        getMachineTrace({"machineId": row.machineId}).then(resp => {
           this.showMachineTrace = JSON.parse(JSON.stringify(resp.data.obj))
-          this.showDetail.value = true
+          getMachineDetection({"machineId": row.machineId}).then(resp => {
+            this.showMachineDetection = JSON.parse(JSON.stringify(resp.data.obj))
+            this.showDetail.value = true
+          })
         })
       })
     }

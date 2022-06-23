@@ -20,4 +20,9 @@ public interface IMachineTraceService extends IService<MachineTrace> {
 	 * 获取所有数据
 	 */
 	List<Statistics> getAllStatistics(Integer[] empIds, Integer[] statusIds, Integer[] dateScope);
+
+	/**
+	 * 获取当前登陆者的数据
+	 */
+	List<Statistics> getOneStatistics(Integer empId);
 }
