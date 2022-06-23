@@ -52,7 +52,7 @@ def delete_proxy(proxy):
 def init_user():
 	get_user()
 	for item in user:
-		item["token"] = "44901f0dc47da87ae9f2bda58718aa4e"	
+		item["token"] = "b03a037f255fecfb5898c426d48f5e00"	
 		#resp = login(item["chromosome"], item["body"])
 		#if resp == -1:
 		#	log.log_error.append(item["userName"] + "用户信息有错误")
