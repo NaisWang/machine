@@ -281,6 +281,11 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 					headers['Chromosome'] = getChromsome()
 					retry_count -= 1
 					continue
+				if access.authCode(resp['resultMessage']) == 1:
+					if access.update_token(0) == False:
+						log.log_error.append("更新token失败")
+						return -2
+					continue
 				log.log_error.append(resp)
 				res = access.token_is_invalid(resp['resultMessage'], userIndex)
 				if res == -2:
@@ -477,11 +482,7 @@ def get_desc(productId, userIndex):
 		'Host': 'sjapi.aihuishou.com',
 		'Version': '2.43.1',
 		'Chromosome': chromosome,
-		'Version-Type': '1',
-		'Platform': 'web',
 		'Access-Token': access.user[userIndex]['token'] ,
-		'Accept': 'application/json',
-		'Content-Type': 'application/json'
 	}
 	retry_count = 5
 	while retry_count > 0:

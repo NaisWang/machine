@@ -36,9 +36,12 @@ def token_is_invalid(resp, index):
 
 
 def chromsome_is_invalid(resp, index):
-	global user
-
 	if "访问行为异常" in resp:
+		return 1
+	return 0
+
+def authCode(resp):
+	if '请校验验证码' in resp:
 		return 1
 	return 0
 
