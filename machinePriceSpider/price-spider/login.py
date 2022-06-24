@@ -40,7 +40,7 @@ def login(chromosome, body):
 	retry_count = 1
 	while retry_count > 0:
 		try:
-			#return "f151d2509a7fbf7d23121688291d5d44"
+			return "08dcef810468f5cf0d695c591a42dcf5"
 			resp = json.loads(requests.post(loginURL, headers=headers, data=str(body)).text)
 			if 'data' in resp and "accessToken" in resp["data"]:
 				log.log_error.append("登录成功, token为:" + str(resp["data"]["accessToken"]))
