@@ -76,21 +76,21 @@ export function updateModelGuaranteeBattery(modelGuaranteeBattery) {
 
 export function getXdCombinationPriceField() {
   return myAxios({
-    url: "http://127.0.0.1:5000/xd_combination_price_field",
+    url: "http://120.79.195.87:5000/xd_combination_price_field",
     method: 'get'
   })
 }
 
 export function get_paiji_combination_price_field() {
   return myAxios({
-    url: "http://127.0.0.1:5000/paiji_combination_price_field",
+    url: "http://120.79.195.87:5000/paiji_combination_price_field",
     method: 'get'
   })
 }
 
 export function getPaijiField() {
   return myAxios({
-    url: "http://127.0.0.1:5000/paiji-field",
+    url: "http://120.79.195.87:5000/paiji-field",
     method: 'get'
   })
 }
@@ -127,14 +127,14 @@ export function updatePaijiUser(paijiUser) {
 
 export function testLogin(username, password) {
   return myAxios({
-    url: "http://127.0.0.1:5000/testLogin?username=" + username + "&password=" + password,
+    url: "http://120.79.195.87:5000/testLogin?username=" + username + "&password=" + password,
     method: 'get'
   })
 }
 
 export function stopSearchPrice() {
   return myAxios({
-    url: 'http://127.0.0.1:5000/stop-search-price',
+    url: 'http://120.79.195.87:5000/stop-search-price',
     method: 'get'
   })
 }

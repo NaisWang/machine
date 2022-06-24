@@ -50,7 +50,7 @@ def init_contrast():
 		"屏幕显示": []
 	}
 
-	url = "http://127.0.0.1:8081/machine/price/field"
+	url = "http://120.79.195.87:8081/machine/price/field"
 	resp = json.loads(requests.get(url).text)
 	for item in resp['obj']:
 		if item["name"] not in excludeField:
@@ -81,7 +81,7 @@ def init_ahs_field():
 
 
 def init_model_contrast():
-	url = "http://127.0.0.1:8081/machine/price/model-contrast/"
+	url = "http://120.79.195.87:8081/machine/price/model-contrast/"
 	resp = json.loads(requests.get(url).text)
 	for item in resp['obj']:
 		model_contrast[str(item['excelModel']).replace(' ', '').replace('(', '').replace(')', '').replace('（', '').replace('）', '').lower()] = item['paijiModel']
@@ -89,28 +89,28 @@ def init_model_contrast():
 
 def init_model_guarantee_battery():
 	global mode_guarantee_battery
-	url = "http://127.0.0.1:8081/machine/price/model-guarantee-battery/"
+	url = "http://120.79.195.87:8081/machine/price/model-guarantee-battery/"
 	resp = json.loads(requests.get(url).text)
 	mode_guarantee_battery = resp['obj']
 
 
 def init_guarantee_corr():
 	global guarantee_corr
-	url = "http://127.0.0.1:8081/machine/price/guarantee/"
+	url = "http://120.79.195.87:8081/machine/price/guarantee/"
 	resp = json.loads(requests.get(url).text)
 	guarantee_corr = resp['obj']
 
 
 def init_battery_corr():
 	global battery_corr
-	url = "http://127.0.0.1:8081/machine/price/battery/"
+	url = "http://120.79.195.87:8081/machine/price/battery/"
 	resp = json.loads(requests.get(url).text)
 	battery_corr = resp['obj']
 
 
 def init_price_combination():
 	global price_combination
-	url = "http://127.0.0.1:8081/machine/price/price-combination/"
+	url = "http://120.79.195.87:8081/machine/price/price-combination/"
 	resp = json.loads(requests.get(url).text)
 	price_combination = resp['obj']
 
