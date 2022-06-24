@@ -2,6 +2,7 @@ from login import login, logout
 import requests
 import log
 import json
+import time
 
 user = []
 
@@ -63,7 +64,9 @@ def init_user():
 def update_token(index):
 	userInfo = user[index]
 	logout(userInfo['token'])
-	resp = login(item["chromosome"], item["body"])
+	time.sleep(5)
+	print(time.strftime('%H:%M:%S'),'重新登录')
+	resp = login(userInfo["chromosome"], userInfo["body"])
 	if resp == -1:
 		log.log_error.append(userInfo["userName"] + "用户信息有错误")
 	else:
