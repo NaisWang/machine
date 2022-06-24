@@ -20,7 +20,6 @@ def testLogin():
 
 def login(chromosome, body):
 	loginURL = "https://sjapi.aihuishou.com/sj-api/auth/login"
-	# data = {"userName": str(username), "passWord": str(password)}
 	headers = {
 		"Host": "sjapi.aihuishou.com",
 		"User-Agent": "OPTapp/2.43.1 (com.aihuishou.OPTapp.P; build:202206171208; iOS 15.5.0) Alamofire/2.43.1",
@@ -64,7 +63,7 @@ def logout(token):
 	retry_count = 2
 	while retry_count > 0:
 		try:
-			resp = json.loads(requests.post(url, headers=headers)
+			resp = json.loads(requests.post(url, headers=headers).text)
 			if resp['code'] == 200:
 				log.log_error.append("退出登录成功, token为:" + str(token))
 				return True
