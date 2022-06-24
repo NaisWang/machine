@@ -41,7 +41,7 @@ def chromsome_is_invalid(resp, index):
 	return 0
 
 def authCode(resp):
-	if '请校验验证码' in resp:
+	if '验证码' in resp:
 		return 1
 	return 0
 

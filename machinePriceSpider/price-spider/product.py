@@ -282,10 +282,12 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 					retry_count -= 1
 					continue
 				if access.authCode(resp['resultMessage']) == 1:
-					if access.update_token(0) == False:
-						log.log_error.append("更新token失败")
-						return -2
-					continue
+					print(resp)
+					log.log_error.append(resp)
+					#if access.update_token(0) == False:
+					#	log.log_error.append("更新失败")
+					#	return -2
+					#continue
 				log.log_error.append(resp)
 				res = access.token_is_invalid(resp['resultMessage'], userIndex)
 				if res == -2:
