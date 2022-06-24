@@ -22,22 +22,23 @@ def login(chromosome, body):
 	loginURL = "https://sjapi.aihuishou.com/sj-api/auth/login"
 
 	payload = "cwmMnp1HwwmamSqys3N0PGhSKvoXdYpWM7/KLZaUMKpmvpFvfdOWT7cSaajurZ9cOvqk+xcpd1k+p1tkDt4xbys9XSHKWAQdqhMxNzSIp8BiUz1TBKrq1y11DofTPGaw5Rg7zECMBqc8GAYv0ZLV98KAm+5WEHIySADGVGuOGIw="
+
 	headers = {
-	'Host': ' sjapi.aihuishou.com',
-	'User-Agent': ' OPTapp/2.43.1 (com.aihuishou.OPTapp.P; build:202206171208; iOS 15.5.0) Alamofire/2.43.1',
-	'App-ID': 'pjt432865',
-	'app-channel': ' 598302',
-	'Version': ' 2.43.1',
-	'chromosome': str(chromosome),
-	'Version-Type': ' 1',
-	'Platform': ' ios',
-	'Content-Length': ' 172',
-	'Connection': ' close',
-	'Accept-Language': ' zh-Hans-CN;q=1.0, en-CN;q=0.9',
-	'Accept': ' application/json',
-	'Content-Type': ' text/plain',
-	'Accept-Encoding': ' gzip, deflate',
-	'Key-Version': ' 1000',
+		'Host': ' sjapi.aihuishou.com',
+		'User-Agent': ' OPTapp/2.43.1 (com.aihuishou.OPTapp.P; build:202206171208; iOS 15.5.0) Alamofire/2.43.1',
+		'App-ID': 'pjt432865',
+		'app-channel': ' 598302',
+		'Version': ' 2.43.1',
+		'chromosome': str(chromosome),
+		'Version-Type': ' 1',
+		'Platform': ' ios',
+		'Content-Length': ' 172',
+		'Connection': ' close',
+		'Accept-Language': ' zh-Hans-CN;q=1.0, en-CN;q=0.9',
+		'Accept': ' application/json',
+		'Content-Type': ' text/plain',
+		'Accept-Encoding': ' gzip, deflate',
+		'Key-Version': ' 1000',
 	}
 
 	#headers = {
@@ -63,6 +64,7 @@ def login(chromosome, body):
 			#return "08dcef810468f5cf0d695c591a42dcf5"
 			#response = requests.request("POST", url, headers=headers, data=payload)
 			resp = json.loads(requests.post(loginURL, headers=headers, data=payload).text)
+			print(resp)
 			if 'data' in resp and "accessToken" in resp["data"]:
 				log.log_error.append("登录成功, token为:" + str(resp["data"]["accessToken"]))
 				return resp["data"]["accessToken"]
