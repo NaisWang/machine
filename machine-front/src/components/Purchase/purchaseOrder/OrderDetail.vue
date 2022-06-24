@@ -12,7 +12,7 @@
         <i :class="showAdvanceSearchVisible ?'fa fa-angle-double-up':'fa fa-angle-double-down'" aria-hidden="true"></i>
         高级搜索
       </el-button>
-      <el-upload action="http://localhost:8080/machine/purchase/import" :show-file-list="false"
+      <el-upload action="http://120.79.195.87:8080/machine/purchase/import" :show-file-list="false"
                  :before-upload="beforeUpload"
                  :headers="headers"
                  :on-success="onSuccess"
