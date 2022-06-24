@@ -6,6 +6,8 @@ import json
 import access
 import random
 
+import log
+
 import paijiContrast
 from app import app
 from flask import request, jsonify
@@ -279,6 +281,7 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 					headers['Chromosome'] = getChromsome()
 					retry_count -= 1
 					continue
+				log.log_error.append(resp)
 				res = access.token_is_invalid(resp['resultMessage'], userIndex)
 				if res == -2:
 					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
@@ -494,6 +497,7 @@ def get_desc(productId, userIndex):
 					headers['Chromosome'] = getChromsome()
 					retry_count -= 1
 					continue
+				log.log_error.append(resp)
 				res = access.token_is_invalid(resp['resultMessage'], userIndex)
 				if res == -2:
 					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
