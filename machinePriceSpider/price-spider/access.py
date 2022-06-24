@@ -64,7 +64,7 @@ def init_user():
 def update_token(index):
 	userInfo = user[index]
 	logout(userInfo['token'])
-	time.sleep(10)
+	time.sleep(200)
 	print(time.strftime('%H:%M:%S'),'重新登录')
 	resp = login(userInfo["chromosome"], userInfo["body"])
 	if resp == -1:
