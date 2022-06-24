@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ac611d6d-50dc-403b-8f58-265aaa2b41fe" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/src/main/resources/config/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/machine-generator/src/main/resources/config/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/target/classes/config/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/machine-generator/target/classes/config/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,7 +126,7 @@
       <workItem from="1649306270676" duration="3616000" />
       <workItem from="1649859656844" duration="3793000" />
       <workItem from="1655716270102" duration="10047000" />
-      <workItem from="1655969732597" duration="6372000" />
+      <workItem from="1655969732597" duration="6962000" />
     </task>
     <servers />
   </component>
