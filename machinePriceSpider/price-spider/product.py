@@ -264,7 +264,8 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 		'Platform': 'web',
 		'Access-Token': access.user[userIndex]['token'] ,
 		'Accept': 'application/json',
-		'Content-Type': 'application/json'
+		'Content-Type': 'application/json',
+		'Content-Length':str(len(json.dumps(data).replace(' ','')))
 	}
 	retry_count = 5
 	resp = ""
@@ -485,6 +486,9 @@ def get_desc(productId, userIndex):
 		'Version': '2.43.1',
 		'Chromosome': chromosome,
 		'Access-Token': access.user[userIndex]['token'] ,
+		'Connection':'keep-alive',
+		'Accept-Encoding':'gzip, deflate, br',
+		'Accept':'*/*'
 	}
 	retry_count = 5
 	while retry_count > 0:
