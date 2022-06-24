@@ -197,6 +197,10 @@ class userThread(threading.Thread):
 	def run(self):
 		global count
 		while count < self.xlrd_worksheet.nrows and search_price_flag == 1:
+			if count % 5 == 0:
+				if access.update_token(0):
+					log.log_error.append("更新token失败")
+					return
 			time.sleep(4)
 			print(time.strftime('%H:%M:%S'),'hahaha')
 			# while count < self.xlrd_worksheet.nrows:

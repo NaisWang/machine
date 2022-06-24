@@ -1,4 +1,4 @@
-from login import login
+from login import login, logout
 import requests
 import log
 import json
@@ -52,18 +52,21 @@ def delete_proxy(proxy):
 def init_user():
 	get_user()
 	for item in user:
-		item["token"] = "2c19000d17a79ddfe8da73b8ade15ef9"	
-		#resp = login(item["chromosome"], item["body"])
-		#if resp == -1:
-		#	log.log_error.append(item["userName"] + "用户信息有错误")
-		#else:
-		#	item["token"] = resp
+		#item["token"] = "2c19000d17a79ddfe8da73b8ade15ef9"	
+		resp = login(item["chromosome"], item["body"])
+		if resp == -1:
+			log.log_error.append(item["userName"] + "用户信息有错误")
+		else:
+			item["token"] = resp
 
 
 def update_token(index):
 	userInfo = user[index]
-	resp = login(userInfo["userName"], userInfo["passWord"])
+	logout(userInfo['token'])
+	resp = login(item["chromosome"], item["body"])
 	if resp == -1:
 		log.log_error.append(userInfo["userName"] + "用户信息有错误")
 	else:
 		userInfo["token"] = resp
+		return True
+	return False
