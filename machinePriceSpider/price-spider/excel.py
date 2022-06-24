@@ -198,7 +198,7 @@ class userThread(threading.Thread):
 		global count
 		while count < self.xlrd_worksheet.nrows and search_price_flag == 1:
 			if count % 5 == 0:
-				if access.update_token(0):
+				if access.update_token(0) == False:
 					log.log_error.append("更新token失败")
 					return
 			time.sleep(4)
