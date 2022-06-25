@@ -6,6 +6,13 @@ import time
 
 user = []
 
+userAgents = [
+	'OPTapp/2.16.11 (com.aihuishou.OPTapp.P; build:202106092123; iOS 14.6.0) Alamofire/4.9.1',
+	'Mozilla/5.0 (iPhone; CPU iPhone OS 14_4_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, '
+	'like Gecko) '
+	'Mobile/15E148 MicroMessenger/8.0.6(0x18000632) NetType/WIFI Language/zh_CN',
+]
+
 def get_user():
 	url = "http://120.79.195.87:8081/machine/price/paiji-user/"
 	resp = json.loads(requests.get(url).text)
