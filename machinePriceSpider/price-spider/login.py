@@ -5,7 +5,7 @@ import log
 import random
 from app import app
 from flask import request
-
+from getChromsome import getChromsome
 
 @app.route("/testLogin")
 def testLogin():
