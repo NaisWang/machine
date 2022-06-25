@@ -64,11 +64,11 @@ def init_user():
 	get_user()
 	for item in user:
 		item["token"] = "49e951cff912c2ab75a1d5a89492af1c"	
-		resp = login(item["chromosome"], item["body"])
-		if resp == -1:
-			log.log_error.append(item["userName"] + "用户信息有错误")
-		else:
-			item["token"] = resp
+		#resp = login(item["chromosome"], item["body"])
+		#if resp == -1:
+		#	log.log_error.append(item["userName"] + "用户信息有错误")
+		#else:
+		#	item["token"] = resp
 
 
 def update_token(index):
