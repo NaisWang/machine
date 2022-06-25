@@ -273,6 +273,7 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 	}
 	retry_count = 5
 	proxy = access.get_proxy().get("proxy")
+	print(proxy)
 	resp = ""
 	while retry_count > 0:
 		try:
