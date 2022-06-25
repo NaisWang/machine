@@ -19,6 +19,7 @@ def testLogin():
 
 
 def login(chromosome, body):
+	userAgentIndex = random.randint(1, len(access.userAgents))
 	loginURL = "https://sjapi.aihuishou.com/sj-api/auth/login"
 
 	#payload = "cwmMnp1HwwmamSqys3N0PGhSKvoXdYpWM7/KLZaUMKpmvpFvfdOWT7cSaajurZ9cOvqk+xcpd1k+p1tkDt4xbys9XSHKWAQdqhMxNzSIp8BiUz1TBKrq1y11DofTPGaw5Rg7zECMBqc8GAYv0ZLV98KAm+5WEHIySADGVGuOGIw="
@@ -57,6 +58,7 @@ def login(chromosome, body):
 		"Content-Type": "text/plain",
 		"Accept-Encoding": "gzip, deflate",
 		"Key-Version": "1000"
+		'User-Agent': access.userAgents[userAgentIndex - 1],
 	}
 	proxy = access.get_proxy().get("proxy")
 	retry_count = 1

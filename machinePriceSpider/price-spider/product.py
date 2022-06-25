@@ -183,6 +183,7 @@ def product_select(keyword, userIndex):
 		'Access-Token': access.user[userIndex]['token'],
 		'Referer': 'https://servicewechat.com/wxfb796f037077edb6/6/page-frame.html',
 		'Content-Type': 'application/json',
+		'User-Agent': access.userAgents[userAgentIndex - 1],
 	}
 	headers.update(common_header)
 	proxy = access.get_proxy().get("proxy")
@@ -270,7 +271,7 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 		'Access-Token': access.user[userIndex]['token'] ,
 		'Accept': 'application/json',
 		'Content-Type': 'application/json',
-		'Content-Length':str(len(json.dumps(data).replace(' ',''))),
+		'Content-Length':str(len(json.dumps(data).replace(' ','')))
 		'User-Agent': access.userAgents[userAgentIndex - 1],
 	}
 	retry_count = 5
@@ -503,6 +504,7 @@ def get_desc(productId, userIndex):
 		'Connection':'keep-alive',
 		'Accept-Encoding':'gzip, deflate, br',
 		'Accept':'*/*'
+		'User-Agent': access.userAgents[userAgentIndex - 1],
 	}
 	proxy = access.get_proxy().get("proxy")
 	retry_count = 5
