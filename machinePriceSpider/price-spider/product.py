@@ -277,6 +277,7 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 	headers = {
 		'Access-Token': '49e951cff912c2ab75a1d5a89492af1c',
 		'Host': 'sjapi.aihuishou.com',
+		'Content-Type': 'application/json',
 		'Content-Length': str(len(json.dumps(data).replace(' ','')))
 	}
 	retry_count = 5
