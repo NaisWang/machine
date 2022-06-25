@@ -219,7 +219,18 @@ def product_select(keyword, userIndex):
 def simplify(keyword):
 	return str(keyword).replace(' ', '').replace('(', '').replace(')', '').replace('（', '').replace('）', '').lower()
 
-
+# 模拟正常流量
+def trace_log():
+	url = "https://bi-log.aihuishou.com/trace/log/pjt?data=eyJkaXN0aW5jdF9pZCI6IjAxM1Z2WEdhMWQySG9EMDJ2cEhhMW5COXhrMFZ2WEdLIiwibGliIjp7IiRsaWIiOiJNaW5pUHJvZ3JhbSIsIiRsaWJfbWV0aG9kIjoiY29kZSIsIiRsaWJfdmVyc2lvbiI6IjEuMTMuMjAifSwicHJvcGVydGllcyI6eyIkbGliIjoiTWluaVByb2dyYW0iLCIkbGliX3ZlcnNpb24iOiIxLjEzLjIwIiwiJG5ldHdvcmtfdHlwZSI6IndpZmkiLCIkbWFudWZhY3R1cmVyIjoiaVBob25lIiwiJG1vZGVsIjoiaVBob25lIFhTPGlQaG9uZTExLDI%2BIiwiJHNjcmVlbl93aWR0aCI6Mzc1LCIkc2NyZWVuX2hlaWdodCI6ODEyLCIkb3MiOiJpT1MiLCIkb3NfdmVyc2lvbiI6IjE1LjUiLCIkbGF0ZXN0X3NjZW5lIjoi5b6u5L%2Bh6IGK5aSp5Li755WM6Z2i5LiL5ouJIiwiYXBwX25hbWUiOiJvcHRfbWluaSIsInBsYXRmb3JtIjoibWluaWFwcCIsInVzZXJfa2V5IjoyNzYxOTIsIiRyZWZlcnJlciI6InBhZ2VzL3Byb2R1Y3Qtc2VhcmNoL2luZGV4IiwiJHVybF9wYXRoIjoicGFnZXMvaW5kZXgvaW5kZXgiLCIkdXJsX3F1ZXJ5IjoiIiwiJGlzX2ZpcnN0X2RheSI6dHJ1ZX0sImFub255bW91c19pZCI6IjAxM1Z2WEdhMWQySG9EMDJ2cEhhMW5COXhrMFZ2WEdLIiwidHlwZSI6InRyYWNrIiwiZXZlbnQiOiIkTVBWaWV3U2NyZWVuIiwidGltZSI6MTY1NjE1NDUyMTY2NX0%3D"
+	headers = {
+		'Host': 'bi-log.aihuishou.com'
+		'Connection': 'close'
+		'content-type': 'application/json'
+		'Accept-Encoding': 'gzip, deflate'
+		'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.23(0x1800172e) NetType/WIFI Language/zh_CN'
+		'Referer': 'https://servicewechat.com/wxfb796f037077edb6/9/page-frame.html'
+	}
+	requests.get(url, headers=headers)
 	
 
 # 通过productId， pricePropertyValueIds获取RrepostNo
@@ -275,6 +286,7 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 	while retry_count > 0:
 		try:
 			resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers, proxies={"http": "http://{}".format(proxy)}).text)
+			trace_log()
 			if 'data' in resp and 'guidePrice' in resp['data']:
 				price = resp['data']['guidePrice']
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
@@ -365,6 +377,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 
 # 通过productId， pricePropertyValueIds获取价格
 def get_price_new(productId, pricePropertyValueIds, userIndex):
+	trace_log()
 	return get_price_by_mini(productId, pricePropertyValueIds, userIndex)
 
 # 通过reptortNo获取价格
@@ -547,6 +560,7 @@ def get_desc(productId, userIndex):
 		}
 	],
 	"""
+	trace_log()
 	userAgentIndex = random.randint(1, len(access.userAgents))
 	url = "https://sjapi.aihuishou.com/supplier-api/frequently-inquiry-price/inspection-content/get?productId=" + \
 				str(productId)
@@ -567,6 +581,7 @@ def get_desc(productId, userIndex):
 		try:
 			resp = json.loads(
 				requests.get(url, headers=headers, proxies={"http": "http://{}".format(proxy)}).text)
+			trace_log()
 			if 'data' in resp and 'productInfos' in resp['data']:
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 														 str(resp['data']))
