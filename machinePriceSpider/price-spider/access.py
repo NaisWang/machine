@@ -73,7 +73,7 @@ def init_user():
 			item["token"] = resp
 
 def update_token():
-	get_user()	
+	#get_user()	
 	for item in user:
 		logout(item['token'])
 		time.sleep(7)
