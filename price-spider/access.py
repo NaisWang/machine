@@ -43,11 +43,11 @@ def token_is_invalid(resp, index):
 
 
 def get_proxy():
-	return requests.get("http://127.0.0.1:5010/get/").json()
+	return requests.get("http://120.79.195.87:5010/get/").json()
 
 
 def delete_proxy(proxy):
-	requests.get("http://127.0.0.1:5010/delete/?proxy={}".format(proxy))
+	requests.get("http://120.79.195.87:5010/delete/?proxy={}".format(proxy))
 
 
 def init_user():

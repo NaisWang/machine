@@ -58,12 +58,13 @@ def login(chromosome, body):
 		"Accept-Encoding": "gzip, deflate",
 		"Key-Version": "1000"
 	}
+	proxy = access.get_proxy().get("proxy")
 	retry_count = 1
 	while retry_count > 0:
 		try:
 			#return "08dcef810468f5cf0d695c591a42dcf5"
 			#response = requests.request("POST", url, headers=headers, data=payload)
-			resp = json.loads(requests.post(loginURL, headers=headers, data=str(body)).text)
+			resp = json.loads(requests.post(loginURL, headers=headers, data=str(body), proxies={"http": "http://{}".format(proxy)}).text)
 			print(resp)
 			if 'data' in resp and "accessToken" in resp["data"]:
 				log.log_error.append("登录成功, token为:" + str(resp["data"]["accessToken"]))
@@ -73,6 +74,7 @@ def login(chromosome, body):
 		except Exception as e:
 			print(e)
 			retry_count -= 1
+	access.delete_proxy(proxy)
 	return -1
 
 def logout(token):
