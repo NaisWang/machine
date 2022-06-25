@@ -187,12 +187,12 @@ def product_select(keyword, userIndex):
 		'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
 	headers.update(common_header)
-	proxy = access.get_proxy().get("proxy")
+	#proxy = access.get_proxy().get("proxy")
 	retry_count = 5
 	while retry_count > 0:
 		try:
 			resp = json.loads(
-				requests.post(url, data=json.dumps(data), headers=headers, proxies={"http": "http://{}".format(proxy)}).text)
+				requests.post(url, data=json.dumps(data), headers=headers).text)
 			res = access.token_is_invalid(resp['resultMessage'], userIndex)
 			if res == -2:
 				return -2
@@ -212,7 +212,7 @@ def product_select(keyword, userIndex):
 		except Exception as e:
 			print(e)
 			retry_count -= 1
-	access.delete_proxy(proxy)
+	#access.delete_proxy(proxy)
 	return -1
 
 
@@ -242,12 +242,12 @@ def get_report_no(productId, pricePropertyValueIds, userIndex):
 		'Content-Type': 'application/json',
 	}
 	headers.update(common_header)
-	proxy = access.get_proxy().get("proxy")
+	#proxy = access.get_proxy().get("proxy")
 	retry_count = 5
 	while retry_count > 0:
 		try:
 			resp = json.loads(
-				requests.post(url, data=json.dumps(data), headers=headers, proxies={"http": "http://{}".format(proxy)}).text)
+				requests.post(url, data=json.dumps(data), headers=headers).text)
 			res = access.token_is_invalid(resp['resultMessage'], userIndex)
 			if res == -2:
 				return -2
@@ -263,7 +263,7 @@ def get_report_no(productId, pricePropertyValueIds, userIndex):
 				return -1
 		except Exception as e:
 			retry_count -= 1
-	access.delete_proxy(proxy)
+	#access.delete_proxy(proxy)
 	return -1
 
 # 拍机堂小程序
@@ -281,12 +281,12 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 		'Content-Length': str(len(json.dumps(data).replace(' ','')))
 	}
 	retry_count = 5
-	proxy = access.get_proxy().get("proxy")
-	print(proxy)
+	#proxy = access.get_proxy().get("proxy")
+	#print(proxy)
 	resp = ""
 	while retry_count > 0:
 		try:
-			resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers, proxies={"http": "http://{}".format(proxy)}).text)
+			resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
 			trace_log()
 			if 'data' in resp and 'guidePrice' in resp['data']:
 				price = resp['data']['guidePrice']
@@ -313,7 +313,7 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 				return {"price": -1, "skuId": -1}
 		except Exception as e:
 			retry_count -= 1
-	access.delete_proxy(proxy)
+	#access.delete_proxy(proxy)
 	return {"price": -1, "skuId": -1}
 
 # 拍机堂app
@@ -337,12 +337,12 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 		#'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
 	retry_count = 5
-	proxy = access.get_proxy().get("proxy")
-	print(proxy)
+	#proxy = access.get_proxy().get("proxy")
+	#print(proxy)
 	resp = ""
 	while retry_count > 0:
 		try:
-			resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers, proxies={"http": "http://{}".format(proxy)}).text)
+			resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
 			if 'data' in resp and 'referencePrice' in resp['data']:
 				price = resp['data']['referencePrice']
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
@@ -372,7 +372,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 				return {"price": -1, "skuId": -1}
 		except Exception as e:
 			retry_count -= 1
-	access.delete_proxy(proxy)
+	#access.delete_proxy(proxy)
 	return {"price": -1, "skuId": -1}
 
 
@@ -463,11 +463,11 @@ def get_brand(category):
 	}
 	data = {"categoryId": 1}
 	retry_count = 5
-	proxy = access.get_proxy().get("proxy")
+	#proxy = access.get_proxy().get("proxy")
 	while retry_count > 0:
 		try:
 			resp = json.loads(
-				requests.post(url, headers=headers, data=json.dumps(data), proxies={"http": "http://{}".format(proxy)}).text)
+				requests.post(url, headers=headers, data=json.dumps(data)).text)
 			if 'data' in resp:
 				brands = resp['data']
 				#generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
@@ -479,7 +479,7 @@ def get_brand(category):
 				return -1
 		except Exception as e:
 			retry_count -= 1
-	access.delete_proxy(proxy)
+	#access.delete_proxy(proxy)
 	return -1
 
 
@@ -494,11 +494,11 @@ def get_all_machine(categoryId, brandId, num):
 		'Content-Length':str(len(json.dumps(data).replace(' ','')))
 	}
 	retry_count = 5
-	proxy = access.get_proxy().get("proxy")
+	#proxy = access.get_proxy().get("proxy")
 	while retry_count > 0:
 		try:
 			resp = json.loads(
-				requests.post(url, headers=headers, data=json.dumps(data), proxies={"http": "http://{}".format(proxy)}).text)
+				requests.post(url, headers=headers, data=json.dumps(data)).text)
 			if 'data' in resp:
 				res = resp['data'][0:num]
 				#generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
@@ -510,7 +510,7 @@ def get_all_machine(categoryId, brandId, num):
 				return -1
 		except Exception as e:
 			retry_count -= 1
-	access.delete_proxy(proxy)
+	#access.delete_proxy(proxy)
 	return -1
 
 
@@ -576,12 +576,12 @@ def get_desc(productId, userIndex):
 		'Accept':'*/*',
 		#'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
-	proxy = access.get_proxy().get("proxy")
+	#proxy = access.get_proxy().get("proxy")
 	retry_count = 5
 	while retry_count > 0:
 		try:
 			resp = json.loads(
-				requests.get(url, headers=headers, proxies={"http": "http://{}".format(proxy)}).text)
+				requests.get(url, headers=headers).text)
 			trace_log()
 			if 'data' in resp and 'productInfos' in resp['data']:
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
@@ -603,7 +603,7 @@ def get_desc(productId, userIndex):
 				return -1
 		except Exception as e:
 			retry_count -= 1
-	access.delete_proxy(proxy)
+	#access.delete_proxy(proxy)
 	return -1
 
 

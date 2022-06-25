@@ -198,7 +198,7 @@ class userThread(threading.Thread):
 		global count
 		while count < self.xlrd_worksheet.nrows and search_price_flag == 1:
 			# time.sleep(1)
-			print(time.strftime('%H:%M:%S'),'hahaha')
+			#print(time.strftime('%H:%M:%S'),'hahaha')
 			# while count < self.xlrd_worksheet.nrows:
 			self.threadLock.acquire()
 			temp = 0
@@ -672,7 +672,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 						already_search[sku + desc + quality]["skuId"] = skuId
 						deal_sell_price(skuId, xlwt_worksheet, number - 1)
 						excel_fill(xlwt_worksheet, number - 1, 2, price, show_default, index)
-						time.sleep(1)
+						#time.sleep(1)
 					else:
 						already_search[sku + desc + quality][index] = -1
 						log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
