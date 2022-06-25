@@ -72,16 +72,15 @@ def init_user():
 		else:
 			item["token"] = resp
 
-
-def update_token(index):
-	userInfo = user[index]
-	logout(userInfo['token'])
-	time.sleep(20)
-	print(time.strftime('%H:%M:%S'),'重新登录')
-	resp = login(userInfo["chromosome"], userInfo["body"])
-	if resp == -1:
-		log.log_error.append(userInfo["userName"] + "用户信息有错误")
-	else:
-		userInfo["token"] = resp
-		return True
-	return False
+def update_token():
+	get_user()	
+	for item in user:
+		logout(item['token'])
+		time.sleep(7)
+		print(time.strftime('%H:%M:%S'),item['username'],'重新登录')
+		resp = login(userInfo["chromosome"], item["body"])
+		if resp == -1:
+			log.log_error.append(item["userName"] + "用户信息有错误")
+		else:
+			item['token'] = resp
+	return True

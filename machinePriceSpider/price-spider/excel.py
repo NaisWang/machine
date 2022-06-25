@@ -207,7 +207,7 @@ class userThread(threading.Thread):
 				temp = count
 				count += 1
 				if count % 80 == 0:
-					if access.update_token(0) == False:
+					if access.update_token() == False:
 						log.log_error.append("更新token失败")
 						return
 			self.threadLock.release()
