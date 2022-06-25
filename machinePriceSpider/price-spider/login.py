@@ -51,7 +51,7 @@ def login(chromosome, body):
 		"chromosome": str(chromosome),
 		"Version-Type": "1",
 		"Platform": "ios",
-		"Content-Length": "172",
+		'Content-Length': str(len(body)),
 		"Connection": "close",
 		"Accept-Language": "zh-Hans-CN;q=1.0, en-CN;q=0.9",
 		"Accept": "application/json",
