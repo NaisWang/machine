@@ -41,7 +41,7 @@ def login(chromosome, body):
 	#	'Accept-Encoding': 'gzip, deflate',
 	#	'Key-Version': '1000',
 	#}
-
+	chromosome = getChromsome()
 	headers = {
 		"Host": "sjapi.aihuishou.com",
 		"User-Agent": "OPTapp/2.43.1 (com.aihuishou.OPTapp.P; build:202206171208; iOS 15.5.0) Alamofire/2.43.1",
@@ -60,13 +60,13 @@ def login(chromosome, body):
 		"Key-Version": "1000",
 		'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
-	proxy = access.get_proxy().get("proxy")
+	#proxy = access.get_proxy().get("proxy")
 	retry_count = 1
 	while retry_count > 0:
 		try:
 			#return "08dcef810468f5cf0d695c591a42dcf5"
 			#response = requests.request("POST", url, headers=headers, data=payload)
-			resp = json.loads(requests.post(loginURL, headers=headers, data=str(body), proxies={"http": "http://{}".format(proxy)}).text)
+			resp = json.loads(requests.post(loginURL, headers=headers, data=str(body)).text)
 			print(resp)
 			if 'data' in resp and "accessToken" in resp["data"]:
 				log.log_error.append("登录成功, token为:" + str(resp["data"]["accessToken"]))
@@ -76,7 +76,7 @@ def login(chromosome, body):
 		except Exception as e:
 			print(e)
 			retry_count -= 1
-	access.delete_proxy(proxy)
+	#access.delete_proxy(proxy)
 	return -1
 
 def logout(token):
