@@ -255,6 +255,7 @@ def get_report_no(productId, pricePropertyValueIds, userIndex):
 
 # 通过productId， pricePropertyValueIds获取价格
 def get_price_new(productId, pricePropertyValueIds, userIndex):
+	userAgentIndex = random.randint(1, len(access.userAgents))
 	print("productId:" + str(productId))
 	print("priceProperty:" + str(pricePropertyValueIds))
 	url = "https://sjapi.aihuishou.com/opt-inquiry/quick-inquiry-price/inspection-info/get-by-ppv"
@@ -269,7 +270,8 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 		'Access-Token': access.user[userIndex]['token'] ,
 		'Accept': 'application/json',
 		'Content-Type': 'application/json',
-		'Content-Length':str(len(json.dumps(data).replace(' ','')))
+		'Content-Length':str(len(json.dumps(data).replace(' ',''))),
+		'User-Agent': access.userAgents[userAgentIndex - 1],
 	}
 	retry_count = 5
 	proxy = access.get_proxy().get("proxy")
