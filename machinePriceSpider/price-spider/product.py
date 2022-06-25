@@ -275,8 +275,8 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 	data = {"productId": productId, "pricePropertyValueIds": pricePropertyValueIds}
 	chromosome = getChromsome()
 	headers = {
-		'Access-Token': access.user[userIndex]['token'] ,
-		'Host': 'sjapi.aihuishou.com'
+		'Access-Token': access.user[userIndex]['token'],
+		'Host': 'sjapi.aihuishou.com',
 		'Content-Length': str(len(json.dumps(data).replace(' ','')))
 	}
 	retry_count = 5
