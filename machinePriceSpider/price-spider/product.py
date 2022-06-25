@@ -285,6 +285,7 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 				if access.authCode(resp['resultMessage']) == 1:
 					print(resp)
 					log.log_error.append(resp)
+					return -2;
 					#if access.update_token(0) == False:
 					#	log.log_error.append("更新失败")
 					#	return -2
