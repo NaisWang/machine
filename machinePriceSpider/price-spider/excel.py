@@ -197,7 +197,7 @@ class userThread(threading.Thread):
 	def run(self):
 		global count
 		while count < self.xlrd_worksheet.nrows and search_price_flag == 1:
-			time.sleep(1)
+			# time.sleep(1)
 			print(time.strftime('%H:%M:%S'),'hahaha')
 			# while count < self.xlrd_worksheet.nrows:
 			self.threadLock.acquire()
