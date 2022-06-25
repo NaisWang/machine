@@ -177,6 +177,7 @@ def get_product_id(keyword, userIndex):
 
 # 通过key获取机器的Id
 def product_select(keyword, userIndex):
+	userAgentIndex = random.randint(1, len(access.userAgents))
 	url = "https://sjapi.aihuishou.com/sj-inspection-api/xcx-foundation/product"
 	data = {"keyword": keyword}
 	headers = {
@@ -493,6 +494,7 @@ def get_desc(productId, userIndex):
 		}
 	],
 	"""
+	userAgentIndex = random.randint(1, len(access.userAgents))
 	url = "https://sjapi.aihuishou.com/supplier-api/frequently-inquiry-price/inspection-content/get?productId=" + \
 				str(productId)
 	chromosome = getChromsome()
