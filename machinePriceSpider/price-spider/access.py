@@ -78,7 +78,7 @@ def update_token():
 		logout(item['token'])
 		time.sleep(7)
 		print(time.strftime('%H:%M:%S'),item['userName'],'重新登录')
-		resp = login(userInfo["chromosome"], item["body"])
+		resp = login(item["chromosome"], item["body"])
 		if resp == -1:
 			log.log_error.append(item["userName"] + "用户信息有错误")
 		else:
