@@ -275,7 +275,7 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 	data = {"productId": productId, "pricePropertyValueIds": pricePropertyValueIds}
 	chromosome = getChromsome()
 	headers = {
-		'Access-Token': access.user[userIndex]['token'],
+		'Access-Token': '49e951cff912c2ab75a1d5a89492af1c',
 		'Host': 'sjapi.aihuishou.com',
 		'Content-Length': str(len(json.dumps(data).replace(' ','')))
 	}
