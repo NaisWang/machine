@@ -255,9 +255,57 @@ def get_report_no(productId, pricePropertyValueIds, userIndex):
 	access.delete_proxy(proxy)
 	return -1
 
-# 通过productId， pricePropertyValueIds获取价格
-def get_price_new(productId, pricePropertyValueIds, userIndex):
-	userAgentIndex = random.randint(1, len(access.userAgents))
+# 拍机堂小程序
+def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
+	#userAgentIndex = random.randint(1, len(access.userAgents))
+	print("productId:" + str(productId))
+	print("priceProperty:" + str(pricePropertyValueIds))
+	url = "https://sjapi.aihuishou.com/opt-inquiry/mini-inquiry-price/price-info/by-ppv"
+	data = {"productId": productId, "pricePropertyValueIds": pricePropertyValueIds}
+	chromosome = getChromsome()
+	headers = {
+		'Access-Token': access.user[userIndex]['token'] ,
+		'Host': 'sjapi.aihuishou.com'
+		'Content-Length': str(len(json.dumps(data).replace(' ','')))
+	}
+	retry_count = 5
+	proxy = access.get_proxy().get("proxy")
+	print(proxy)
+	resp = ""
+	while retry_count > 0:
+		try:
+			resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers, proxies={"http": "http://{}".format(proxy)}).text)
+			if 'data' in resp and 'guidePrice' in resp['data']:
+				price = resp['data']['guidePrice']
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+														 str(price))
+				return {"price": price, "skuId": resp['data']['skuId']}
+			else:
+				if access.authCode(resp['resultMessage']) == 1:
+					print(resp)
+					log.log_error.append(resp)
+					return -2;
+					#if access.update_token(0) == False:
+					#	log.log_error.append("更新失败")
+					#	return -2
+					#continue
+				log.log_error.append(resp)
+				res = access.token_is_invalid(resp['resultMessage'], userIndex)
+				if res == -2:
+					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+															str("token失效"))
+					return -2
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+														 str(resp))
+				return {"price": -1, "skuId": -1}
+		except Exception as e:
+			retry_count -= 1
+	access.delete_proxy(proxy)
+	return {"price": -1, "skuId": -1}
+
+# 拍机堂app
+def get_price_by_app(productId, pricePropertyValueIds, userIndex):
+	#userAgentIndex = random.randint(1, len(access.userAgents))
 	print("productId:" + str(productId))
 	print("priceProperty:" + str(pricePropertyValueIds))
 	url = "https://sjapi.aihuishou.com/opt-inquiry/quick-inquiry-price/inspection-info/get-by-ppv"
@@ -273,7 +321,7 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 		'Accept': 'application/json',
 		'Content-Type': 'application/json',
 		'Content-Length':str(len(json.dumps(data).replace(' ',''))),
-		'User-Agent': access.userAgents[userAgentIndex - 1]
+		#'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
 	retry_count = 5
 	proxy = access.get_proxy().get("proxy")
@@ -313,6 +361,11 @@ def get_price_new(productId, pricePropertyValueIds, userIndex):
 			retry_count -= 1
 	access.delete_proxy(proxy)
 	return {"price": -1, "skuId": -1}
+
+
+# 通过productId， pricePropertyValueIds获取价格
+def get_price_new(productId, pricePropertyValueIds, userIndex):
+	return get_price_by_mini(productId, pricePropertyValueIds, userIndex)
 
 # 通过reptortNo获取价格
 def get_price(reportNo, userIndex):
@@ -506,7 +559,7 @@ def get_desc(productId, userIndex):
 		'Connection':'keep-alive',
 		'Accept-Encoding':'gzip, deflate, br',
 		'Accept':'*/*',
-		'User-Agent': access.userAgents[userAgentIndex - 1]
+		#'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
 	proxy = access.get_proxy().get("proxy")
 	retry_count = 5

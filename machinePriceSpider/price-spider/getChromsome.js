@@ -96,7 +96,9 @@ function generateValues() {
 
 // =======================
 function getTimestamp() {
-	return new Date().getTime();
+    let res = new Date().getTime();
+    console.log(res)
+	return res
 }
 
 // ===========================
