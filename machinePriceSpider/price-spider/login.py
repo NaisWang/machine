@@ -57,8 +57,8 @@ def login(chromosome, body):
 		"Accept": "application/json",
 		"Content-Type": "text/plain",
 		"Accept-Encoding": "gzip, deflate",
-		"Key-Version": "1000"
-		'User-Agent': access.userAgents[userAgentIndex - 1],
+		"Key-Version": "1000",
+		'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
 	proxy = access.get_proxy().get("proxy")
 	retry_count = 1
