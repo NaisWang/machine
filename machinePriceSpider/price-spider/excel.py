@@ -738,8 +738,6 @@ def traverse_excel(xlrd_worksheet, xlwt_worksheet):
 	init_first_row(xlwt_worksheet)
 	for i in range(userNum):
 		thread = userThread(i, threadLock, xlrd_worksheet, xlwt_worksheet)
-		time.sleep(5)
-		print(time.strftime('%H:%M:%S'),'hahaha')
 		thread.start()
 		threads.append(thread)
 	for t in threads:
