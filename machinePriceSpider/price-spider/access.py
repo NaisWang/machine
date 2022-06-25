@@ -76,7 +76,7 @@ def update_token():
 	#get_user()	
 	for item in user:
 		logout(item['token'])
-		time.sleep(7)
+		time.sleep(10)
 		print(time.strftime('%H:%M:%S'),item['userName'],'重新登录')
 		resp = login(item["chromosome"], item["body"])
 		if resp == -1:
