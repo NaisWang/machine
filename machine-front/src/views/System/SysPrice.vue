@@ -191,13 +191,16 @@ export default {
       let that = this;
       setTimeout(function fn() {
         if (that.stopTimer) {
-          $http.get("http://120.79.195.87:5000/log").then(resp => {
-          //$http.get("http://127.0.0.1:5000/log").then(resp => {
-            that.log = resp.data
-            console.log(that.log)
-            console.log(that.log.length)
+          try {
+            $http.get("http://120.79.195.87:5000/log").then(resp => {
+              //$http.get("http://127.0.0.1:5000/log").then(resp => {
+              that.log = resp.data
+              setTimeout(fn, 1000);
+            })
+          }catch (e) {
             setTimeout(fn, 1000);
-          })
+            console.log(e)
+          }
         }
       }, 1000)
     },
