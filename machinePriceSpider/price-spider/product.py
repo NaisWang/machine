@@ -378,8 +378,8 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 
 # 通过productId， pricePropertyValueIds获取价格
 def get_price_new(productId, pricePropertyValueIds, userIndex):
-	trace_log()
-	return get_price_by_mini(productId, pricePropertyValueIds, userIndex)
+	#trace_log()
+	return get_price_by_app(productId, pricePropertyValueIds, userIndex)
 
 # 通过reptortNo获取价格
 def get_price(reportNo, userIndex):
