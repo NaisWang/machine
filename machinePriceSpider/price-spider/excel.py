@@ -207,7 +207,7 @@ class userThread(threading.Thread):
 				# if count < self.xlrd_worksheet.nrows:
 				temp = count
 				count += 1
-				if count % 90 == 0:
+				if count % 600 == 0:
 					if access.update_token() == False:
 						log.log_error.append("更新token失败")
 						return
