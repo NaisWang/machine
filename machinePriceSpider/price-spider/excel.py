@@ -113,7 +113,8 @@ def get_use_paiji_and_excel_field(pai_desc):
 				if remove_space(item1['value']) not in use_contrast.keys():
 					log.log_error.append("缺少拍机堂中:" + remove_space(item1['value']) + "字段")
 					return item1['value']
-				if use_contrast[remove_space(item1['value'])] != "" and use_contrast[remove_space(item1['value'])] != None:
+				if use_contrast[remove_space(item1['value'])] != "" and use_contrast[
+					remove_space(item1['value'])] != None:
 					item2 = use_contrast[remove_space(item1['value'])]
 					if item2 != "" and item2 != None:
 						for item3 in item2.split("、"):
@@ -198,7 +199,7 @@ class userThread(threading.Thread):
 		global count
 		while count < self.xlrd_worksheet.nrows and search_price_flag == 1:
 			# time.sleep(1)
-			#print(time.strftime('%H:%M:%S'),'hahaha')
+			# print(time.strftime('%H:%M:%S'),'hahaha')
 			# while count < self.xlrd_worksheet.nrows:
 			self.threadLock.acquire()
 			temp = 0
@@ -227,11 +228,9 @@ def get_color_pricePropertyValue(paiji_colors, model, sku, colors):
 
 
 def apple_model_match(str1, str2):
-	str1 = str(str1).replace(' ', '').lower().replace('苹果', '').replace('(5g版)', '').replace('（5g版）', '').replace('（',
-																																																								'').replace(
+	str1 = str(str1).replace(' ', '').lower().replace('苹果', '').replace('(5g版)', '').replace('（5g版）', '').replace('（', '').replace(
 		'）', '').replace('(', '').replace(')', '')
-	str2 = str(str2).replace(' ', '').lower().replace('苹果', '').replace('(5g版)', '').replace('（5g版）', '').replace('（',
-																																																								'').replace(
+	str2 = str(str2).replace(' ', '').lower().replace('苹果', '').replace('(5g版)', '').replace('（5g版）', '').replace('（', '').replace(
 		'）', '').replace('(', '').replace(')', '')
 	if str1 == str2:
 		return 1
@@ -242,13 +241,12 @@ def get_guarantee_propertyValue(model, sku):
 	for item in paijiContrast.mode_guarantee_battery:
 		for item1 in str(item['model']).split('、'):
 			if apple_model_match(item1, model) and str(item['excelGuarantee']).replace(' ', '').lower() in sku:
-				return {'id': int(item['paijiGuaranteeId']), 'value': paijiContrast.guarantee_corr[str(item[
-																																																 'paijiGuaranteeId'])]}
+				return {'id': int(item['paijiGuaranteeId']), 'value': paijiContrast.guarantee_corr[str(item['paijiGuaranteeId'])]}
 	for item in paijiContrast.mode_guarantee_battery:
 		for item1 in str(item['model']).split('、'):
 			if apple_model_match(item1, model) == 1 and int(item['guaranteeDefaultEnable']) == 1:
 				return {'id': int(item['guaranteeDefaultId']), 'value': paijiContrast.guarantee_corr[str(item[
-																																																	 'guaranteeDefaultId'])]}
+																											 'guaranteeDefaultId'])]}
 	return -3
 
 
@@ -257,7 +255,7 @@ def get_battery_propertyValue(model):
 		for item1 in str(item['model']).split('、'):
 			if apple_model_match(item1, model) == 1:
 				return {'id': int(item['batteryId']), 'value': paijiContrast.battery_corr[str(item[
-																																												'batteryId'])]}
+																								  'batteryId'])]}
 	return -3
 
 
@@ -290,7 +288,8 @@ def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_d
 				detectionFields = str(use_contrast.get(item['value'])).split('、')
 				if detectionFields != None:
 					for detectionFiled in detectionFields:
-						if detectionFiled != '' and remove_space(str(detectionFiled)).lower() in remove_space(sku_desc).split("、"):
+						if detectionFiled != '' and remove_space(str(detectionFiled)).lower() in remove_space(
+								sku_desc).split("、"):
 							select_log[category_name] = item['value']
 							return int(item['id'])
 	if '电池健康' in category_name:
@@ -351,10 +350,11 @@ def get_pricePropertyValues(paijiDesc, model, sku, sku_desc, number, show_defaul
 	select_log = {}
 	for parent_category in paijiDesc.keys():
 		for children_category in paijiDesc[parent_category]:
-			if 'pricePropertyValueVos' in children_category: 
+			if 'pricePropertyValueVos' in children_category:
 				pricePropertyValue = get_pricePropertyValue(children_category["name"],
-																										children_category["pricePropertyValueVos"], model, sku, sku_desc,
-																										select_log, show_default)
+															children_category["pricePropertyValueVos"], model, sku,
+															sku_desc,
+															select_log, show_default)
 				if pricePropertyValue == -1:
 					select_logs.append({str(number) + "行": select_log})
 					return {-1: children_category["name"]}
@@ -596,18 +596,21 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 				return
 			if paijiDesc != -1:
 				colors = []
-				pricePropertyList = get_pricePropertyValues(paijiDesc, model, sku, sku + "、" + desc, number, show_default,
-																										colors)
+				pricePropertyList = get_pricePropertyValues(paijiDesc, model, sku, sku + "、" + desc, number,
+															show_default,
+															colors)
 				if type(pricePropertyList) == dict:
 					if -1 in pricePropertyList.keys():
 						already_search[sku + desc + quality][0] = -1
 						excel_fill(xlwt_worksheet, number - 1, 1, pricePropertyList[-1], show_default, 0)
-						log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
+						log.log_error.append(
+							"用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
 						return
 
 				if pricePropertyList == -3:
 					already_search[sku + desc + quality][0] = -3
-					log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行对应的保修或电池情况")
+					log.log_error.append(
+						"用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行对应的保修或电池情况")
 					excel_fill(xlwt_worksheet, number - 1, 4, -1, show_default, 0)
 					return
 
@@ -616,7 +619,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 				if search_price_method == 1:
 					paijiDescProertyIds = get_desc_property_ids(paijiDesc)
 					pricePropertyLists = get_pricePropertyValues_one(quality, desc, pricePropertyList.copy(),
-																													 paijiDescProertyIds)
+																	 paijiDescProertyIds)
 
 					if len(pricePropertyLists) == 0:
 						pricePropertyLists = get_pricePropertyValues_two(pricePropertyList.copy())
@@ -658,8 +661,9 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 					if price != 9999999 and price != -1:
 						already_search[sku + desc + quality][index] = price
 						log.log_success.append(
-							"用户：" + str(access.user[userIndex]['userName'] + "查出了" + str(number) + "行的价格为" + str(price) +
-													"元"))
+							"用户：" + str(
+								access.user[userIndex]['userName'] + "查出了" + str(number) + "行的价格为" + str(price) +
+								"元"))
 						if len(colors) != 0:
 							default_colors_desc = ""
 							for color in colors:
@@ -672,10 +676,11 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 						already_search[sku + desc + quality]["skuId"] = skuId
 						deal_sell_price(skuId, xlwt_worksheet, number - 1)
 						excel_fill(xlwt_worksheet, number - 1, 2, price, show_default, index)
-						#time.sleep(1)
+					# time.sleep(1)
 					else:
 						already_search[sku + desc + quality][index] = -1
-						log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
+						log.log_error.append(
+							"用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
 						excel_fill(xlwt_worksheet, number - 1, 1, -1, show_default, index)
 					if index == len(pricePropertyLists) - 1:
 						already_search[sku + desc + quality]["flag"] = 1
