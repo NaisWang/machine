@@ -316,6 +316,33 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 	#access.delete_proxy(proxy)
 	return {"price": -1, "skuId": -1}
 
+# 拍机堂白名单接口
+def get_price_by_white_api(productId, pricePropertyValueIds, userIndex):
+	#userAgentIndex = random.randint(1, len(access.userAgents))
+	print("productId:" + str(productId))
+	print("priceProperty:" + str(pricePropertyValueIds))
+	url = "https://sjapi.aihuishou.com/sj-inspection-api/inspection-report/v2/app/dp/create-by-ppv"
+	data = {"productId": productId, "pricePropertyValueIds": pricePropertyValueIds}
+	chromosome = getChromsome()
+	headers = {
+		'Host': 'sjapi.aihuishou.com',
+		'Version': '2.43.1',
+		'Chromosome': chromosome,
+		'Version-Type': '1',
+		'Platform': 'web',
+		'Access-Token': access.user[userIndex]['token'] ,
+		'Accept': 'application/json',
+		'Content-Type': 'application/json',
+		'Content-Length':str(len(json.dumps(data).replace(' ',''))),
+		#'User-Agent': access.userAgents[userAgentIndex - 1]
+	}
+	retry_count = 5
+	#proxy = access.get_proxy().get("proxy")
+	#print(proxy)
+	resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
+	print(str(resp))
+	return
+
 # 拍机堂app
 def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 	#userAgentIndex = random.randint(1, len(access.userAgents))
@@ -379,7 +406,9 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 # 通过productId， pricePropertyValueIds获取价格
 def get_price_new(productId, pricePropertyValueIds, userIndex):
 	#trace_log()
-	return get_price_by_app(productId, pricePropertyValueIds, userIndex)
+	#return get_price_by_app(productId, pricePropertyValueIds, userIndex)
+	return get_price_by_white_api(productId, pricePropertyValueIds, userIndex)
+
 
 # 通过reptortNo获取价格
 def get_price(reportNo, userIndex):
