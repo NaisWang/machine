@@ -323,7 +323,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 	chromosome = getChromsome()
 	headers = {
 		'Host': 'sjapi.aihuishou.com',
-		'Version': '2.43.1',
+		'Version': '2.44.0',
 		'Chromosome': chromosome,
 		'Version-Type': '1',
 		'Platform': 'web',
@@ -563,7 +563,7 @@ def get_desc(productId, userIndex):
 	chromosome = getChromsome()
 	headers = {
 		'Host': 'sjapi.aihuishou.com',
-		'Version': '2.43.1',
+		'Version': '2.44.0',
 		'Chromosome': chromosome,
 		'Access-Token': access.user[userIndex]['token'],
 		'Connection': 'keep-alive',

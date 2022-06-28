@@ -47,7 +47,7 @@ def login(chromosome, body):
 		"User-Agent": "OPTapp/2.43.1 (com.aihuishou.OPTapp.P; build:202206171208; iOS 15.5.0) Alamofire/2.43.1",
 		"App-ID": "pjt432865",
 		"app-channel": "598302",
-		"Version": "2.43.1",
+		"Version": "2.44.0",
 		"chromosome": str(chromosome),
 		"Version-Type": "1",
 		"Platform": "ios",
