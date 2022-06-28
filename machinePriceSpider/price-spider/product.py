@@ -350,6 +350,8 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 					continue
 				if access.authCode(resp['resultMessage']) == 1:
 					print(resp)
+					time.sleep(6)
+					print(time.strftime('%H:%M:%S'),'hahaha')
 					log.log_error.append(resp)
 					return -2;
 				# if access.update_token(0) == False:
