@@ -18,45 +18,99 @@ import log
 import sellPrice
 import numpy as np
 
+# 当前处理表格的行数
 count = 1
+# 用来存储已经查询了的机器，每次查一个机器时，会先看起其是否有相同的机器已查询过
 already_search = {}
-comparison_price = {}
-select_default_color = {}
-select_logs = []
-column_name_number = {}
+# 当前对照表中没有包含的描述
 exclude_desc = []
 
+'''
+存储对照表中的价格
+
+comparison_price = {
+	"文件名1": {
+		"sku1 + desc1 + quality1" : 价格1,
+		"sku2 + desc2 + quality2" : 价格2
+	},
+	"文件名2": {
+		"sku1 + desc1 + quality1" : 价格1,
+		"sku2 + desc2 + quality2" : 价格2
+	}
+}
+'''
+comparison_price = {}
+
+'''
+excel文件中列号与列名的对应关系。 key为列名，value为列号
+
+例如：column_name_number = {
+	'sku': 2,
+	'机况描述': 3
+}
+'''
+column_name_number = {}
+
+# 是否继续搜索价格的标记，当为0时，表示暂停搜索
 search_price_flag = 1
+# 查询价格的方式：1：小当；2：拍机堂
 search_price_method = 1
 
+'''
+存储机器的拍机堂的属性名与对应的机况描述中可能出现的的对应关系
+
+例如：use_contrast = {
+	'iCloud已注销': ['密码/icloud已解除', '密码/云账号已解除']
+	'iCloud无法注销': ['密码/云账号无法全部解除']
+}
+'''
 use_contrast = {}
+
+'''
+该机器所有拍机堂的属性名对应的机况描述中可能出现的描述的集合
+
+例如: 
+use_excel_field = ['密码/icloud已解除', '密码/云账号已解除', '密码/云账号无法全部解除', '按键/卡槽/耳机孔失灵或缺失', '音量键下陷', '开机键按不动', '开机键按压手感欠佳', '开机不灵敏','振动键异常', '振动键失灵']
+'''
 use_excel_field = []
+
+'''
+拍机堂中一个机器的所有属性
+
+例如：use_paiji_field = ["大陆国行", "港澳机", "256G", ...]
+'''
 use_paiji_field = []
 
 
 def init():
 	global count
 	global already_search
-	global select_default_color
-	global select_logs
 	global exclude_desc
 	global search_price_flag
 
 	log.log_error = []
 	log.log_success = []
 
-	select_logs = []
-	select_default_color = {}
 	already_search = {}
 	exclude_desc = []
 	product.product_log = []
 	count = 1
 	search_price_flag = 1
+
+	# 初始化用户
 	access.init_user()
+	# 初始化拍机堂一些信息
 	paijiContrast.init()
 
 
 def judge_excel_legal(column_name_number_corr, fileName):
+	"""
+	判断excel文件格式是否合法
+
+	:param column_name_number_corr: 列号与列名对应关系
+	:param fileName: 文件名
+	:return: -1: 文件不合法; 0: 文件合法
+	"""
 	column_name = ["机型", "sku", "成色", "机况描述", "单台出价1"]
 	for name in column_name:
 		if name not in column_name_number_corr.keys():
@@ -65,7 +119,24 @@ def judge_excel_legal(column_name_number_corr, fileName):
 	return 0
 
 
+def get_column_name_number(xlrd_worksheet):
+	"""
+	获取excel文件中列号与列名的对应关系。 key为列名，value为列号
+	"""
+	column_name_number1 = {}
+	for i in range(len(xlrd_worksheet.row_values(0))):
+		column_name = remove_space(str(xlrd_worksheet.row_values(0)[i])).lower()
+		column_name_number1[column_name] = i
+	column_name_number1["第一个空白"] = len(xlrd_worksheet.row_values(0))
+	return column_name_number1
+
+
 def dealComparisonExcel(files):
+	"""
+	获取对照excel表中的价格对象comparison_price
+
+	:param files: 所有对照excel表
+	"""
 	global comparison_price
 	for f in files:
 		comparison_price[f.filename] = {}
@@ -76,6 +147,7 @@ def dealComparisonExcel(files):
 		column_name_number1 = get_column_name_number(xlrd_worksheet)
 		if judge_excel_legal(column_name_number1, f.filename) == -1:
 			break
+
 		sku_number = column_name_number1['sku']
 		quality_number = column_name_number1['成色']
 		desc_number = column_name_number1['机况描述']
@@ -85,41 +157,40 @@ def dealComparisonExcel(files):
 			sku = remove_space(str(xlrd_worksheet.row_values(i)[sku_number])).lower()
 			quality = remove_space(str(xlrd_worksheet.row_values(i)[quality_number])).lower()
 			desc = remove_space(str(xlrd_worksheet.row_values(i)[desc_number])).lower()
-			if str(xlrd_worksheet.row_values(i)[price_number]).replace(' ', '') != '' and sku + desc + quality not in \
-					comparison_price[
-						f.filename].keys():
+			if str(xlrd_worksheet.row_values(i)[price_number]).replace(' ', '') != '' and sku + desc + quality not in comparison_price[f.filename].keys():
 				comparison_price[f.filename][sku + desc + quality] = xlrd_worksheet.row_values(i)[price_number]
 
 
-def get_column_name_number(xlrd_worksheet):
-	column_name_number1 = {}
-	for i in range(len(xlrd_worksheet.row_values(0))):
-		column_name = remove_space(str(xlrd_worksheet.row_values(0)[i])).lower()
-		column_name_number1[column_name] = i
-	column_name_number1["第一个空白"] = len(xlrd_worksheet.row_values(0))
-	return column_name_number1
-
-
 def get_use_paiji_and_excel_field(pai_desc):
+	"""
+	获取该机器在拍机堂上的所有属性, 即设置use_paiji_field对象
+
+	获取该机器所有拍机堂的属性名对应的机况描述中可能出现的描述的集合, 即设置use_excel_field对象
+	"""
 	global use_paiji_field
 	global use_excel_field
 	use_paiji_field = []
 	use_excel_field = []
 	keys = ["qualityInfos", "functionInfos"]
 	for key in keys:
+		# item对应一组属性的归类，例如item为受潮情况；受潮情况下面会有很多属性对象，例如{"id": 5226,"propertyName": 1120,"value": "机身进水"}, {"id": 5227,"propertyName": 1120,"value": "进水无进水"}
 		for item in pai_desc[key]:
+			# item1对应机器的属性对象，例如{"id": 5226,"propertyName": 1120,"value": "机身进水"}
 			for item1 in item["pricePropertyValueVos"]:
-				use_paiji_field.append(remove_space(item1['value']))
-				if remove_space(item1['value']) not in use_contrast.keys():
-					log.log_error.append("缺少拍机堂中:" + remove_space(item1['value']) + "字段")
-					return item1['value']
-				if use_contrast[remove_space(item1['value'])] != "" and use_contrast[
-					remove_space(item1['value'])] != None:
-					item2 = use_contrast[remove_space(item1['value'])]
+				# property_name为机器的属性，例如机身进水
+				property_name = remove_space(item1['value'])
+				use_paiji_field.append(property_name)
+				if property_name not in use_contrast.keys():
+					log.log_error.append("缺少拍机堂中:" + property_name + "字段")
+					return property_name
+
+				if use_contrast[property_name] != "" and use_contrast[property_name] != None:
+					item2 = use_contrast[property_name]
 					if item2 != "" and item2 != None:
 						for item3 in item2.split("、"):
 							if item3 != "" and item3 != None:
 								use_excel_field.append(remove_space(item3))
+
 	if use_contrast["账号已注销"] != "" and use_contrast["账号已注销"] != None:
 		item2 = use_contrast["账号已注销"]
 		if item2 != "" and item2 != None:
@@ -137,11 +208,15 @@ def import_excel():
 	global use_excel_field
 	global search_price_method
 
+	# 获取对照表
 	files = request.files.getlist("files")
+	# 处理对照表，获取comparison_price对象
 	dealComparisonExcel(files)
 
+	# 获取询价表
 	file = request.files.get("file")
 
+	# 获取询价方式
 	searchPriceMethod = request.form["searchPriceMethod"]
 	if searchPriceMethod == "1":
 		use_contrast = paijiContrast.xd_contrast
@@ -157,6 +232,7 @@ def import_excel():
 	newWb = copy(oldWb)
 	newWs = newWb.get_sheet(0)
 
+	# 询价
 	ans = traverse_excel(oldws, newWs)
 	if ans != 1:
 		return "出现错误!!!"
@@ -215,8 +291,10 @@ class userThread(threading.Thread):
 			get_price(temp, self.xlrd_worksheet, self.xlwt_worksheet, self.userIndex)
 
 
-# 在机身颜色没有完全匹配的情况下，进行机身颜色的选择
 def get_color_pricePropertyValue(paiji_colors, model, sku, colors):
+	"""
+	在机身颜色没有完全匹配的情况下，进行机身颜色的选择
+	"""
 	sku = str(sku).replace(model, '')
 	color = ""
 	for item in paijiContrast.color:
@@ -238,6 +316,9 @@ def apple_model_match(str1, str2):
 
 
 def get_guarantee_propertyValue(model, sku):
+	"""
+	根据机型-保修-电池容量对照表选出对应的保修属性
+	"""
 	for item in paijiContrast.mode_guarantee_battery:
 		for item1 in str(item['model']).split('、'):
 			if apple_model_match(item1, model) and str(item['excelGuarantee']).replace(' ', '').lower() in sku:
@@ -251,6 +332,9 @@ def get_guarantee_propertyValue(model, sku):
 
 
 def get_battery_propertyValue(model):
+	"""
+	根据机型-保修-电池容量对照表选出对应的电池健康属性
+	"""
 	for item in paijiContrast.mode_guarantee_battery:
 		for item1 in str(item['model']).split('、'):
 			if apple_model_match(item1, model) == 1:
@@ -260,6 +344,11 @@ def get_battery_propertyValue(model):
 
 
 def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_desc, select_log, show_default):
+	"""
+	选出category_name属性组paiji_category_desc中的某个属性
+	例如category_name为iCloud是否可注销, paiji_category_desc为[{"id": 5226,"propertyName": 1120,"value": "iCloud已注销"}, {"id": 5226,"propertyName": 1120,"value": "iCloud无法注销"}]
+	:return -3: 表示没有选出电池健康与保修情况
+	"""
 	if len(paiji_category_desc) == 1:
 		select_log[category_name] = paiji_category_desc[0]['value']
 		return paiji_category_desc[0]['id']
@@ -273,6 +362,48 @@ def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_d
 			return resp['id']
 		select_log[category_name] = "没有选出"
 		return -3
+
+	if category_name == '机身颜色':
+		if "oppoa91" in remove_space(sku_desc).lower() and "黑色" in remove_space(sku).lower():
+			sku = sku + "、暗夜星晨"
+		elif "oppok5" in remove_space(sku_desc).lower() and "白色" in remove_space(sku).lower():
+			sku = sku + "、极地阳光"
+		elif "oppok5" in remove_space(sku_desc).lower() and "蓝色" in remove_space(sku).lower():
+			sku = sku + "、赛博金属"
+		elif "oppok5" in remove_space(sku_desc).lower() and "绿色" in remove_space(sku).lower():
+			sku = sku + "、奇妙森林"
+		elif "oppor9splus" in remove_space(sku_desc).lower() and "粉色" in remove_space(sku).lower():
+			sku = sku + "、玫瑰金"
+		elif "realme真我x50pro（5g版）" in remove_space(sku_desc).lower() and "青苔" in remove_space(sku).lower():
+			sku = sku + "、绿色"
+		elif "vivoxplay6" in remove_space(sku_desc).lower() and "粉色" in remove_space(sku).lower():
+			sku = sku + "、玫瑰金"
+		elif "vivoz5" in remove_space(sku_desc).lower() and "浅蓝" in remove_space(sku).lower():
+			sku = sku + "、全息幻彩"
+		elif "vivoz5" in remove_space(sku_desc).lower() and "紫色" in remove_space(sku).lower():
+			sku = sku + "、极光幻境"
+		elif "vivoz5" in remove_space(sku_desc).lower() and "绿色" in remove_space(sku).lower():
+			sku = sku + "、极速幻影"
+		elif "vivoz5" in remove_space(sku_desc).lower() and "黑色" in remove_space(sku).lower():
+			sku = sku + "、竹林幻夜"
+		elif "vivoz5" in remove_space(sku_desc).lower() and "深蓝" in remove_space(sku).lower():
+			sku = sku + "、湖光幻月"
+		elif "华为mate9pro" in remove_space(sku_desc).lower() and "粉色" in remove_space(sku).lower():
+			sku = sku + "、玫瑰金"
+		elif "华为nova5ipro（华为nova5z）" in remove_space(sku_desc).lower() and "绿色" in remove_space(sku).lower():
+			sku = sku + "、翡冷翠"
+		elif "华为畅享10" in remove_space(sku_desc).lower() and "浅蓝" in remove_space(sku).lower():
+			sku = sku + "、天空之境"
+		elif "华为畅享10" in remove_space(sku_desc).lower() and "深蓝" in remove_space(sku).lower():
+			sku = sku + "、极光色"
+		elif "华为畅享10plus" in remove_space(sku_desc).lower() and "蓝色" in remove_space(sku).lower():
+			sku = sku + "、天空之境"
+		elif "华为畅享10s" in remove_space(sku_desc).lower() and "蓝色" in remove_space(sku).lower():
+			sku = sku + "、天空之境"
+		elif "魅族17pro（5g版）" in remove_space(sku_desc).lower() and "乌金" in remove_space(sku).lower():
+			sku = sku + "、黑色"
+		elif "荣耀畅玩9a" in remove_space(sku_desc).lower() and "蓝水翡翠" in remove_space(sku).lower():
+			sku = sku + "、绿色"
 
 	if category_name in paijiContrast.excludeField:
 		temp_paiji_category_desc = sorted(paiji_category_desc, key=lambda e: len(e.__getitem__('value')), reverse=True)
@@ -301,26 +432,54 @@ def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_d
 	if category_name == "机身颜色":
 		return -2
 	if category_name == "内存":
-		if "oppoa53" in remove_space(sku_desc).lower():
-			select_log[category_name] = "2G+16G"
-			return 4482
-		if "oppoa57" in remove_space(sku_desc).lower():
-			select_log[category_name] = "3G+32G"
-			return 3964
-		if "opporeno2" in remove_space(sku_desc).lower():
-			select_log[category_name] = "8G+128G"
-			return 5032
-		if "oppoa11x" in remove_space(sku_desc).lower():
-			select_log[category_name] = "8G+128G"
-			return 5032
-		if "oppor15x" in remove_space(sku_desc).lower():
-			select_log[category_name] = "6G+128G"
-			return 4068
-		if "vivoy67" in remove_space(sku_desc).lower():
-			select_log[category_name] = "4G+32G"
-			return 3965
-	if category_name in paijiContrast.musthaveField:
-		select_log[category_name] = "没有选出"
+		temp1 = ["oppoa53", "oppoa37", "红米4a", "红米5a", "荣耀畅玩5a"]
+		for item in temp1:
+			if item in remove_space(sku_desc).lower():
+				select_log[category_name] = "2G+16G"
+				return 4482
+
+		temp2 = ["oppoa57", "三星galaxys6"]
+		for item in temp2:
+			if item in remove_space(sku_desc).lower():
+				select_log[category_name] = "3G+32G"
+				return 3964
+
+		temp3 = ["opporeno2", "小米mix2全陶瓷尊享版", "华为nova6（4g版）", "oppoa11x"]
+		for item in temp3:
+			if item in remove_space(sku_desc).lower():
+				select_log[category_name] = "8G+128G"
+				return 5032
+
+		temp4 = ["oppoa9x", "oppor15x", "redmik30极速版（5g版）", "红米note7pro", "华为mate20pro无屏幕指纹版"]
+		for item in temp4:
+			if item in remove_space(sku_desc).lower():
+				select_log[category_name] = "6G+128G"
+				return 4068
+
+		temp5 = ["oppoa59s", "vivoy67", "vivoy75"]
+		for item in temp5:
+			if item in remove_space(sku_desc).lower():
+				select_log[category_name] = "4G+32G"
+				return 3965
+
+		temp6 = ["美图m8", "三星galaxys8"]
+		for item in temp6:
+			if item in remove_space(sku_desc).lower():
+				select_log[category_name] = "4G+64G"
+				return 4066
+
+		temp7 = ["vivox27pro"]
+		for item in temp7:
+			if item in remove_space(sku_desc).lower():
+				select_log[category_name] = "8G+256G"
+				return 5835
+
+		temp8 = ["小米mix3故宫特别版"]
+		for item in temp8:
+			if item in remove_space(sku_desc).lower():
+				select_log[category_name] = "10G+256G"
+				return 8582
+
 		return -1
 	if category_name == "购买渠道":
 		if "非国行" in sku and "有锁" not in sku:
@@ -330,6 +489,9 @@ def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_d
 		if "移动版" in sku:
 			select_log[category_name] = "运营商版全网通"
 			return 12114
+	if category_name in paijiContrast.musthaveField:
+		select_log[category_name] = "没有选出"
+		return -1
 	if category_name in paijiContrast.default_choice.keys():
 		for item in paijiContrast.default_choice[category_name]:
 			if item['value'] in use_paiji_field:
@@ -345,6 +507,9 @@ def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_d
 
 
 def get_pricePropertyValues(paijiDesc, model, sku, sku_desc, number, show_default, colors):
+	"""
+	根据excel表中的信息选出PropertyValues
+	"""
 	pricePropertyList = []
 	pricePropertyValue = -1
 	select_log = {}
@@ -355,11 +520,10 @@ def get_pricePropertyValues(paijiDesc, model, sku, sku_desc, number, show_defaul
 															children_category["pricePropertyValueVos"], model, sku,
 															sku_desc,
 															select_log, show_default)
+
 				if pricePropertyValue == -1:
-					select_logs.append({str(number) + "行": select_log})
 					return {-1: children_category["name"]}
 				if pricePropertyValue == -3:
-					select_logs.append({str(number) + "行": select_log})
 					return -3
 				# 机身颜色没有完全匹配
 				if pricePropertyValue == -2:
@@ -373,7 +537,6 @@ def get_pricePropertyValues(paijiDesc, model, sku, sku_desc, number, show_defaul
 		for color in colors:
 			color_desc += color['value'] + "、"
 		select_log["机身颜色"] = color_desc
-	select_logs.append({str(number) + "行": select_log})
 	return pricePropertyList
 
 
@@ -392,8 +555,10 @@ def judge_price_combination(desc, item):
 	return 1
 
 
-# 根据询价规则页面中的设置来价格查询规则
 def get_pricePropertyValues_one(quality, desc, pricePropertyList, paijiDescProertyIds):
+	"""
+	根据询价规则页面中的设置来价格查询规则
+	"""
 	pricePropertyLists = []
 	print("paijiCon")
 	print(str(paijiContrast.price_combination))
@@ -418,8 +583,10 @@ def get_pricePropertyValues_one(quality, desc, pricePropertyList, paijiDescProer
 	return pricePropertyLists
 
 
-# 透图与色差
 def get_pricePropertyValues_two(pricePropertyList):
+	"""
+	透图与色差
+	"""
 	pricePropertyLists = []
 	pricePropertyLists.append(pricePropertyList.copy())
 	# 如果包含透图
@@ -473,11 +640,18 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 	# 设置单元格背景色为灰色, 表示缺少拍机堂中的某个字段描述
 	pattern4.pattern_fore_colour = Style.colour_map['gray25']
 
+	style5 = XFStyle()
+	pattern5 = Pattern()
+	pattern5.pattern = Pattern.SOLID_PATTERN
+	# 设置单元格背景色为粉色，表示出现不选查改机器价格的关键词
+	pattern5.pattern_fore_colour = Style.colour_map['pink']
+
 	style.pattern = pattern
 	style1.pattern = pattern1
 	style2.pattern = pattern2
 	style3.pattern = pattern3
 	style4.pattern = pattern4
+	style5.pattern = pattern5
 
 	price_column_number = column_name_number["单台出价1"]
 
@@ -491,6 +665,8 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 		xlwt_worksheet.write(number, price_column_number + index, label="*" + str(content), style=style3)
 	elif method == 6:
 		xlwt_worksheet.write(number, price_column_number + index, label="*" + str(content), style=style4)
+	elif method == 7:
+		xlwt_worksheet.write(number, price_column_number + index, label="*" + str(content), style=style5)
 	elif method == 2:
 		xlwt_worksheet.write(number, price_column_number + index, label=str(content))
 		default_desc = ""
@@ -502,8 +678,12 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 		xlwt_worksheet.write(number, price_column_number + method - 2, label=str(content))
 
 
-# 判断机况描述中的字段是否在对照表中全部包含，只有当全部包含时，才能查询价格
 def judge_contain_desc(desc):
+	"""
+	判断机况描述中的字段是否在对照表中全部包含，只有当全部包含时，才能查询价格
+	:param desc:
+	:return:
+	"""
 	ans = ""
 	for item in desc.split('、'):
 		item = remove_space(item)
@@ -524,8 +704,11 @@ def fill_comparsion_column(xlwt_worksheet):
 		i += 1
 
 
-# 填上对比价格
 def fill_comparison_price(number, key, xlwt_worksheet):
+	"""
+	填上对比价格
+	:param number: 行数
+	"""
 	i = 0
 	for fileName in comparison_price.keys():
 		if key in comparison_price[fileName].keys():
@@ -554,6 +737,11 @@ def get_desc_property_ids(paijiDesc):
 
 
 def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
+	"""
+	查询价格
+
+	:param number: 行数
+	"""
 	global already_search
 
 	model = remove_space(str(xlrd_worksheet.row_values(number)[column_name_number["机型"]])).lower()
@@ -573,6 +761,12 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 		return
 
 	show_default = {"机身颜色": "", "电池健康度": "", "网络制式": "", "购买渠道": ""}
+
+	temp = ["触摸失灵/延迟", "密码/云账号无法全部解除", "屏幕无法正常显示", "无法正常进入桌面或开机异常"]
+	for item in temp:
+		if item in desc:
+			excel_fill(xlwt_worksheet, number - 1, 7, item, "", 0)
+			return
 
 	if sku + desc + quality not in already_search.keys() or "flag" not in already_search.keys():
 		already_search[sku + desc + quality] = {}
@@ -603,10 +797,10 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 					if -1 in pricePropertyList.keys():
 						already_search[sku + desc + quality][0] = -1
 						excel_fill(xlwt_worksheet, number - 1, 1, pricePropertyList[-1], show_default, 0)
-						log.log_error.append(
-							"用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
+						log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
 						return
 
+				# 没有选出保修或电池容量
 				if pricePropertyList == -3:
 					already_search[sku + desc + quality][0] = -3
 					log.log_error.append(
@@ -714,8 +908,10 @@ def remove_space(s):
 	return s.replace(' ', '').encode('utf-8').replace(b'\xc2\xa0', b'').decode('utf-8')
 
 
-# 初始化列名
 def init_first_row(xlwt_worksheet):
+	"""
+	初始化列名
+	"""
 	price_column_number = column_name_number["单台出价1"]
 	xlwt_worksheet.write(0, price_column_number + 0, label="单台出价1")
 	xlwt_worksheet.write(0, price_column_number + 1, label="单台出价2")
@@ -747,8 +943,4 @@ def traverse_excel(xlrd_worksheet, xlwt_worksheet):
 		threads.append(thread)
 	for t in threads:
 		t.join()
-
-	# for item in select_logs:
-	#	print(item)
-
 	return 1

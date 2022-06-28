@@ -187,7 +187,6 @@ def product_select(keyword, userIndex):
 		'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
 	headers.update(common_header)
-	#proxy = access.get_proxy().get("proxy")
 	retry_count = 5
 	while retry_count > 0:
 		try:
@@ -202,26 +201,28 @@ def product_select(keyword, userIndex):
 				for item in resp['data']:
 					if simplify(keyword) == simplify(item["productName"]):
 						generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-																 str(item["productId"]))
+											 str(item["productId"]))
 						return item["productId"]
 				return -1
 			else:
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp))
+									 str(resp))
 				return -1
 		except Exception as e:
 			print(e)
 			retry_count -= 1
-	#access.delete_proxy(proxy)
 	return -1
 
 
 def simplify(keyword):
 	return str(keyword).replace(' ', '').replace('(', '').replace(')', '').replace('（', '').replace('）', '').lower()
 
+
 # 模拟正常流量
 def trace_log():
-	url = "https://bi-log.aihuishou.com/trace/log/pjt?data=eyJkaXN0aW5jdF9pZCI6IjAxM1Z2WEdhMWQySG9EMDJ2cEhhMW5COXhrMFZ2WEdLIiwibGliIjp7IiRsaWIiOiJNaW5pUHJvZ3JhbSIsIiRsaWJfbWV0aG9kIjoiY29kZSIsIiRsaWJfdmVyc2lvbiI6IjEuMTMuMjAifSwicHJvcGVydGllcyI6eyIkbGliIjoiTWluaVByb2dyYW0iLCIkbGliX3ZlcnNpb24iOiIxLjEzLjIwIiwiJG5ldHdvcmtfdHlwZSI6IndpZmkiLCIkbWFudWZhY3R1cmVyIjoiaVBob25lIiwiJG1vZGVsIjoiaVBob25lIFhTPGlQaG9uZTExLDI%2BIiwiJHNjcmVlbl93aWR0aCI6Mzc1LCIkc2NyZWVuX2hlaWdodCI6ODEyLCIkb3MiOiJpT1MiLCIkb3NfdmVyc2lvbiI6IjE1LjUiLCIkbGF0ZXN0X3NjZW5lIjoi5b6u5L%2Bh6IGK5aSp5Li755WM6Z2i5LiL5ouJIiwiYXBwX25hbWUiOiJvcHRfbWluaSIsInBsYXRmb3JtIjoibWluaWFwcCIsInVzZXJfa2V5IjoyNzYxOTIsIiRyZWZlcnJlciI6InBhZ2VzL3Byb2R1Y3Qtc2VhcmNoL2luZGV4IiwiJHVybF9wYXRoIjoicGFnZXMvaW5kZXgvaW5kZXgiLCIkdXJsX3F1ZXJ5IjoiIiwiJGlzX2ZpcnN0X2RheSI6dHJ1ZX0sImFub255bW91c19pZCI6IjAxM1Z2WEdhMWQySG9EMDJ2cEhhMW5COXhrMFZ2WEdLIiwidHlwZSI6InRyYWNrIiwiZXZlbnQiOiIkTVBWaWV3U2NyZWVuIiwidGltZSI6MTY1NjE1NDUyMTY2NX0%3D"
+	url = "https://bi-log.aihuishou.com/trace/log/pjt?data=eyJkaXN0aW5jdF9pZCI6IjAxM1Z2WEdhMWQySG9EMDJ2cEhhMW5COXhrMFZ2WEdLIiwibGliIjp7IiRsaWIiOiJNaW5pUHJvZ3JhbSIsIiRsaWJfbWV0aG9kIjoiY29kZSIsIiRsaWJfdmVyc2lvbiI6IjEuMTMuMjAifSwicHJvcGVydGllcyI6eyIkbGliIjoiTWluaVByb2dyYW0iLCIkbGliX3ZlcnNpb24iOiIxLjEzLjIwIiwiJG5ldHdvcmtfdHlwZSI6IndpZmkiLCIkbWFudWZhY3R1cmVyIjoiaVBob25lIiwiJG1vZGVsIjoiaVBob25lIFhTPGlQaG9uZTExLDI" \
+		  "%2BIiwiJHNjcmVlbl93aWR0aCI6Mzc1LCIkc2NyZWVuX2hlaWdodCI6ODEyLCIkb3MiOiJpT1MiLCIkb3NfdmVyc2lvbiI6IjE1LjUiLCIkbGF0ZXN0X3NjZW5lIjoi5b6u5L" \
+		  "%2Bh6IGK5aSp5Li755WM6Z2i5LiL5ouJIiwiYXBwX25hbWUiOiJvcHRfbWluaSIsInBsYXRmb3JtIjoibWluaWFwcCIsInVzZXJfa2V5IjoyNzYxOTIsIiRyZWZlcnJlciI6InBhZ2VzL3Byb2R1Y3Qtc2VhcmNoL2luZGV4IiwiJHVybF9wYXRoIjoicGFnZXMvaW5kZXgvaW5kZXgiLCIkdXJsX3F1ZXJ5IjoiIiwiJGlzX2ZpcnN0X2RheSI6dHJ1ZX0sImFub255bW91c19pZCI6IjAxM1Z2WEdhMWQySG9EMDJ2cEhhMW5COXhrMFZ2WEdLIiwidHlwZSI6InRyYWNrIiwiZXZlbnQiOiIkTVBWaWV3U2NyZWVuIiwidGltZSI6MTY1NjE1NDUyMTY2NX0%3D"
 	headers = {
 		'Host': 'bi-log.aihuishou.com',
 		'Connection': 'close',
@@ -231,7 +232,7 @@ def trace_log():
 		'Referer': 'https://servicewechat.com/wxfb796f037077edb6/9/page-frame.html'
 	}
 	requests.get(url, headers=headers)
-	
+
 
 # 通过productId， pricePropertyValueIds获取RrepostNo
 def get_report_no(productId, pricePropertyValueIds, userIndex):
@@ -242,7 +243,6 @@ def get_report_no(productId, pricePropertyValueIds, userIndex):
 		'Content-Type': 'application/json',
 	}
 	headers.update(common_header)
-	#proxy = access.get_proxy().get("proxy")
 	retry_count = 5
 	while retry_count > 0:
 		try:
@@ -255,20 +255,19 @@ def get_report_no(productId, pricePropertyValueIds, userIndex):
 				return get_report_no(productId, pricePropertyValueIds, 0)
 			if 'data' in resp:
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp['data']['reportNo']))
+									 str(resp['data']['reportNo']))
 				return resp['data']['reportNo']
 			else:
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp))
+				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()), str(resp))
 				return -1
 		except Exception as e:
 			retry_count -= 1
-	#access.delete_proxy(proxy)
 	return -1
+
 
 # 拍机堂小程序
 def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
-	#userAgentIndex = random.randint(1, len(access.userAgents))
+	# userAgentIndex = random.randint(1, len(access.userAgents))
 	print("productId:" + str(productId))
 	print("priceProperty:" + str(pricePropertyValueIds))
 	url = "https://sjapi.aihuishou.com/opt-inquiry/mini-inquiry-price/price-info/by-ppv"
@@ -278,11 +277,9 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 		'Access-Token': '49e951cff912c2ab75a1d5a89492af1c',
 		'Host': 'sjapi.aihuishou.com',
 		'Content-Type': 'application/json',
-		'Content-Length': str(len(json.dumps(data).replace(' ','')))
+		'Content-Length': str(len(json.dumps(data).replace(' ', '')))
 	}
 	retry_count = 5
-	#proxy = access.get_proxy().get("proxy")
-	#print(proxy)
 	resp = ""
 	while retry_count > 0:
 		try:
@@ -291,34 +288,34 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 			if 'data' in resp and 'guidePrice' in resp['data']:
 				price = resp['data']['guidePrice']
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(price))
+									 str(price))
 				return {"price": price, "skuId": resp['data']['skuId']}
 			else:
 				if access.authCode(resp['resultMessage']) == 1:
 					print(resp)
 					log.log_error.append(resp)
 					return -2;
-					#if access.update_token(0) == False:
-					#	log.log_error.append("更新失败")
-					#	return -2
-					#continue
+				# if access.update_token(0) == False:
+				#	log.log_error.append("更新失败")
+				#	return -2
+				# continue
 				log.log_error.append(resp)
 				res = access.token_is_invalid(resp['resultMessage'], userIndex)
 				if res == -2:
 					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-															str("token失效"))
+										 str("token失效"))
 					return -2
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp))
+									 str(resp))
 				return {"price": -1, "skuId": -1}
 		except Exception as e:
 			retry_count -= 1
-	#access.delete_proxy(proxy)
 	return {"price": -1, "skuId": -1}
+
 
 # 拍机堂app
 def get_price_by_app(productId, pricePropertyValueIds, userIndex):
-	#userAgentIndex = random.randint(1, len(access.userAgents))
+	# userAgentIndex = random.randint(1, len(access.userAgents))
 	print("productId:" + str(productId))
 	print("priceProperty:" + str(pricePropertyValueIds))
 	url = "https://sjapi.aihuishou.com/opt-inquiry/quick-inquiry-price/inspection-info/get-by-ppv"
@@ -330,15 +327,13 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 		'Chromosome': chromosome,
 		'Version-Type': '1',
 		'Platform': 'web',
-		'Access-Token': access.user[userIndex]['token'] ,
+		'Access-Token': access.user[userIndex]['token'],
 		'Accept': 'application/json',
 		'Content-Type': 'application/json',
-		'Content-Length':str(len(json.dumps(data).replace(' ',''))),
-		#'User-Agent': access.userAgents[userAgentIndex - 1]
+		'Content-Length': str(len(json.dumps(data).replace(' ', ''))),
+		# 'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
 	retry_count = 5
-	#proxy = access.get_proxy().get("proxy")
-	#print(proxy)
 	resp = ""
 	while retry_count > 0:
 		try:
@@ -346,7 +341,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 			if 'data' in resp and 'referencePrice' in resp['data']:
 				price = resp['data']['referencePrice']
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(price))
+									 str(price))
 				return {"price": price, "skuId": resp['data']['skuId']}
 			else:
 				if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
@@ -357,29 +352,29 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 					print(resp)
 					log.log_error.append(resp)
 					return -2;
-					#if access.update_token(0) == False:
-					#	log.log_error.append("更新失败")
-					#	return -2
-					#continue
+				# if access.update_token(0) == False:
+				#	log.log_error.append("更新失败")
+				#	return -2
+				# continue
 				log.log_error.append(resp)
 				res = access.token_is_invalid(resp['resultMessage'], userIndex)
 				if res == -2:
 					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-															str("token失效"))
+										 str("token失效"))
 					return -2
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp))
+									 str(resp))
 				return {"price": -1, "skuId": -1}
 		except Exception as e:
 			retry_count -= 1
-	#access.delete_proxy(proxy)
 	return {"price": -1, "skuId": -1}
 
 
 # 通过productId， pricePropertyValueIds获取价格
 def get_price_new(productId, pricePropertyValueIds, userIndex):
-	#trace_log()
+	# trace_log()
 	return get_price_by_app(productId, pricePropertyValueIds, userIndex)
+
 
 # 通过reptortNo获取价格
 def get_price(reportNo, userIndex):
@@ -388,13 +383,13 @@ def get_price(reportNo, userIndex):
 		# 'Access-Token': access.user[userIndex - 1]["token"],
 		'Access-Token': access.user[userIndex]['token'],
 		'wToken': 'KIUR_BFQul0i40whfD/3YAUPk5pn3rtvEpuVgV6BNw9ZEbHALg+pFxd9ojeTvYO3zvMg8OUHaMzIANpS09'
-							'+YMSuqEQnSDnxNqkSt4wHL14PDVcyw3aEJjhI/liDTVfoasF7d9'
-							'+elgl2zb6uG67ySxfUpRPXibaziayY1htAogjAAZLjZ9XGdOkRfbJBkTQJ'
-							'/yjfkzlJpk0pOSEZI8bkj6iSn1tJMr92ZYfkSuglMzoGrUuE+QX06S5oeqPKPd7feiv'
-							'+smUHb9cZ0MLpi5JsmzNgP17T5QG6O1YwhMpK6vomD8TlvHHm/x85o2sAZwVNCUQ4WufzF77R+Iwln8KAIHot20pJZTE0'
-							'+ypXw5UHsOW10g5hkc2H3c5Lro1R4Y0l2jSTEPeiri4edMmtvW3jEOE8isINdX9+SeWPsUxvAE5Flly'
-							'+sbLJnkgaXeeRS7TRuuLJhh'
-							'&IMHW_i0013dd481f50c8890660573867c246dd7daee549cb36',
+				  '+YMSuqEQnSDnxNqkSt4wHL14PDVcyw3aEJjhI/liDTVfoasF7d9'
+				  '+elgl2zb6uG67ySxfUpRPXibaziayY1htAogjAAZLjZ9XGdOkRfbJBkTQJ'
+				  '/yjfkzlJpk0pOSEZI8bkj6iSn1tJMr92ZYfkSuglMzoGrUuE+QX06S5oeqPKPd7feiv'
+				  '+smUHb9cZ0MLpi5JsmzNgP17T5QG6O1YwhMpK6vomD8TlvHHm/x85o2sAZwVNCUQ4WufzF77R+Iwln8KAIHot20pJZTE0'
+				  '+ypXw5UHsOW10g5hkc2H3c5Lro1R4Y0l2jSTEPeiri4edMmtvW3jEOE8isINdX9+SeWPsUxvAE5Flly'
+				  '+sbLJnkgaXeeRS7TRuuLJhh'
+				  '&IMHW_i0013dd481f50c8890660573867c246dd7daee549cb36',
 		'App-ID': 'pjt432865',
 		'Platform': 'ios',
 		'Version': '2.19.1'
@@ -411,11 +406,11 @@ def get_price(reportNo, userIndex):
 			if 'data' in resp:
 				price = resp['data']['p2Price']
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(price))
+									 str(price))
 				return {"price": price, "skuId": resp['data']['skuId']}
 			else:
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp))
+									 str(resp))
 				return {"price": -1, "skuId": -1}
 		except Exception as e:
 			retry_count -= 1
@@ -439,13 +434,13 @@ def get_category_id():
 				for item in categories:
 					if item["categoryName"] == "手机":
 						generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-																 str(item["categoryId"]))
+											 str(item["categoryId"]))
 						return item["categoryId"]
 					return -1
 				return -1
 			else:
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp))
+									 str(resp))
 				return -1
 		except Exception as e:
 			retry_count -= 1
@@ -463,23 +458,23 @@ def get_brand(category):
 	}
 	data = {"categoryId": 1}
 	retry_count = 5
-	#proxy = access.get_proxy().get("proxy")
+	# proxy = access.get_proxy().get("proxy")
 	while retry_count > 0:
 		try:
 			resp = json.loads(
 				requests.post(url, headers=headers, data=json.dumps(data)).text)
 			if 'data' in resp:
 				brands = resp['data']
-				#generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+				# generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 				#										 str(brands))
 				return brands
 			else:
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp))
+									 str(resp))
 				return -1
 		except Exception as e:
 			retry_count -= 1
-	#access.delete_proxy(proxy)
+	# access.delete_proxy(proxy)
 	return -1
 
 
@@ -491,26 +486,26 @@ def get_all_machine(categoryId, brandId, num):
 	headers = {
 		'Access-Token': access.user[userIndex - 1]["token"],
 		'Content-Type': 'application/json',
-		'Content-Length':str(len(json.dumps(data).replace(' ','')))
+		'Content-Length': str(len(json.dumps(data).replace(' ', '')))
 	}
 	retry_count = 5
-	#proxy = access.get_proxy().get("proxy")
+	# proxy = access.get_proxy().get("proxy")
 	while retry_count > 0:
 		try:
 			resp = json.loads(
 				requests.post(url, headers=headers, data=json.dumps(data)).text)
 			if 'data' in resp:
 				res = resp['data'][0:num]
-				#generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
+				# generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
 				#										 str(res))
 				return res
 			else:
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp))
+									 str(resp))
 				return -1
 		except Exception as e:
 			retry_count -= 1
-	#access.delete_proxy(proxy)
+	# access.delete_proxy(proxy)
 	return -1
 
 
@@ -564,19 +559,19 @@ def get_desc(productId, userIndex):
 	trace_log()
 	userAgentIndex = random.randint(1, len(access.userAgents))
 	url = "https://sjapi.aihuishou.com/supplier-api/frequently-inquiry-price/inspection-content/get?productId=" + \
-				str(productId)
+		  str(productId)
 	chromosome = getChromsome()
 	headers = {
 		'Host': 'sjapi.aihuishou.com',
 		'Version': '2.43.1',
 		'Chromosome': chromosome,
-		'Access-Token': access.user[userIndex]['token'] ,
-		'Connection':'keep-alive',
-		'Accept-Encoding':'gzip, deflate, br',
-		'Accept':'*/*',
-		#'User-Agent': access.userAgents[userAgentIndex - 1]
+		'Access-Token': access.user[userIndex]['token'],
+		'Connection': 'keep-alive',
+		'Accept-Encoding': 'gzip, deflate, br',
+		'Accept': '*/*',
+		# 'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
-	#proxy = access.get_proxy().get("proxy")
+	# proxy = access.get_proxy().get("proxy")
 	retry_count = 5
 	while retry_count > 0:
 		try:
@@ -585,7 +580,7 @@ def get_desc(productId, userIndex):
 			trace_log()
 			if 'data' in resp and 'productInfos' in resp['data']:
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp['data']))
+									 str(resp['data']))
 				return resp['data']
 			else:
 				if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
@@ -596,14 +591,14 @@ def get_desc(productId, userIndex):
 				res = access.token_is_invalid(resp['resultMessage'], userIndex)
 				if res == -2:
 					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-															str("token失效"))
+										 str("token失效"))
 					return -2
 				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-														 str(resp))
+									 str(resp))
 				return -1
 		except Exception as e:
 			retry_count -= 1
-	#access.delete_proxy(proxy)
+	# access.delete_proxy(proxy)
 	return -1
 
 
@@ -613,7 +608,7 @@ def update_desc():
 	times = 1
 
 	categoryId = 1
-	#while categoryId == -1 and times < 5:
+	# while categoryId == -1 and times < 5:
 	#	categoryId = get_category_id()
 	#	times += 1
 
@@ -639,9 +634,9 @@ def update_desc():
 			print(products)
 		if str(brand['brandName']).strip() == '三星':
 			count += 1
-			#products = get_all_machine(categoryId, brand["brandId"], 50)
-			#print("c")
-			#print(products)
+		# products = get_all_machine(categoryId, brand["brandId"], 50)
+		# print("c")
+		# print(products)
 		if count != 0:
 			if products != -1:
 				for product in products:
@@ -668,7 +663,7 @@ def update_desc():
 												"id": pricePropertyValue['id'],
 												"parentValue": key,
 												"value": str(pricePropertyValue['value']).strip() if isinstance(pricePropertyValue['value'],
-																																												str) else pricePropertyValue[
+																												str) else pricePropertyValue[
 													'value'],
 												"name": descKey,
 											})
