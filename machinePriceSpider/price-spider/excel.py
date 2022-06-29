@@ -703,6 +703,7 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 	pattern5.pattern_fore_colour = Style.colour_map['pink']
 
 	style.pattern = pattern
+	style0.pattern = pattern0
 	style1.pattern = pattern1
 	style2.pattern = pattern2
 	style3.pattern = pattern3
