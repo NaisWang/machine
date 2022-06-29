@@ -834,9 +834,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 	if sku + desc + quality not in already_search.keys() or "flag" not in already_search.keys():
 		already_search[sku + desc + quality] = {}
 		productId = product.get_product_id(model, userIndex)
-		productId = -2
 		if productId == -2:
-			print("productId ========= ffffffffffffffffffffffffffff")
 			excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
 			return
 		if productId != -1:
@@ -853,7 +851,6 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 				return
 
 			if paijiDesc == -2:
-				print("paijiDesc ========= ffffffffffffffffffffffffffff")
 				excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
 				return
 			if paijiDesc != -1:
@@ -904,7 +901,6 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 								pricePropertyLists[index].append(color['id'])
 								resp1 = product.get_price_new(productId, pricePropertyLists[index], userIndex)
 								if resp1 == -2:
-									print("resp1 ========= ffffffffffffffffffffffffffff")
 									excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
 									return
 								tempPrice = resp1['price']
@@ -918,7 +914,6 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 							pricePropertyLists[index].append(colorId)
 							resp1 = product.get_price_new(productId, pricePropertyLists[index], userIndex)
 							if resp1 == -2:
-								print("resp2 =========== ffffffffffffffffffffffffffff")
 								excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
 								return
 							price = resp1['price']
@@ -926,7 +921,6 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 					else:
 						resp1 = product.get_price_new(productId, pricePropertyLists[index], userIndex)
 						if resp1 == -2:
-							print("resp3 ========= ffffffffffffffffffffffffffff")
 							excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
 							return
 						price = resp1['price']
