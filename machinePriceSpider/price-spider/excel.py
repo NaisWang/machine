@@ -586,7 +586,7 @@ def get_pricePropertyValues(paijiDesc, model, sku, sku_desc, number, show_defaul
 		for color in colors:
 			color_desc += color['value'] + "、"
 		select_log["机身颜色"] = color_desc
-	excel_fill(xlwt_worksheet, number - 1, colNumOfSelectLog, str(select_log), "", 0)
+	excel_fill(xlwt_worksheet, number - 1, colNumOfSelectLog, '、'.join(('%s' % item for item in select_log.values())), "", 0)
 	return pricePropertyList
 
 
