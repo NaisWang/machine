@@ -190,6 +190,7 @@ def product_select(keyword, userIndex):
 	retry_count = 5
 	while retry_count > 0:
 		resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
+		print(str(resp))
 		if 'data' in resp and len(resp['data']) != 0:
 			for item in resp['data']:
 				if simplify(keyword) == simplify(item["productName"]):
