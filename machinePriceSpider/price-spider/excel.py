@@ -1,4 +1,5 @@
 # coding=utf-8
+import re
 import requests
 import copy
 import json
@@ -247,12 +248,14 @@ def import_excel():
 	response.headers["Content-Disposition"] = "attachment; filename={}".format(filename)
 
 	time.sleep(1)
+	access.logout_all()
 	return response
 
 
 @app.route("/stop-search-price", methods=['POST', 'GET'])
 def stop_search_price():
 	global search_price_flag
+	access.logout_all()
 	search_price_flag = 0
 
 
@@ -404,6 +407,46 @@ def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_d
 			sku = sku + "、黑色"
 		elif "荣耀畅玩9a" in remove_space(sku_desc).lower() and "蓝水翡翠" in remove_space(sku).lower():
 			sku = sku + "、绿色"
+		elif "oppoa91" in remove_space(sku_desc).lower() and "蓝色" in remove_space(sku).lower():
+			sku = sku + "、融雪之光"
+		elif "opporeno3pro（5g版）" in remove_space(sku_desc).lower() and "红蓝" in remove_space(sku).lower():
+			sku = sku + "、日出印象"
+		elif "opporeno3（5g版）" in remove_space(sku_desc).lower() and "日出印象" in remove_space(sku).lower():
+			sku = sku + "、红蓝"
+		elif "opporeno4pro（5g版）" in remove_space(sku_desc).lower() and "仲夏荧光" in remove_space(sku).lower():
+			sku = sku + "、绿色"
+		elif "realmex2" in remove_space(sku_desc).lower() and "牛油果" in remove_space(sku).lower():
+			sku = sku + "、绿色"
+		elif "redmik30" in remove_space(sku_desc).lower() and "花影惊鸿" in remove_space(sku).lower():
+			sku = sku + "、粉色"
+		elif "redmik30" in remove_space(sku_desc).lower() and "深海微光" in remove_space(sku).lower():
+			sku = sku + "、蓝色"
+		elif "vivox30（5g版）" in remove_space(sku_desc).lower() and "曜石" in remove_space(sku).lower():
+			sku = sku + "、黑色"
+		elif "vivoy9s" in remove_space(sku_desc).lower() and "幻彩" in remove_space(sku).lower():
+			sku = sku + "、幻彩晴空"
+		elif "华为nova7（5g版）" in remove_space(sku_desc).lower() and "绮境森林" in remove_space(sku).lower():
+			sku = sku + "、绿色"
+		elif "华为p30pro" in remove_space(sku_desc).lower() and "赤茶橘" in remove_space(sku).lower():
+			sku = sku + "、橙色"
+		elif "华为p30" in remove_space(sku_desc).lower() and "赤茶橘" in remove_space(sku).lower():
+			sku = sku + "、橙色"
+		elif "华为畅享10plus" in remove_space(sku_desc).lower() and "赤茶橘" in remove_space(sku).lower():
+			sku = sku + "、橙色"
+		elif "荣耀20pro" in remove_space(sku_desc).lower() and "幻夜星河" in remove_space(sku).lower():
+			sku = sku + "、蓝色"
+		elif "荣耀30pro（5g版）" in remove_space(sku_desc).lower() and "流光幻境" in remove_space(sku).lower():
+			sku = sku + "、流光幻镜"
+		elif "荣耀30（5g版）" in remove_space(sku_desc).lower() and "流光幻境" in remove_space(sku).lower():
+			sku = sku + "、流光幻境"
+		elif "荣耀50（5g版）" in remove_space(sku_desc).lower() and "水晶初雪" in remove_space(sku).lower():
+			sku = sku + "、初雪水晶"
+		elif "荣耀play4t" in remove_space(sku_desc).lower() and "极光蓝" in remove_space(sku).lower():
+			sku = sku + "、极光色"
+		elif "荣耀v30（5g版）" in remove_space(sku_desc).lower() and "幻夜星河" in remove_space(sku).lower():
+			sku = sku + "、黑色"
+		elif "小米mix3" in remove_space(sku_desc).lower() and "翡翠色" in remove_space(sku).lower():
+			sku = sku + "、绿色"
 
 	if category_name in paijiContrast.excludeField:
 		temp_paiji_category_desc = sorted(paiji_category_desc, key=lambda e: len(e.__getitem__('value')), reverse=True)
@@ -480,6 +523,12 @@ def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_d
 				select_log[category_name] = "10G+256G"
 				return 8582
 
+		temp9 = ["oppor11plus", "oppor9splus"]
+		for item in temp9:
+			if item in remove_space(sku_desc).lower():
+				select_log[category_name] = "6G+64G"
+				return 4067
+
 		return -1
 	if category_name == "购买渠道":
 		if "非国行" in sku and "有锁" not in sku:
@@ -506,7 +555,7 @@ def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_d
 	return paiji_category_desc[0]['id']
 
 
-def get_pricePropertyValues(paijiDesc, model, sku, sku_desc, number, show_default, colors):
+def get_pricePropertyValues(paijiDesc, model, sku, sku_desc, number, show_default, colors, colNumOfSelectLog, xlwt_worksheet):
 	"""
 	根据excel表中的信息选出PropertyValues
 	"""
@@ -537,6 +586,7 @@ def get_pricePropertyValues(paijiDesc, model, sku, sku_desc, number, show_defaul
 		for color in colors:
 			color_desc += color['value'] + "、"
 		select_log["机身颜色"] = color_desc
+	excel_fill(xlwt_worksheet, number, colNumOfSelectLog, str(select_log), "", 0)
 	return pricePropertyList
 
 
@@ -674,9 +724,8 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 			if str(show_default[item]) != "":
 				default_desc = default_desc + str(show_default[item]) + "、"
 		xlwt_worksheet.write(number, price_column_number + 4, label=default_desc)
-	elif method >= 7:
-		xlwt_worksheet.write(number, price_column_number + method - 2, label=str(content))
-
+	elif method in [8, 9, 10, 11, 12, 13, 14, 15]:
+		xlwt_worksheet.write(number, price_column_number + method - 3, label=str(content))
 
 def judge_contain_desc(desc):
 	"""
@@ -718,12 +767,12 @@ def fill_comparison_price(number, key, xlwt_worksheet):
 
 def deal_sell_price(skuId, xlwt_worksheet, number):
 	if skuId in sellPrice.sell_product.keys():
-		excel_fill(xlwt_worksheet, number, 7, sellPrice.sell_product[skuId]['early_create_date'][0:10], "", 0)
-		excel_fill(xlwt_worksheet, number, 8, int(round(np.mean(sellPrice.sell_product[skuId]['day']))), "", 0)
-		excel_fill(xlwt_worksheet, number, 9, len(sellPrice.sell_product[skuId]['day']), "", 0)
+		excel_fill(xlwt_worksheet, number, 8, sellPrice.sell_product[skuId]['early_create_date'][0:10], "", 0)
+		excel_fill(xlwt_worksheet, number, 9, int(round(np.mean(sellPrice.sell_product[skuId]['day']))), "", 0)
+		excel_fill(xlwt_worksheet, number, 10, len(sellPrice.sell_product[skuId]['day']), "", 0)
 	if skuId in sellPrice.sold_product.keys():
-		excel_fill(xlwt_worksheet, number, 10, int(round(np.mean(sellPrice.sold_product[skuId]['day']))), "", 0)
-		excel_fill(xlwt_worksheet, number, 11, len(sellPrice.sold_product[skuId]['day']), "", 0)
+		excel_fill(xlwt_worksheet, number, 11, int(round(np.mean(sellPrice.sold_product[skuId]['day']))), "", 0)
+		excel_fill(xlwt_worksheet, number, 12, len(sellPrice.sold_product[skuId]['day']), "", 0)
 
 
 def get_desc_property_ids(paijiDesc):
@@ -747,7 +796,12 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 	model = remove_space(str(xlrd_worksheet.row_values(number)[column_name_number["机型"]])).lower()
 	sku = remove_space(str(xlrd_worksheet.row_values(number)[column_name_number["sku"]])).lower()
 	quality = remove_space(str(xlrd_worksheet.row_values(number)[column_name_number["成色"]])).lower()
+
 	desc = remove_space(str(xlrd_worksheet.row_values(number)[column_name_number["机况描述"]])).lower()
+	pattern = re.compile(r'、+')
+	pattern1 = re.compile(r'、$')
+	desc = re.sub(pattern1, '', re.sub(pattern, '、', desc))
+
 	priceCell = str(xlrd_worksheet.row_values(number)[column_name_number["单台出价1"]])
 
 	number += 1
@@ -790,35 +844,40 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 				return
 			if paijiDesc != -1:
 				colors = []
-				pricePropertyList = get_pricePropertyValues(paijiDesc, model, sku, sku + "、" + desc, number,
-															show_default,
-															colors)
-				if type(pricePropertyList) == dict:
-					if -1 in pricePropertyList.keys():
-						already_search[sku + desc + quality][0] = -1
-						excel_fill(xlwt_worksheet, number - 1, 1, pricePropertyList[-1], show_default, 0)
-						log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
+				desc_list = [desc, desc[:desc.rfind("、")]]
+				pricePropertyLists = []
+				for i in range(2):
+					pricePropertyList = get_pricePropertyValues(paijiDesc, model, sku, sku + "、" + desc_list[i], number,
+																show_default,
+																colors, 10 + i, xlwt_worksheet)
+					if type(pricePropertyList) == dict:
+						if -1 in pricePropertyList.keys():
+							already_search[sku + desc + quality][0] = -1
+							excel_fill(xlwt_worksheet, number - 1, 1, pricePropertyList[-1], show_default, 0)
+							log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
+							return
+
+					# 没有选出保修或电池容量
+					if pricePropertyList == -3:
+						already_search[sku + desc + quality][0] = -3
+						log.log_error.append(
+							"用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行对应的保修或电池情况")
+						excel_fill(xlwt_worksheet, number - 1, 4, -1, show_default, 0)
 						return
 
-				# 没有选出保修或电池容量
-				if pricePropertyList == -3:
-					already_search[sku + desc + quality][0] = -3
-					log.log_error.append(
-						"用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行对应的保修或电池情况")
-					excel_fill(xlwt_worksheet, number - 1, 4, -1, show_default, 0)
-					return
-
-				# 判断是查小当还是采货侠
-				pricePropertyLists = []
-				if search_price_method == 1:
-					paijiDescProertyIds = get_desc_property_ids(paijiDesc)
-					pricePropertyLists = get_pricePropertyValues_one(quality, desc, pricePropertyList.copy(),
-																	 paijiDescProertyIds)
-
-					if len(pricePropertyLists) == 0:
-						pricePropertyLists = get_pricePropertyValues_two(pricePropertyList.copy())
-				else:
 					pricePropertyLists.append(pricePropertyList)
+
+					# 判断是查小当还是采货侠
+					#pricePropertyLists = []
+				#	if search_price_method == 1:
+				#		paijiDescProertyIds = get_desc_property_ids(paijiDesc)
+				#		pricePropertyLists = get_pricePropertyValues_one(quality, desc, pricePropertyList.copy(),
+				#														 paijiDescProertyIds)
+
+				#		if len(pricePropertyLists) == 0:
+				#			pricePropertyLists = get_pricePropertyValues_two(pricePropertyList.copy())
+				#	else:
+				#		pricePropertyLists.append(pricePropertyList)
 
 				choiceColor = {}
 				colorId = -1
@@ -922,6 +981,9 @@ def init_first_row(xlwt_worksheet):
 	xlwt_worksheet.write(0, price_column_number + 7, label="销售中的数量")
 	xlwt_worksheet.write(0, price_column_number + 8, label="售出平均天数")
 	xlwt_worksheet.write(0, price_column_number + 9, label="售出中的数量")
+	xlwt_worksheet.write(0, price_column_number + 10, label="单台出价1选法")
+	xlwt_worksheet.write(0, price_column_number + 11, label="单台出价2选法")
+	xlwt_worksheet.write(0, price_column_number + 12, label="单台出价3选法")
 	fill_comparsion_column(xlwt_worksheet)
 
 
