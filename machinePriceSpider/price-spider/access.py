@@ -15,9 +15,11 @@ userAgents = [
 
 
 def get_user():
+	global user
+	user = []
+
 	url = "http://120.79.195.87:8081/machine/price/paiji-user/"
 	resp = json.loads(requests.get(url).text)
-	user = []
 	for item in resp['obj']:
 		user.append({"userName": item['username'], "passWord": item['password'], "token": "", "login_times": 0, "chromosome": item['chromosome'], "body": item['body']})
 
