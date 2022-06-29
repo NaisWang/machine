@@ -63,7 +63,6 @@ def init_user():
 				item["token"] = resp
 				break
 
-
 def logout_all():
 	for item in user:
 		logout(item['token'], item["userName"])

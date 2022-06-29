@@ -205,13 +205,21 @@ def product_select(keyword, userIndex):
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
+				log.log_error.append(resp + "当前用户为:" + str(access.user[userIndex]["userName"]))
 				time.sleep(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
-				log.log_error.append(resp)
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
-				temp_user = access.user
-				access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
+				temp_user = access.user[userIndex]
+				for i in range(3):
+					time.sleep(1)
+					print(time.strftime('%H:%M:%S'), 'hahaha')
+					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
+					if temp_resp == -1:
+						log.log_error.append(temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
+					else:
+						temp_user["token"] = resp
+						break
 				continue
 	return -2
 
@@ -350,13 +358,21 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
+				log.log_error.append(resp + "当前用户为:" + str(access.user[userIndex]["userName"]))
 				time.sleep(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
-				log.log_error.append(resp)
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
-				temp_user = access.user
-				access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
+				temp_user = access.user[userIndex]
+				for i in range(3):
+					time.sleep(1)
+					print(time.strftime('%H:%M:%S'), 'hahaha')
+					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
+					if temp_resp == -1:
+						log.log_error.append(temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
+					else:
+						temp_user["token"] = resp
+						break
 				continue
 	return -2
 
@@ -578,13 +594,21 @@ def get_desc(productId, userIndex):
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
+				log.log_error.append(resp + "当前用户为:" + str(access.user[userIndex]["userName"]))
 				time.sleep(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
-				log.log_error.append(resp)
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
-				temp_user = access.user
-				access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
+				temp_user = access.user[userIndex]
+				for i in range(3):
+					time.sleep(1)
+					print(time.strftime('%H:%M:%S'), 'hahaha')
+					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
+					if temp_resp == -1:
+						log.log_error.append(temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
+					else:
+						temp_user["token"] = resp
+						break
 				continue
 	return -2
 
