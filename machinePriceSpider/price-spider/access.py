@@ -53,14 +53,15 @@ def delete_proxy(proxy):
 def init_user():
 	get_user()
 	for item in user:
-		# item["token"] = "49e951cff912c2ab75a1d5a89492af1c"
-		time.sleep(1)
-		print(time.strftime('%H:%M:%S'), 'hahaha')
-		resp = login(item["chromosome"], item["body"], item["userName"])
-		if resp == -1:
-			log.log_error.append(item["userName"] + "用户信息有错误")
-		else:
-			item["token"] = resp
+		for i in range(3):
+			time.sleep(1)
+			print(time.strftime('%H:%M:%S'), 'hahaha')
+			resp = login(item["chromosome"], item["body"], item["userName"])
+			if resp == -1:
+				log.log_error.append(item["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
+			else:
+				item["token"] = resp
+				break
 
 
 def logout_all():
@@ -73,11 +74,13 @@ def update_token():
 	# get_user()
 	for item in user:
 		logout(item['token'], item['userName'])
-		time.sleep(1)
 		print(time.strftime('%H:%M:%S'), item['userName'], '重新登录')
-		resp = login(item["chromosome"], item["body"], item['userName'])
-		if resp == -1:
-			log.log_error.append(item["userName"] + "用户信息有错误")
-		else:
-			item['token'] = resp
+		for i in range(3):
+			time.sleep(1)
+			resp = login(item["chromosome"], item["body"], item['userName'])
+			if resp == -1:
+				log.log_error.append(item["userName"] + "用户信息有错误: " + str(i + 1))
+			else:
+				item['token'] = resp
+				break
 	return True
