@@ -749,7 +749,7 @@ def judge_contain_desc(desc):
 def fill_comparsion_column(xlwt_worksheet):
 	i = 0
 	for fileName in comparison_price.keys():
-		xlwt_worksheet.write(0, column_name_number["单台出价1"] + 13 + i, label=str(fileName))
+		xlwt_worksheet.write(0, column_name_number["单台出价1"] + 10 + i, label=str(fileName))
 		i += 1
 
 
@@ -849,7 +849,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 				for i in range(2):
 					pricePropertyList = get_pricePropertyValues(paijiDesc, model, sku, sku + "、" + desc_list[i], number,
 																show_default,
-																colors, 10 + i, xlwt_worksheet)
+																colors, 13 + i, xlwt_worksheet)
 					if type(pricePropertyList) == dict:
 						if -1 in pricePropertyList.keys():
 							already_search[sku + desc + quality][0] = -1
