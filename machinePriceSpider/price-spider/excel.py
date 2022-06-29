@@ -749,7 +749,7 @@ def judge_contain_desc(desc):
 def fill_comparsion_column(xlwt_worksheet):
 	i = 0
 	for fileName in comparison_price.keys():
-		xlwt_worksheet.write(0, column_name_number["单台出价1"] + 10 + i, label=str(fileName))
+		xlwt_worksheet.write(0, column_name_number["单台出价1"] + 13 + i, label=str(fileName))
 		i += 1
 
 

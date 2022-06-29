@@ -69,7 +69,7 @@ def init_user():
 		# item["token"] = "49e951cff912c2ab75a1d5a89492af1c"
 		time.sleep(1)
 		print(time.strftime('%H:%M:%S'), 'hahaha')
-		resp = login(item["chromosome"], item["body"])
+		resp = login(item["chromosome"], item["body"], item["userName"])
 		if resp == -1:
 			log.log_error.append(item["userName"] + "用户信息有错误")
 		else:
@@ -78,16 +78,16 @@ def init_user():
 
 def logout_all():
 	for item in user:
-		logout(item['token'])
-
+		logout(item['token'], item["userName"])
+		time.sleep(1)
 
 def update_token():
 	# get_user()
 	for item in user:
-		logout(item['token'])
+		logout(item['token'], item['userName'])
 		time.sleep(1)
 		print(time.strftime('%H:%M:%S'), item['userName'], '重新登录')
-		resp = login(item["chromosome"], item["body"])
+		resp = login(item["chromosome"], item["body"], item['userName'])
 		if resp == -1:
 			log.log_error.append(item["userName"] + "用户信息有错误")
 		else:

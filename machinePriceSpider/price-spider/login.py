@@ -18,7 +18,7 @@ def testLogin():
 
 
 
-def login(chromosome, body):
+def login(chromosome, body, userName):
 	userAgentIndex = random.randint(1, len(access.userAgents))
 	loginURL = "https://sjapi.aihuishou.com/sj-api/auth/login"
 
@@ -69,7 +69,7 @@ def login(chromosome, body):
 			resp = json.loads(requests.post(loginURL, headers=headers, data=str(body)).text)
 			print(resp)
 			if 'data' in resp and "accessToken" in resp["data"]:
-				log.log_error.append("登录成功, token为:" + str(resp["data"]["accessToken"]))
+				log.log_error.append("登录成功, token为:" + str(resp["data"]["accessToken"]) + ", 用户名为:" + str(userName))
 				return resp["data"]["accessToken"]
 			else:
 				return -1
@@ -79,7 +79,7 @@ def login(chromosome, body):
 	#access.delete_proxy(proxy)
 	return -1
 
-def logout(token):
+def logout(token, userName):
 	url = "https://sjapi.aihuishou.com/sj-api/account/logout"
 	headers = {
 		'Host': 'sjapi.aihuishou.com',
@@ -92,7 +92,7 @@ def logout(token):
 		try:
 			resp = json.loads(requests.post(url, headers=headers).text)
 			if resp['code'] == 200:
-				log.log_error.append("退出登录成功, token为:" + str(token))
+				log.log_error.append("退出登录成功, token:" + str(token) + ", 用户名为:" + str(userName))
 				return True
 			retry_count -= 1
 		except Exception as e:
