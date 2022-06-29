@@ -191,11 +191,12 @@ def product_select(keyword, userIndex):
 	while retry_count > 0:
 		resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
 		print(str(resp))
-		if 'data' in resp and len(resp['data']) != 0:
-			for item in resp['data']:
-				if simplify(keyword) == simplify(item["productName"]):
-					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()), str(item["productId"]))
-					return item["productId"]
+		if 'data' in resp:
+			if len(resp['data']) != 0:
+				for item in resp['data']:
+					if simplify(keyword) == simplify(item["productName"]):
+						generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()), str(item["productId"]))
+						return item["productId"]
 			return -1
 		else:
 			retry_count -= 1
