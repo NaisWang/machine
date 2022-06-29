@@ -198,7 +198,7 @@ def product_select(keyword, userIndex):
 			return -1
 		else:
 			retry_count -= 1
-			if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
+			if access.chromsome_is_invalid(resp['resultMessage']) == 1:
 				headers['Chromosome'] = getChromsome()
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
@@ -343,7 +343,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 			return {"price": price, "skuId": resp['data']['skuId']}
 		else:
 			retry_count -= 1
-			if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
+			if access.chromsome_is_invalid(resp['resultMessage']) == 1:
 				headers['Chromosome'] = getChromsome()
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
@@ -571,7 +571,7 @@ def get_desc(productId, userIndex):
 			return resp['data']
 		else:
 			retry_count -= 1
-			if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
+			if access.chromsome_is_invalid(resp['resultMessage']) == 1:
 				headers['Chromosome'] = getChromsome()
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
