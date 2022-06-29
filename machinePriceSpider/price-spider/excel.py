@@ -669,8 +669,8 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 	style0 = XFStyle()
 	pattern0 = Pattern()
 	pattern0.pattern = Pattern.SOLID_PATTERN
-	# 设置单元格背景色为红色, 表示机型搜索不出来
-	pattern0.pattern_fore_colour = Style.colour_map['black']
+	# 设置单元格背景色为黑色, 表示当前用户查此行价格时出错
+	pattern0.pattern_fore_colour = Style.colour_map['dark_purple']
 
 	style1 = XFStyle()
 	pattern1 = Pattern()
@@ -833,6 +833,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 	if sku + desc + quality not in already_search.keys() or "flag" not in already_search.keys():
 		already_search[sku + desc + quality] = {}
 		productId = product.get_product_id(model, userIndex)
+		productId = -2
 		if productId == -2:
 			print("productId ========= ffffffffffffffffffffffffffff")
 			excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
