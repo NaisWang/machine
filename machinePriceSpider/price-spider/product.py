@@ -205,7 +205,7 @@ def product_select(keyword, userIndex):
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
-				log.log_error.append(resp + "当前用户为:" + str(access.user[userIndex]["userName"]))
+				log.log_error.append(str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
 				time.sleep(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
@@ -358,7 +358,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
-				log.log_error.append(resp + "当前用户为:" + str(access.user[userIndex]["userName"]))
+				log.log_error.append(str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
 				time.sleep(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
@@ -594,7 +594,7 @@ def get_desc(productId, userIndex):
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
-				log.log_error.append(resp + "当前用户为:" + str(access.user[userIndex]["userName"]))
+				log.log_error.append(str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
 				time.sleep(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
