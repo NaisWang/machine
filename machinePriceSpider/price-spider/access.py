@@ -24,29 +24,13 @@ def get_user():
 		user.append({"userName": item['username'], "passWord": item['password'], "token": "", "login_times": 0, "chromosome": item['chromosome'], "body": item['body']})
 
 
-def token_is_invalid(resp, index):
-	global user
-
-	# if len(user) <= 0:
-	#	log.log_error.append("没有可用用户了!!!")
-	#	return -2
+def token_is_invalid(resp):
 	if "失效" in resp:
-		# TODO
-		return -2
-		if user[index]["login_times"] == 6:
-			log.log_error.append(user[index]["userName"] + "用户已失效")
-			del user[index]
-			if len(user) <= 0:
-				log.log_error.append("没有可用用户了!!!")
-				return -2
-			return user[0]["token"]
-		update_token(index)
-		user[index]["login_times"] += 1
-		return user[index]["token"]
-	return 1
+		return 1
+	return 0
 
 
-def chromsome_is_invalid(resp, index):
+def chromsome_is_invalid(resp):
 	if "访问行为异常" in resp:
 		return 1
 	return 0
@@ -83,6 +67,7 @@ def logout_all():
 	for item in user:
 		logout(item['token'], item["userName"])
 		time.sleep(1)
+
 
 def update_token():
 	# get_user()

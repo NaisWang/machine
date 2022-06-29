@@ -189,29 +189,29 @@ def product_select(keyword, userIndex):
 	headers.update(common_header)
 	retry_count = 5
 	while retry_count > 0:
-		try:
-			resp = json.loads(
-				requests.post(url, data=json.dumps(data), headers=headers).text)
-			res = access.token_is_invalid(resp['resultMessage'], userIndex)
-			if res == -2:
-				return -2
-			if res != 1:
-				return product_select(keyword, 0)
-			if 'data' in resp and len(resp['data']) != 0:
-				for item in resp['data']:
-					if simplify(keyword) == simplify(item["productName"]):
-						generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-											 str(item["productId"]))
-						return item["productId"]
-				return -1
-			else:
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(resp))
-				return -1
-		except Exception as e:
-			print(e)
+		resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
+		if 'data' in resp and len(resp['data']) != 0:
+			for item in resp['data']:
+				if simplify(keyword) == simplify(item["productName"]):
+					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()), str(item["productId"]))
+					return item["productId"]
+			return -1
+		else:
 			retry_count -= 1
-	return -1
+			if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
+				headers['Chromosome'] = getChromsome()
+				continue
+			if access.authCode(resp['resultMessage']) == 1:
+				print(resp)
+				time.sleep(6)
+				print(time.strftime('%H:%M:%S'), 'hahaha')
+				log.log_error.append(resp)
+				continue
+			if access.token_is_invalid(resp['resultMessage']) == 1:
+				temp_user = access.user
+				access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
+				continue
+	return -2
 
 
 def simplify(keyword):
@@ -336,40 +336,27 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 	retry_count = 5
 	resp = ""
 	while retry_count > 0:
-		try:
-			resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
-			if 'data' in resp and 'referencePrice' in resp['data']:
-				price = resp['data']['referencePrice']
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(price))
-				return {"price": price, "skuId": resp['data']['skuId']}
-			else:
-				if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
-					headers['Chromosome'] = getChromsome()
-					retry_count -= 1
-					continue
-				if access.authCode(resp['resultMessage']) == 1:
-					print(resp)
-					time.sleep(6)
-					print(time.strftime('%H:%M:%S'),'hahaha')
-					log.log_error.append(resp)
-					return -2;
-				# if access.update_token(0) == False:
-				#	log.log_error.append("更新失败")
-				#	return -2
-				# continue
-				log.log_error.append(resp)
-				res = access.token_is_invalid(resp['resultMessage'], userIndex)
-				if res == -2:
-					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-										 str("token失效"))
-					return -2
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(resp))
-				return {"price": -1, "skuId": -1}
-		except Exception as e:
+		resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
+		if 'data' in resp and 'referencePrice' in resp['data']:
+			price = resp['data']['referencePrice']
+			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()), str(price))
+			return {"price": price, "skuId": resp['data']['skuId']}
+		else:
 			retry_count -= 1
-	return {"price": -1, "skuId": -1}
+			if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
+				headers['Chromosome'] = getChromsome()
+				continue
+			if access.authCode(resp['resultMessage']) == 1:
+				print(resp)
+				time.sleep(6)
+				print(time.strftime('%H:%M:%S'), 'hahaha')
+				log.log_error.append(resp)
+				continue
+			if access.token_is_invalid(resp['resultMessage']) == 1:
+				temp_user = access.user
+				access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
+				continue
+	return -2
 
 
 # 通过productId， pricePropertyValueIds获取价格
@@ -576,32 +563,28 @@ def get_desc(productId, userIndex):
 	# proxy = access.get_proxy().get("proxy")
 	retry_count = 5
 	while retry_count > 0:
-		try:
-			resp = json.loads(
-				requests.get(url, headers=headers).text)
-			trace_log()
-			if 'data' in resp and 'productInfos' in resp['data']:
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(resp['data']))
-				return resp['data']
-			else:
-				if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
-					headers['Chromosome'] = getChromsome()
-					retry_count -= 1
-					continue
-				log.log_error.append(resp)
-				res = access.token_is_invalid(resp['resultMessage'], userIndex)
-				if res == -2:
-					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-										 str("token失效"))
-					return -2
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(resp))
-				return -1
-		except Exception as e:
+		resp = json.loads(
+			requests.get(url, headers=headers).text)
+		trace_log()
+		if 'data' in resp and 'productInfos' in resp['data']:
+			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()), str(resp['data']))
+			return resp['data']
+		else:
 			retry_count -= 1
-	# access.delete_proxy(proxy)
-	return -1
+			if access.chromsome_is_invalid(resp['resultMessage'], userIndex) == 1:
+				headers['Chromosome'] = getChromsome()
+				continue
+			if access.authCode(resp['resultMessage']) == 1:
+				print(resp)
+				time.sleep(6)
+				print(time.strftime('%H:%M:%S'), 'hahaha')
+				log.log_error.append(resp)
+				continue
+			if access.token_is_invalid(resp['resultMessage']) == 1:
+				temp_user = access.user
+				access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
+				continue
+	return -2
 
 
 @app.route('/update')

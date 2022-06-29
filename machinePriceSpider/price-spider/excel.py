@@ -666,6 +666,12 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 	# 设置单元格背景色为黄色, 表示表格中缺少必须要有的字段描述, 或该字段搭配没有价格
 	pattern.pattern_fore_colour = Style.colour_map['yellow']
 
+	style0 = XFStyle()
+	pattern0 = Pattern()
+	pattern0.pattern = Pattern.SOLID_PATTERN
+	# 设置单元格背景色为红色, 表示机型搜索不出来
+	pattern0.pattern_fore_colour = Style.colour_map['black']
+
 	style1 = XFStyle()
 	pattern1 = Pattern()
 	pattern1.pattern = Pattern.SOLID_PATTERN
@@ -707,6 +713,8 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 
 	if method == 1:
 		xlwt_worksheet.write(number, price_column_number + index, label="*" + str(content), style=style)
+	elif method == 0:
+		xlwt_worksheet.write(number, price_column_number + index, label="", style=style0)
 	elif method == 3:
 		xlwt_worksheet.write(number, price_column_number + index, label="", style=style1)
 	elif method == 4:
@@ -826,6 +834,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 		already_search[sku + desc + quality] = {}
 		productId = product.get_product_id(model, userIndex)
 		if productId == -2:
+			excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
 			return
 		if productId != -1:
 
@@ -841,6 +850,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 				return
 
 			if paijiDesc == -2:
+				excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
 				return
 			if paijiDesc != -1:
 				colors = []
@@ -890,6 +900,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 								pricePropertyLists[index].append(color['id'])
 								resp1 = product.get_price_new(productId, pricePropertyLists[index], userIndex)
 								if resp1 == -2:
+									excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
 									return
 								tempPrice = resp1['price']
 								if tempPrice != -1 and tempPrice < price:
@@ -902,12 +913,14 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 							pricePropertyLists[index].append(colorId)
 							resp1 = product.get_price_new(productId, pricePropertyLists[index], userIndex)
 							if resp1 == -2:
+								excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
 								return
 							price = resp1['price']
 							skuId = resp1['skuId']
 					else:
 						resp1 = product.get_price_new(productId, pricePropertyLists[index], userIndex)
 						if resp1 == -2:
+							excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
 							return
 						price = resp1['price']
 						skuId = resp1['skuId']
