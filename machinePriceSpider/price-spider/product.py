@@ -334,6 +334,21 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 		resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
 		if 'data' in resp and 'referencePrice' in resp['data']:
 			price = resp['data']['referencePrice']
+
+			access.user[userIndex]['cnt'] += 1
+			if access.user[userIndex]['cnt'] == 60:
+				temp_user = access.user[userIndex]
+				access.logout(temp_user['token'], temp_user['userName'])
+				for i in range(3):
+					access.delay(1)
+					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
+					if temp_resp == -1:
+						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
+					else:
+						temp_user["token"] = temp_resp
+						temp_user['cnt'] = 0
+						break
+
 			return {"price": price, "skuId": resp['data']['skuId']}
 		else:
 			retry_count -= 1

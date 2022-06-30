@@ -295,10 +295,10 @@ class userThread(threading.Thread):
 				# if count < self.xlrd_worksheet.nrows:
 				temp = count
 				count += 1
-				if count % 600 == 0:
-					if access.update_token() == False:
-						log.log_error.insert(0, "更新token失败")
-						return
+				#if count % 600 == 0:
+				#	if access.update_token() == False:
+				#		log.log_error.insert(0, "更新token失败")
+				#		return
 			self.threadLock.release()
 			get_price(temp, self.xlrd_worksheet, self.xlwt_worksheet, self.userIndex)
 
