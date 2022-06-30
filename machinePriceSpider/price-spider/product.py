@@ -338,6 +338,8 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 		else:
 			retry_count -= 1
 			log.log_error.insert(0, '查价异常：' + str(5 - retry_count) + str(resp))
+			if "SKU组合" in resp['resultMessage']:
+				return {"price": -1, "skuId": -1}
 			if access.chromsome_is_invalid(resp['resultMessage']) == 1:
 				headers['Chromosome'] = getChromsome()
 				continue
