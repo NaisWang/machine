@@ -196,8 +196,12 @@ export default {
               //$http.get("http://127.0.0.1:5000/log").then(resp => {
               that.log = resp.data
               setTimeout(fn, 1000);
+            }).catch((e) => {
+              console.log("捕获了异常1")
+              setTimeout(fn, 1000);
             })
           } catch (e) {
+            console.log("捕获了异常2")
             setTimeout(fn, 1000);
             console.log(e)
           }
