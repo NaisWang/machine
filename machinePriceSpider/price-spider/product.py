@@ -338,6 +338,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 			access.user[userIndex]['cnt'] += 1
 			if access.user[userIndex]['cnt'] == 60:
 				temp_user = access.user[userIndex]
+				log.log_error.insert(0, temp_user["userName"] + "用户已查60个，正进行重新登录")
 				access.logout(temp_user['token'], temp_user['userName'])
 				for i in range(3):
 					access.delay(1)
