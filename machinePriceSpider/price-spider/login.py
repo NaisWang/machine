@@ -69,7 +69,7 @@ def login(chromosome, body, userName):
 			resp = json.loads(requests.post(loginURL, headers=headers, data=str(body)).text)
 			print(resp)
 			if 'data' in resp and "accessToken" in resp["data"]:
-				log.log_error.append("登录成功, token为:" + str(resp["data"]["accessToken"]) + ", 用户名为:" + str(userName))
+				log.log_error.insert(0, "登录成功, token为:" + str(resp["data"]["accessToken"]) + ", 用户名为:" + str(userName))
 				return resp["data"]["accessToken"]
 			else:
 				return -1
@@ -92,7 +92,7 @@ def logout(token, userName):
 		try:
 			resp = json.loads(requests.post(url, headers=headers).text)
 			if resp['code'] == 200:
-				log.log_error.append("退出登录成功, token:" + str(token) + ", 用户名为:" + str(userName))
+				log.log_error.insert(0, "退出登录成功, token:" + str(token) + ", 用户名为:" + str(userName))
 				return True
 			retry_count -= 1
 		except Exception as e:

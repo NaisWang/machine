@@ -499,7 +499,7 @@ def judge_contain_desc(desc):
 		item = remove_space(item)
 		if item != "" and item not in use_excel_field:
 			if item not in exclude_desc:
-				log.log_error.append("当前对照表描述中没有:" + item)
+				log.log_error.insert(0, "当前对照表描述中没有:" + item)
 			exclude_desc.append(item)
 			ans += item + "、"
 			return ans

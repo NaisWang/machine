@@ -205,7 +205,7 @@ def product_select(keyword, userIndex):
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
-				log.log_error.append(str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
+				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
 				time.sleep(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
@@ -216,7 +216,7 @@ def product_select(keyword, userIndex):
 					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
-						log.log_error.append(temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
+						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
 					else:
 						temp_user["token"] = resp
 						break
@@ -303,13 +303,13 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 			else:
 				if access.authCode(resp['resultMessage']) == 1:
 					print(resp)
-					log.log_error.append(resp)
+					log.log_error.insert(0, resp)
 					return -2;
 				# if access.update_token(0) == False:
 				#	log.log_error.append("更新失败")
 				#	return -2
 				# continue
-				log.log_error.append(resp)
+				log.log_error.insert(0, resp)
 				res = access.token_is_invalid(resp['resultMessage'], userIndex)
 				if res == -2:
 					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
@@ -358,7 +358,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
-				log.log_error.append(str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
+				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
 				time.sleep(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
@@ -369,7 +369,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
-						log.log_error.append(temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
+						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
 					else:
 						temp_user["token"] = resp
 						break
@@ -594,7 +594,7 @@ def get_desc(productId, userIndex):
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
-				log.log_error.append(str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
+				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
 				time.sleep(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
@@ -605,7 +605,7 @@ def get_desc(productId, userIndex):
 					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
-						log.log_error.append(temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
+						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
 					else:
 						temp_user["token"] = resp
 						break

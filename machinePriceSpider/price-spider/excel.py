@@ -115,7 +115,7 @@ def judge_excel_legal(column_name_number_corr, fileName):
 	column_name = ["机型", "sku", "成色", "机况描述", "单台出价1"]
 	for name in column_name:
 		if name not in column_name_number_corr.keys():
-			log.log_error.append(fileName + "文件中没有" + name + "列")
+			log.log_error.insert(0, fileName + "文件中没有" + name + "列")
 			return -1
 	return 0
 
@@ -182,7 +182,7 @@ def get_use_paiji_and_excel_field(pai_desc):
 				property_name = remove_space(item1['value'])
 				use_paiji_field.append(property_name)
 				if property_name not in use_contrast.keys():
-					log.log_error.append("缺少拍机堂中:" + property_name + "字段")
+					log.log_error.insert(0, "缺少拍机堂中:" + property_name + "字段")
 					return property_name
 
 				if use_contrast[property_name] != "" and use_contrast[property_name] != None:
@@ -288,7 +288,7 @@ class userThread(threading.Thread):
 				count += 1
 				if count % 600 == 0:
 					if access.update_token() == False:
-						log.log_error.append("更新token失败")
+						log.log_error.insert(0, "更新token失败")
 						return
 			self.threadLock.release()
 			get_price(temp, self.xlrd_worksheet, self.xlwt_worksheet, self.userIndex)
@@ -747,7 +747,7 @@ def judge_contain_desc(desc):
 		item = remove_space(item)
 		if item != "" and item not in use_excel_field:
 			if item not in exclude_desc:
-				log.log_error.append("当前对照表描述中没有:" + item)
+				log.log_error.insert(0, "当前对照表描述中没有:" + item)
 			exclude_desc.append(item)
 			ans += item + "、"
 			return ans
@@ -865,13 +865,13 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 						if -1 in pricePropertyList.keys():
 							already_search[sku + desc + quality][0] = -1
 							excel_fill(xlwt_worksheet, number - 1, 1, pricePropertyList[-1], show_default, 0)
-							log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
+							log.log_error.insert(0, "用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
 							return
 
 					# 没有选出保修或电池容量
 					if pricePropertyList == -3:
 						already_search[sku + desc + quality][0] = -3
-						log.log_error.append(
+						log.log_error.insert(0,
 							"用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行对应的保修或电池情况")
 						excel_fill(xlwt_worksheet, number - 1, 4, -1, show_default, 0)
 						return
@@ -927,7 +927,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 						skuId = resp1['skuId']
 					if price != 9999999 and price != -1:
 						already_search[sku + desc + quality][index] = price
-						log.log_success.append(
+						log.log_success.insert(0,
 							"用户：" + str(
 								access.user[userIndex]['userName'] + "查出了" + str(number) + "行的价格为" + str(price) +
 								"元"))
@@ -946,14 +946,14 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 					# time.sleep(1)
 					else:
 						already_search[sku + desc + quality][index] = -1
-						log.log_error.append(
+						log.log_error.insert(0,
 							"用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
 						excel_fill(xlwt_worksheet, number - 1, 1, -1, show_default, index)
 					if index == len(pricePropertyLists) - 1:
 						already_search[sku + desc + quality]["flag"] = 1
 		else:
 			already_search[sku + desc + quality][0] = -2
-			log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "查出" + str(number) + "行的机型搜索不到")
+			log.log_error.insert(0, "用户：" + str(access.user[userIndex]['userName']) + "查出" + str(number) + "行的机型搜索不到")
 			excel_fill(xlwt_worksheet, number - 1, 3, -1, show_default, 0)
 	else:
 		prices = already_search[sku + desc + quality]
@@ -963,13 +963,13 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 				break
 			price = prices[index]
 			if price == -1:
-				log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
+				log.log_error.insert(0, "用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
 				excel_fill(xlwt_worksheet, number - 1, 1, -1, show_default, index)
 			elif price == -2:
-				log.log_error.append("用户：" + str(access.user[userIndex]['userName']) + "查出" + str(number) + "行的机型搜索不到")
+				log.log_error.insert(0, "用户：" + str(access.user[userIndex]['userName']) + "查出" + str(number) + "行的机型搜索不到")
 				excel_fill(xlwt_worksheet, number - 1, 3, -1, show_default, index)
 			else:
-				log.log_success.append("用户：" + str(
+				log.log_success.insert(0, "用户：" + str(
 					access.user[userIndex]['userName'] + "查出了" + str(number) + "行的价格为" + str(price) +
 					"元"))
 				excel_fill(xlwt_worksheet, number - 1, 2, price, show_default, index)
@@ -1010,13 +1010,14 @@ def traverse_excel(xlrd_worksheet, xlwt_worksheet):
 	if judge_excel_legal(column_name_number, "询价表") == -1:
 		return -1
 	if userNum == 0:
-		log.log_error.append("没有可用用户了!!!")
+		log.log_error.insert(0, "没有可用用户了!!!")
 		return -1
 	init_first_row(xlwt_worksheet)
 	for i in range(userNum):
 		thread = userThread(i, threadLock, xlrd_worksheet, xlwt_worksheet)
 		thread.start()
-		threads.append(thread)
-	for t in threads:
-		t.join()
+		thread.join()
+		#threads.append(thread)
+	#for t in threads:
+	#	t.join()
 	return 1

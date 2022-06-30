@@ -58,7 +58,7 @@ def init_user():
 			print(time.strftime('%H:%M:%S'), 'hahaha')
 			resp = login(item["chromosome"], item["body"], item["userName"])
 			if resp == -1:
-				log.log_error.append(item["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
+				log.log_error.insert(0, item["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
 			else:
 				item["token"] = resp
 				break
@@ -78,7 +78,7 @@ def update_token():
 			time.sleep(1)
 			resp = login(item["chromosome"], item["body"], item['userName'])
 			if resp == -1:
-				log.log_error.append(item["userName"] + "用户信息有错误: " + str(i + 1))
+				log.log_error.insert(0, item["userName"] + "用户信息有错误: " + str(i + 1))
 			else:
 				item['token'] = resp
 				break

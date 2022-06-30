@@ -24,16 +24,16 @@ def token_is_invalid(resp, index):
 	global user
 
 	if len(user) <= 0:
-		log.log_error.append("没有可用用户了!!!")
+		log.log_error.insert(0, "没有可用用户了!!!")
 		return -2
 	if "失效" in resp:
 		if user[index]["login_times"] == 6:
-			log.log_error.append(user[index]["userName"] + "用户已失效")
+			log.log_error.insert(0, user[index]["userName"] + "用户已失效")
 			print("ffff")
 			print(user)
 			del user[index]
 			if len(user) <= 0:
-				log.log_error.append("没有可用用户了!!!")
+				log.log_error.insert(0, "没有可用用户了!!!")
 				return -2
 			return user[0]["token"]
 		update_token(index)
@@ -55,7 +55,7 @@ def init_user():
 	for item in user:
 		resp = login(item["userName"], item["passWord"])
 		if resp == -1:
-			log.log_error.append(item["userName"] + "用户信息有错误")
+			log.log_error.insert(0, item["userName"] + "用户信息有错误")
 		else:
 			item["token"] = resp
 
@@ -64,6 +64,6 @@ def update_token(index):
 	userInfo = user[index]
 	resp = login(userInfo["userName"], userInfo["passWord"])
 	if resp == -1:
-		log.log_error.append(userInfo["userName"] + "用户信息有错误")
+		log.log_error.insert(0, userInfo["userName"] + "用户信息有错误")
 	else:
 		userInfo["token"] = resp
