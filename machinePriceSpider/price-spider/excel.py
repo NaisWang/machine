@@ -889,6 +889,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 							already_search[sku + desc + quality][0] = -4
 							excel_fill(xlwt_worksheet, number - 1, -1, pricePropertyList[-4], show_default, 0)
 							log.log_error.insert(0, "用户：" + str(access.user[userIndex]['userName']) + "查出" + str(number) + "行中的" + pricePropertyList[-4] + "属性存在多个选择")
+							return
 
 					# 没有选出保修或电池容量
 					if pricePropertyList == -3:

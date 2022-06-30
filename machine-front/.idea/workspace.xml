@@ -4,30 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ac611d6d-50dc-403b-8f58-265aaa2b41fe" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/.idea/dataSources/71e1babb-a3d6-4700-9e09-e8af99c6056b/entities/entities.dat" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/.idea/dataSources/71e1babb-a3d6-4700-9e09-e8af99c6056b/entities/entities.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/.idea/dataSources/71e1babb-a3d6-4700-9e09-e8af99c6056b/entities/entities.dat.values" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/.idea/dataSources/71e1babb-a3d6-4700-9e09-e8af99c6056b/entities/entities.dat.values" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/.idea/dataSources/71e1babb-a3d6-4700-9e09-e8af99c6056b/entities/entities.dat.values.s" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/.idea/dataSources/71e1babb-a3d6-4700-9e09-e8af99c6056b/entities/entities.dat.values.s" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/.idea/dataSources/71e1babb-a3d6-4700-9e09-e8af99c6056b/entities/entities.dat_i" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/.idea/dataSources/71e1babb-a3d6-4700-9e09-e8af99c6056b/entities/entities.dat_i" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/src/main/java/CodeGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/machine-generator/src/main/java/CodeGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/src/main/java/com/example/controller/SentenceController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/src/main/java/com/example/mapper/SentenceMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/src/main/java/com/example/pojo/Sentence.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/src/main/java/com/example/service/ISentenceService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/src/main/java/com/example/service/impl/SentenceServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/src/main/resources/config/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/machine-generator/src/main/resources/config/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/target/classes/CodeGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/machine-generator/target/classes/CodeGenerator.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/target/classes/com/example/controller/SentenceController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/target/classes/com/example/mapper/SentenceMapper.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/target/classes/com/example/pojo/Sentence.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/target/classes/com/example/service/ISentenceService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/target/classes/com/example/service/impl/SentenceServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/target/classes/config/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/machine-generator/target/classes/config/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/access.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/price-spider/access.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/excel.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/price-spider/excel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/product.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/price-spider/product.py" afterDir="false" />
-    </list>
+    <list default="true" id="ac611d6d-50dc-403b-8f58-265aaa2b41fe" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -147,7 +124,7 @@
       <workItem from="1649306270676" duration="3616000" />
       <workItem from="1649859656844" duration="3793000" />
       <workItem from="1655716270102" duration="10047000" />
-      <workItem from="1655969732597" duration="22913000" />
+      <workItem from="1655969732597" duration="22914000" />
     </task>
     <servers />
   </component>
