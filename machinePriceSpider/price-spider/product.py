@@ -191,7 +191,6 @@ def product_select(keyword, userIndex):
 	retry_count = 5
 	while retry_count > 0:
 		resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
-		print(str(resp))
 		if 'data' in resp:
 			if len(resp['data']) != 0:
 				for item in resp['data']:
@@ -200,6 +199,7 @@ def product_select(keyword, userIndex):
 						return item["productId"]
 			return -1
 		else:
+			log.log_error.insert(0, "没有查询到机器, 尝试:" + str(5 - retry_count) + str(resp))
 			retry_count -= 1
 			if access.chromsome_is_invalid(resp['resultMessage']) == 1:
 				headers['Chromosome'] = getChromsome()
@@ -207,14 +207,13 @@ def product_select(keyword, userIndex):
 			if access.authCode(resp['resultMessage']) == 1:
 				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("开始"))
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
-				access.delay(5)
+				access.delay(10)
 				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("结束"))
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
 				for i in range(3):
 					access.delay(1)
-					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
 						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
@@ -360,14 +359,13 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 			if access.authCode(resp['resultMessage']) == 1:
 				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("开始"))
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
-				access.delay(5)
+				access.delay(10)
 				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("结束"))
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
 				for i in range(3):
 					access.delay(1)
-					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
 						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
@@ -596,14 +594,13 @@ def get_desc(productId, userIndex):
 			if access.authCode(resp['resultMessage']) == 1:
 				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("开始"))
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
-				access.delay(5)
+				access.delay(10)
 				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("结束"))
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
 				for i in range(3):
 					access.delay(1)
-					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
 						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
