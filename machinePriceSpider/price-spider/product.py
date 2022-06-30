@@ -17,7 +17,6 @@ from getChromsome import getChromsome
 
 import threading
 
-
 common_header = {
 	'Host': 'sjapi.aihuishou.com',
 	'Connection': 'close'
@@ -206,10 +205,10 @@ def product_select(keyword, userIndex):
 				headers['Chromosome'] = getChromsome()
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
-				print(resp)
+				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("开始"))
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
 				access.delay(5)
-				print(time.strftime('%H:%M:%S'), 'hahaha')
+				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("结束"))
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
@@ -359,10 +358,10 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 				headers['Chromosome'] = getChromsome()
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
-				print(resp)
+				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("开始"))
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
 				access.delay(5)
-				print(time.strftime('%H:%M:%S'), 'hahaha', str(5 - retry_count))
+				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("结束"))
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
@@ -595,10 +594,10 @@ def get_desc(productId, userIndex):
 				headers['Chromosome'] = getChromsome()
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
-				print(resp)
+				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("开始"))
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
 				access.delay(5)
-				print(time.strftime('%H:%M:%S'), 'hahaha')
+				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("结束"))
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
