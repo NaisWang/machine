@@ -201,6 +201,20 @@ def get_use_paiji_and_excel_field(pai_desc):
 	return 1
 
 
+@app.after_request
+def af_request(resp):
+	"""
+	#请求钩子，在所有的请求发生后执行，加入headers。
+	:param resp:
+	:return:
+	"""
+	resp = make_response(resp)
+	resp.headers['Access-Control-Allow-Origin'] = '*'
+	resp.headers['Access-Control-Allow-Methods'] = 'GET,POST'
+	resp.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+	return resp
+
+
 @app.route("/price_excel/import", methods=['POST', 'GET'])
 def import_excel():
 	init()
