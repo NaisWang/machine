@@ -21,30 +21,9 @@ def testLogin():
 def login(chromosome, body, userName):
 	userAgentIndex = random.randint(1, len(access.userAgents))
 	loginURL = "https://sjapi.aihuishou.com/sj-api/auth/login"
-
-	#payload = "cwmMnp1HwwmamSqys3N0PGhSKvoXdYpWM7/KLZaUMKpmvpFvfdOWT7cSaajurZ9cOvqk+xcpd1k+p1tkDt4xbys9XSHKWAQdqhMxNzSIp8BiUz1TBKrq1y11DofTPGaw5Rg7zECMBqc8GAYv0ZLV98KAm+5WEHIySADGVGuOGIw="
-
-	#headers = {
-	#	'Host': 'sjapi.aihuishou.com',
-	#	'User-Agent': 'OPTapp/2.43.1 (com.aihuishou.OPTapp.P; build:202206171208; iOS 15.5.0) Alamofire/2.43.1',
-	#	'App-ID': 'pjt432865',
-	#	'app-channel': '598302',
-	#	'Version': '2.43.1',
-	#	'chromosome': str(chromosome),
-	#	'Version-Type': '1',
-	#	'Platform': 'ios',
-	#	'Content-Length': '172',
-	#	'Connection': 'close',
-	#	'Accept-Language': 'zh-Hans-CN;q=1.0, en-CN;q=0.9',
-	#	'Accept': 'application/json',
-	#	'Content-Type': 'text/plain',
-	#	'Accept-Encoding': 'gzip, deflate',
-	#	'Key-Version': '1000',
-	#}
 	chromosome = getChromsome()
 	headers = {
 		"Host": "sjapi.aihuishou.com",
-		"User-Agent": "OPTapp/2.43.1 (com.aihuishou.OPTapp.P; build:202206171208; iOS 15.5.0) Alamofire/2.43.1",
 		"App-ID": "pjt432865",
 		"app-channel": "598302",
 		"Version": "2.44.0",

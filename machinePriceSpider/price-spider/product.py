@@ -189,7 +189,6 @@ def product_select(keyword, userIndex):
 		'Content-Type': 'application/json',
 		'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
-	headers.update(common_header)
 	retry_count = 5
 	while retry_count > 0:
 		resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
@@ -221,7 +220,7 @@ def product_select(keyword, userIndex):
 					if temp_resp == -1:
 						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
 					else:
-						temp_user["token"] = resp
+						temp_user["token"] = temp_resp
 						break
 				continue
 	return -2
@@ -374,7 +373,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 					if temp_resp == -1:
 						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
 					else:
-						temp_user["token"] = resp
+						temp_user["token"] = temp_resp
 						break
 				continue
 	return -2
@@ -610,7 +609,7 @@ def get_desc(productId, userIndex):
 					if temp_resp == -1:
 						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
 					else:
-						temp_user["token"] = resp
+						temp_user["token"] = temp_resp
 						break
 				continue
 	return -2
