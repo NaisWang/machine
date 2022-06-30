@@ -195,7 +195,6 @@ def product_select(keyword, userIndex):
 			if len(resp['data']) != 0:
 				for item in resp['data']:
 					if simplify(keyword) == simplify(item["productName"]):
-						generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()), str(item["productId"]))
 						return item["productId"]
 			return -1
 		else:
@@ -264,11 +263,8 @@ def get_report_no(productId, pricePropertyValueIds, userIndex):
 			if res != 1:
 				return get_report_no(productId, pricePropertyValueIds, 0)
 			if 'data' in resp:
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(resp['data']['reportNo']))
 				return resp['data']['reportNo']
 			else:
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()), str(resp))
 				return -1
 		except Exception as e:
 			retry_count -= 1
@@ -278,8 +274,6 @@ def get_report_no(productId, pricePropertyValueIds, userIndex):
 # 拍机堂小程序
 def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 	# userAgentIndex = random.randint(1, len(access.userAgents))
-	print("productId:" + str(productId))
-	print("priceProperty:" + str(pricePropertyValueIds))
 	url = "https://sjapi.aihuishou.com/opt-inquiry/mini-inquiry-price/price-info/by-ppv"
 	data = {"productId": productId, "pricePropertyValueIds": pricePropertyValueIds}
 	chromosome = getChromsome()
@@ -297,8 +291,6 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 			trace_log()
 			if 'data' in resp and 'guidePrice' in resp['data']:
 				price = resp['data']['guidePrice']
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(price))
 				return {"price": price, "skuId": resp['data']['skuId']}
 			else:
 				if access.authCode(resp['resultMessage']) == 1:
@@ -312,11 +304,7 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 				log.log_error.insert(0, resp)
 				res = access.token_is_invalid(resp['resultMessage'], userIndex)
 				if res == -2:
-					generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-										 str("token失效"))
 					return -2
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(resp))
 				return {"price": -1, "skuId": -1}
 		except Exception as e:
 			retry_count -= 1
@@ -326,8 +314,6 @@ def get_price_by_mini(productId, pricePropertyValueIds, userIndex):
 # 拍机堂app
 def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 	# userAgentIndex = random.randint(1, len(access.userAgents))
-	print("productId:" + str(productId))
-	print("priceProperty:" + str(pricePropertyValueIds))
 	url = "https://sjapi.aihuishou.com/opt-inquiry/quick-inquiry-price/inspection-info/get-by-ppv"
 	data = {"productId": productId, "pricePropertyValueIds": pricePropertyValueIds}
 	chromosome = getChromsome()
@@ -344,15 +330,14 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 		# 'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
 	retry_count = 5
-	resp = ""
 	while retry_count > 0:
 		resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
 		if 'data' in resp and 'referencePrice' in resp['data']:
 			price = resp['data']['referencePrice']
-			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()), str(price))
 			return {"price": price, "skuId": resp['data']['skuId']}
 		else:
 			retry_count -= 1
+			log.log_error.insert(0, '查价异常：' + str(5 - retry_count) + str(resp))
 			if access.chromsome_is_invalid(resp['resultMessage']) == 1:
 				headers['Chromosome'] = getChromsome()
 				continue
@@ -411,12 +396,8 @@ def get_price(reportNo, userIndex):
 				return get_price(reportNo, 0)
 			if 'data' in resp:
 				price = resp['data']['p2Price']
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(price))
 				return {"price": price, "skuId": resp['data']['skuId']}
 			else:
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(resp))
 				return {"price": -1, "skuId": -1}
 		except Exception as e:
 			retry_count -= 1
@@ -439,14 +420,10 @@ def get_category_id():
 				categories = resp['data']
 				for item in categories:
 					if item["categoryName"] == "手机":
-						generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-											 str(item["categoryId"]))
 						return item["categoryId"]
 					return -1
 				return -1
 			else:
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(resp))
 				return -1
 		except Exception as e:
 			retry_count -= 1
@@ -471,12 +448,8 @@ def get_brand(category):
 				requests.post(url, headers=headers, data=json.dumps(data)).text)
 			if 'data' in resp:
 				brands = resp['data']
-				# generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-				#										 str(brands))
 				return brands
 			else:
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(resp))
 				return -1
 		except Exception as e:
 			retry_count -= 1
@@ -502,12 +475,8 @@ def get_all_machine(categoryId, brandId, num):
 				requests.post(url, headers=headers, data=json.dumps(data)).text)
 			if 'data' in resp:
 				res = resp['data'][0:num]
-				# generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-				#										 str(res))
 				return res
 			else:
-				generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()),
-									 str(resp))
 				return -1
 		except Exception as e:
 			retry_count -= 1
@@ -580,14 +549,13 @@ def get_desc(productId, userIndex):
 	# proxy = access.get_proxy().get("proxy")
 	retry_count = 5
 	while retry_count > 0:
-		resp = json.loads(
-			requests.get(url, headers=headers).text)
+		resp = json.loads(requests.get(url, headers=headers).text)
 		trace_log()
 		if 'data' in resp and 'productInfos' in resp['data']:
-			generate_product_log(access.user[userIndex]['userName'], sys._getframe().f_code.co_name, str(locals()), str(resp['data']))
 			return resp['data']
 		else:
 			retry_count -= 1
+			log.log_error.insert(0, '获取机器描述异常：' + str(5 - retry_count) + str(resp))
 			if access.chromsome_is_invalid(resp['resultMessage']) == 1:
 				headers['Chromosome'] = getChromsome()
 				continue

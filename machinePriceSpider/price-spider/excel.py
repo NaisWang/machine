@@ -619,8 +619,6 @@ def get_pricePropertyValues_one(quality, desc, pricePropertyList, paijiDescProer
 	根据询价规则页面中的设置来价格查询规则
 	"""
 	pricePropertyLists = []
-	print("paijiCon")
-	print(str(paijiContrast.price_combination))
 	for item in paijiContrast.price_combination:
 		if quality in remove_space(item['grade']).lower().split("、"):
 			flag = judge_price_combination(desc, item)
@@ -845,7 +843,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 		already_search[sku + desc + quality] = {}
 		productId = product.get_product_id(model, userIndex)
 		if productId == -2:
-			excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
+			excel_fill(xlwt_worksheet, number - 1, 0, "productId", "", 0)
 			return
 		if productId != -1:
 
@@ -861,7 +859,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 				return
 
 			if paijiDesc == -2:
-				excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
+				excel_fill(xlwt_worksheet, number - 1, 0, "paijiDesc", "", 0)
 				return
 			if paijiDesc != -1:
 				colors = []
@@ -911,7 +909,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 								pricePropertyLists[index].append(color['id'])
 								resp1 = product.get_price_new(productId, pricePropertyLists[index], userIndex)
 								if resp1 == -2:
-									excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
+									excel_fill(xlwt_worksheet, number - 1, 0, "price", "", 0)
 									return
 								tempPrice = resp1['price']
 								if tempPrice != -1 and tempPrice < price:
@@ -924,14 +922,14 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 							pricePropertyLists[index].append(colorId)
 							resp1 = product.get_price_new(productId, pricePropertyLists[index], userIndex)
 							if resp1 == -2:
-								excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
+								excel_fill(xlwt_worksheet, number - 1, 0, "price", "", 0)
 								return
 							price = resp1['price']
 							skuId = resp1['skuId']
 					else:
 						resp1 = product.get_price_new(productId, pricePropertyLists[index], userIndex)
 						if resp1 == -2:
-							excel_fill(xlwt_worksheet, number - 1, 0, "", "", 0)
+							excel_fill(xlwt_worksheet, number - 1, 0, "price", "", 0)
 							return
 						price = resp1['price']
 						skuId = resp1['skuId']

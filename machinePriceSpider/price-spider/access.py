@@ -55,7 +55,6 @@ def init_user():
 	for item in user:
 		for i in range(3):
 			delay(1)
-			print(time.strftime('%H:%M:%S'), 'hahaha')
 			resp = login(item["chromosome"], item["body"], item["userName"])
 			if resp == -1:
 				log.log_error.insert(0, item["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
@@ -74,7 +73,6 @@ def update_token():
 	# get_user()
 	for item in user:
 		logout(item['token'], item['userName'])
-		print(time.strftime('%H:%M:%S'), item['userName'], '重新登录')
 		for i in range(3):
 			delay(1)
 			resp = login(item["chromosome"], item["body"], item['userName'])
