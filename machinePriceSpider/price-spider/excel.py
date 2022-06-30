@@ -1017,7 +1017,6 @@ def traverse_excel(xlrd_worksheet, xlwt_worksheet):
 	for i in range(userNum):
 		thread = userThread(i, threadLock, xlrd_worksheet, xlwt_worksheet)
 		thread.start()
-		thread.join()
 		threads.append(thread)
 	for t in threads:
 		t.join()
