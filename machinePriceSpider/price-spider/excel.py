@@ -247,7 +247,7 @@ def import_excel():
 	response.headers["Content-Type"] = "application/octet-stream; charset=UTF-8"
 	response.headers["Content-Disposition"] = "attachment; filename={}".format(filename)
 
-	time.sleep(1)
+	access.delay(1)
 	access.logout_all()
 	return response
 

@@ -54,7 +54,7 @@ def init_user():
 	get_user()
 	for item in user:
 		for i in range(3):
-			time.sleep(1)
+			delay(1)
 			print(time.strftime('%H:%M:%S'), 'hahaha')
 			resp = login(item["chromosome"], item["body"], item["userName"])
 			if resp == -1:
@@ -63,10 +63,11 @@ def init_user():
 				item["token"] = resp
 				break
 
+
 def logout_all():
 	for item in user:
 		logout(item['token'], item["userName"])
-		time.sleep(1)
+		delay(1)
 
 
 def update_token():
@@ -75,7 +76,8 @@ def update_token():
 		logout(item['token'], item['userName'])
 		print(time.strftime('%H:%M:%S'), item['userName'], '重新登录')
 		for i in range(3):
-			time.sleep(1)
+			delay(1)
+			delay(1)
 			resp = login(item["chromosome"], item["body"], item['userName'])
 			if resp == -1:
 				log.log_error.insert(0, item["userName"] + "用户信息有错误: " + str(i + 1))
@@ -83,3 +85,8 @@ def update_token():
 				item['token'] = resp
 				break
 	return True
+
+
+def delay(second):
+	URL = 'https://httpbin.org/delay/' + str(second)
+	requests.get(URL)

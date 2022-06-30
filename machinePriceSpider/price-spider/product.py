@@ -209,13 +209,13 @@ def product_select(keyword, userIndex):
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
-				threading.Event().wait(6)
+				access.delay(5)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
 				for i in range(3):
-					threading.Event().wait(1)
+					access.delay(1)
 					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
@@ -362,13 +362,13 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
-				threading.Event().wait(6)
+				access.delay(5)
 				print(time.strftime('%H:%M:%S'), 'hahaha', str(5 - retry_count))
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
 				for i in range(3):
-					threading.Event().wait(1)
+					access.delay(1)
 					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
@@ -598,13 +598,13 @@ def get_desc(productId, userIndex):
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
-				threading.Event().wait(6)
+				access.delay(5)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
 				for i in range(3):
-					threading.Event().wait(1)
+					access.delay(1)
 					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
