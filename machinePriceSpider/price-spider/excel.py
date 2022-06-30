@@ -736,6 +736,7 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 	elif method in [8, 9, 10, 11, 12, 13, 14, 15]:
 		xlwt_worksheet.write(number, price_column_number + method - 3, label=str(content))
 
+
 def judge_contain_desc(desc):
 	"""
 	判断机况描述中的字段是否在对照表中全部包含，只有当全部包含时，才能查询价格
@@ -872,14 +873,14 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 					if pricePropertyList == -3:
 						already_search[sku + desc + quality][0] = -3
 						log.log_error.insert(0,
-							"用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行对应的保修或电池情况")
+											 "用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行对应的保修或电池情况")
 						excel_fill(xlwt_worksheet, number - 1, 4, -1, show_default, 0)
 						return
 
 					pricePropertyLists.append(pricePropertyList)
 
-					# 判断是查小当还是采货侠
-					#pricePropertyLists = []
+				# 判断是查小当还是采货侠
+				# pricePropertyLists = []
 				#	if search_price_method == 1:
 				#		paijiDescProertyIds = get_desc_property_ids(paijiDesc)
 				#		pricePropertyLists = get_pricePropertyValues_one(quality, desc, pricePropertyList.copy(),
@@ -928,9 +929,9 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 					if price != 9999999 and price != -1:
 						already_search[sku + desc + quality][index] = price
 						log.log_success.insert(0,
-							"用户：" + str(
-								access.user[userIndex]['userName'] + "查出了" + str(number) + "行的价格为" + str(price) +
-								"元"))
+											   "用户：" + str(
+												   access.user[userIndex]['userName'] + "查出了" + str(number) + "行的价格为" + str(price) +
+												   "元"))
 						if len(colors) != 0:
 							default_colors_desc = ""
 							for color in colors:
@@ -947,7 +948,7 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 					else:
 						already_search[sku + desc + quality][index] = -1
 						log.log_error.insert(0,
-							"用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
+											 "用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
 						excel_fill(xlwt_worksheet, number - 1, 1, -1, show_default, index)
 					if index == len(pricePropertyLists) - 1:
 						already_search[sku + desc + quality]["flag"] = 1
@@ -1017,7 +1018,7 @@ def traverse_excel(xlrd_worksheet, xlwt_worksheet):
 		thread = userThread(i, threadLock, xlrd_worksheet, xlwt_worksheet)
 		thread.start()
 		thread.join()
-		#threads.append(thread)
-	#for t in threads:
-	#	t.join()
+		threads.append(thread)
+	for t in threads:
+		t.join()
 	return 1

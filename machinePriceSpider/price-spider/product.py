@@ -15,6 +15,9 @@ import time
 
 from getChromsome import getChromsome
 
+import threading
+
+
 common_header = {
 	'Host': 'sjapi.aihuishou.com',
 	'Connection': 'close'
@@ -206,13 +209,13 @@ def product_select(keyword, userIndex):
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
-				time.sleep(6)
+				threading.Event().wait(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
 				for i in range(3):
-					time.sleep(1)
+					threading.Event().wait(1)
 					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
@@ -359,13 +362,13 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
-				time.sleep(6)
+				threading.Event().wait(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
 				for i in range(3):
-					time.sleep(1)
+					threading.Event().wait(1)
 					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
@@ -595,13 +598,13 @@ def get_desc(productId, userIndex):
 			if access.authCode(resp['resultMessage']) == 1:
 				print(resp)
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]))
-				time.sleep(6)
+				threading.Event().wait(6)
 				print(time.strftime('%H:%M:%S'), 'hahaha')
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
 				temp_user = access.user[userIndex]
 				for i in range(3):
-					time.sleep(1)
+					threading.Event().wait(1)
 					print(time.strftime('%H:%M:%S'), 'hahaha')
 					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
 					if temp_resp == -1:
