@@ -198,27 +198,17 @@ def product_select(keyword, userIndex):
 						return item["productId"]
 			return -1
 		else:
-			log.log_error.insert(0, "没有查询到机器, 尝试:" + str(5 - retry_count) + str(resp))
+			log.log_error.insert(0, "没有查询到机器的id, 尝试:" + str(5 - retry_count) + str(resp))
 			retry_count -= 1
 			if access.chromsome_is_invalid(resp['resultMessage']) == 1:
 				headers['Chromosome'] = getChromsome()
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
-				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("开始"))
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
 				access.delay(10)
-				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("结束"))
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
-				temp_user = access.user[userIndex]
-				for i in range(3):
-					access.delay(1)
-					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
-					if temp_resp == -1:
-						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
-					else:
-						temp_user["token"] = temp_resp
-						break
+				access.re_login(userIndex)
 				continue
 	return -2
 
@@ -241,34 +231,6 @@ def trace_log():
 		'Referer': 'https://servicewechat.com/wxfb796f037077edb6/9/page-frame.html'
 	}
 	requests.get(url, headers=headers)
-
-
-# 通过productId， pricePropertyValueIds获取RrepostNo
-def get_report_no(productId, pricePropertyValueIds, userIndex):
-	url = "https://sjapi.aihuishou.com/supplier-api/frequently-inquiry-price/inspection-report/create-by-ppv"
-	data = {"productId": productId, "pricePropertyValueIds": pricePropertyValueIds}
-	headers = {
-		'Access-Token': access.user[userIndex]['token'],
-		'Content-Type': 'application/json',
-	}
-	headers.update(common_header)
-	retry_count = 5
-	while retry_count > 0:
-		try:
-			resp = json.loads(
-				requests.post(url, data=json.dumps(data), headers=headers).text)
-			res = access.token_is_invalid(resp['resultMessage'], userIndex)
-			if res == -2:
-				return -2
-			if res != 1:
-				return get_report_no(productId, pricePropertyValueIds, 0)
-			if 'data' in resp:
-				return resp['data']['reportNo']
-			else:
-				return -1
-		except Exception as e:
-			retry_count -= 1
-	return -1
 
 
 # 拍机堂小程序
@@ -339,16 +301,7 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 			if access.user[userIndex]['cnt'] == 60:
 				temp_user = access.user[userIndex]
 				log.log_error.insert(0, temp_user["userName"] + "用户已查60个，正进行重新登录")
-				access.logout(temp_user['token'], temp_user['userName'])
-				for i in range(3):
-					access.delay(1)
-					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
-					if temp_resp == -1:
-						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
-					else:
-						temp_user["token"] = temp_resp
-						temp_user['cnt'] = 0
-						break
+				access.re_login(userIndex)
 
 			return {"price": price, "skuId": resp['data']['skuId']}
 		else:
@@ -360,21 +313,11 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 				headers['Chromosome'] = getChromsome()
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
-				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("开始"))
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
 				access.delay(10)
-				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("结束"))
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
-				temp_user = access.user[userIndex]
-				for i in range(3):
-					access.delay(1)
-					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
-					if temp_resp == -1:
-						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
-					else:
-						temp_user["token"] = temp_resp
-						break
+				access.re_login(userIndex)
 				continue
 	return -2
 
@@ -383,43 +326,6 @@ def get_price_by_app(productId, pricePropertyValueIds, userIndex):
 def get_price_new(productId, pricePropertyValueIds, userIndex):
 	# trace_log()
 	return get_price_by_app(productId, pricePropertyValueIds, userIndex)
-
-
-# 通过reptortNo获取价格
-def get_price(reportNo, userIndex):
-	url = "https://sjapi.aihuishou.com/supplier-api/supply-product/v2/confirming-product-quality/" + reportNo
-	headers = {
-		# 'Access-Token': access.user[userIndex - 1]["token"],
-		'Access-Token': access.user[userIndex]['token'],
-		'wToken': 'KIUR_BFQul0i40whfD/3YAUPk5pn3rtvEpuVgV6BNw9ZEbHALg+pFxd9ojeTvYO3zvMg8OUHaMzIANpS09'
-				  '+YMSuqEQnSDnxNqkSt4wHL14PDVcyw3aEJjhI/liDTVfoasF7d9'
-				  '+elgl2zb6uG67ySxfUpRPXibaziayY1htAogjAAZLjZ9XGdOkRfbJBkTQJ'
-				  '/yjfkzlJpk0pOSEZI8bkj6iSn1tJMr92ZYfkSuglMzoGrUuE+QX06S5oeqPKPd7feiv'
-				  '+smUHb9cZ0MLpi5JsmzNgP17T5QG6O1YwhMpK6vomD8TlvHHm/x85o2sAZwVNCUQ4WufzF77R+Iwln8KAIHot20pJZTE0'
-				  '+ypXw5UHsOW10g5hkc2H3c5Lro1R4Y0l2jSTEPeiri4edMmtvW3jEOE8isINdX9+SeWPsUxvAE5Flly'
-				  '+sbLJnkgaXeeRS7TRuuLJhh'
-				  '&IMHW_i0013dd481f50c8890660573867c246dd7daee549cb36',
-		'App-ID': 'pjt432865',
-		'Platform': 'ios',
-		'Version': '2.19.1'
-	}
-	retry_count = 5
-	while retry_count > 0:
-		try:
-			resp = json.loads(requests.get(url, headers=headers).text)
-			res = access.token_is_invalid(resp['resultMessage'], userIndex)
-			if res == -2:
-				return -2
-			if res != 1:
-				return get_price(reportNo, 0)
-			if 'data' in resp:
-				price = resp['data']['p2Price']
-				return {"price": price, "skuId": resp['data']['skuId']}
-			else:
-				return {"price": -1, "skuId": -1}
-		except Exception as e:
-			retry_count -= 1
-	return {"price": -1, "skuId": -1}
 
 
 # 获取手机对应的类别编号
@@ -562,9 +468,7 @@ def get_desc(productId, userIndex):
 		'Connection': 'keep-alive',
 		'Accept-Encoding': 'gzip, deflate, br',
 		'Accept': '*/*',
-		# 'User-Agent': access.userAgents[userAgentIndex - 1]
 	}
-	# proxy = access.get_proxy().get("proxy")
 	retry_count = 5
 	while retry_count > 0:
 		resp = json.loads(requests.get(url, headers=headers).text)
@@ -578,21 +482,11 @@ def get_desc(productId, userIndex):
 				headers['Chromosome'] = getChromsome()
 				continue
 			if access.authCode(resp['resultMessage']) == 1:
-				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("开始"))
 				log.log_error.insert(0, str(resp) + "当前用户为:" + str(access.user[userIndex]["userName"]) + ", 尝试次数：" + str(5 - retry_count))
 				access.delay(10)
-				log.log_error.insert(0, str(time.strftime('%H:%M:%S')) + str("结束"))
 				continue
 			if access.token_is_invalid(resp['resultMessage']) == 1:
-				temp_user = access.user[userIndex]
-				for i in range(3):
-					access.delay(1)
-					temp_resp = access.login(temp_user["chromosome"], temp_user["body"], temp_user["userName"])
-					if temp_resp == -1:
-						log.log_error.insert(0, temp_user["userName"] + "用户信息有错误, 尝试次数:" + str(i + 1))
-					else:
-						temp_user["token"] = temp_resp
-						break
+				access.re_login(userIndex)
 				continue
 	return -2
 

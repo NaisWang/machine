@@ -286,19 +286,11 @@ class userThread(threading.Thread):
 	def run(self):
 		global count
 		while count < self.xlrd_worksheet.nrows and search_price_flag == 1:
-			# time.sleep(1)
-			# print(time.strftime('%H:%M:%S'),'hahaha')
-			# while count < self.xlrd_worksheet.nrows:
 			self.threadLock.acquire()
 			temp = 0
 			if count < self.xlrd_worksheet.nrows and search_price_flag == 1:
-				# if count < self.xlrd_worksheet.nrows:
 				temp = count
 				count += 1
-				#if count % 600 == 0:
-				#	if access.update_token() == False:
-				#		log.log_error.insert(0, "更新token失败")
-				#		return
 			self.threadLock.release()
 			get_price(temp, self.xlrd_worksheet, self.xlwt_worksheet, self.userIndex)
 
@@ -464,6 +456,8 @@ def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_d
 				select_log[category_name] = item['value']
 				return int(item['id'])
 	else:
+		cnt = 0
+		res = 0
 		for item in paiji_category_desc:
 			if remove_space(str(item['value'])).lower() not in use_contrast.keys():
 				break
@@ -471,10 +465,15 @@ def get_pricePropertyValue(category_name, paiji_category_desc, model, sku, sku_d
 				detectionFields = str(use_contrast.get(item['value'])).split('、')
 				if detectionFields != None:
 					for detectionFiled in detectionFields:
-						if detectionFiled != '' and remove_space(str(detectionFiled)).lower() in remove_space(
-								sku_desc).split("、"):
+						if detectionFiled != '' and remove_space(str(detectionFiled)).lower() in remove_space(sku_desc).split("、"):
+							cnt += 1
 							select_log[category_name] = item['value']
-							return int(item['id'])
+							res = int(item['id'])
+		if cnt == 1:
+			return res
+		elif cnt > 1:
+			# 说明根据excel表中的机况描述中能匹配多种
+			return -4
 	if '电池健康' in category_name:
 		resp = get_battery_propertyValue(model)
 		if resp != -3:
@@ -583,6 +582,8 @@ def get_pricePropertyValues(paijiDesc, model, sku, sku_desc, number, show_defaul
 					return {-1: children_category["name"]}
 				if pricePropertyValue == -3:
 					return -3
+				if pricePropertyValue == -4:
+					return {-4: children_category["name"]}
 				# 机身颜色没有完全匹配
 				if pricePropertyValue == -2:
 					get_color_pricePropertyValue(children_category["pricePropertyValueVos"], model, sku, colors)
@@ -676,7 +677,7 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 	style0 = XFStyle()
 	pattern0 = Pattern()
 	pattern0.pattern = Pattern.SOLID_PATTERN
-	# 设置单元格背景色为黑色, 表示当前用户查此行价格时出错
+	# 设置单元格背景色为紫色, 表示当前用户查此行价格时出错
 	pattern0.pattern_fore_colour = Style.colour_map['dark_purple']
 
 	style1 = XFStyle()
@@ -709,6 +710,12 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 	# 设置单元格背景色为粉色，表示出现不选查改机器价格的关键词
 	pattern5.pattern_fore_colour = Style.colour_map['pink']
 
+	style6 = XFStyle()
+	pattern6 = Pattern()
+	pattern6.pattern = Pattern.SOLID_PATTERN
+	# 设置单元格背景色为棕色，表示机况描述中存在多个对同一属性组的描述
+	pattern6.pattern_fore_colour = Style.colour_map['brown']
+
 	style.pattern = pattern
 	style0.pattern = pattern0
 	style1.pattern = pattern1
@@ -716,13 +723,16 @@ def excel_fill(xlwt_worksheet, number, method, content, show_default, index):
 	style3.pattern = pattern3
 	style4.pattern = pattern4
 	style5.pattern = pattern5
+	style6.pattern = pattern6
 
 	price_column_number = column_name_number["单台出价1"]
 
 	if method == 1:
 		xlwt_worksheet.write(number, price_column_number + index, label="*" + str(content), style=style)
 	elif method == 0:
-		xlwt_worksheet.write(number, price_column_number + index, label="", style=style0)
+		xlwt_worksheet.write(number, price_column_number + index, label="*" + str(content), style=style0)
+	elif method == -1:
+		xlwt_worksheet.write(number, price_column_number + index, label="*" + str(content), style=style6)
 	elif method == 3:
 		xlwt_worksheet.write(number, price_column_number + index, label="", style=style1)
 	elif method == 4:
@@ -875,12 +885,15 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 							excel_fill(xlwt_worksheet, number - 1, 1, pricePropertyList[-1], show_default, 0)
 							log.log_error.insert(0, "用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行的价格")
 							return
+						if -4 in pricePropertyList.keys():
+							already_search[sku + desc + quality][0] = -4
+							excel_fill(xlwt_worksheet, number - 1, -1, pricePropertyList[-4], show_default, 0)
+							log.log_error.insert(0, "用户：" + str(access.user[userIndex]['userName']) + "查出" + str(number) + "行中的" + pricePropertyList[-4] + "属性存在多个选择")
 
 					# 没有选出保修或电池容量
 					if pricePropertyList == -3:
 						already_search[sku + desc + quality][0] = -3
-						log.log_error.insert(0,
-											 "用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行对应的保修或电池情况")
+						log.log_error.insert(0, "用户：" + str(access.user[userIndex]['userName']) + "没有查出" + str(number) + "行对应的保修或电池情况")
 						excel_fill(xlwt_worksheet, number - 1, 4, -1, show_default, 0)
 						return
 
@@ -976,6 +989,9 @@ def get_price(number, xlrd_worksheet, xlwt_worksheet, userIndex):
 			elif price == -2:
 				log.log_error.insert(0, "用户：" + str(access.user[userIndex]['userName']) + "查出" + str(number) + "行的机型搜索不到")
 				excel_fill(xlwt_worksheet, number - 1, 3, -1, show_default, index)
+			elif price == -4:
+				log.log_error.insert(0, "用户：" + str(access.user[userIndex]['userName']) + "查出" + str(number) + "行中的属性存在多个选择")
+				excel_fill(xlwt_worksheet, number - 1, -1, -1, show_default, index)
 			else:
 				log.log_success.insert(0, "用户：" + str(
 					access.user[userIndex]['userName'] + "查出了" + str(number) + "行的价格为" + str(price) +

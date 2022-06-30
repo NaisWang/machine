@@ -87,3 +87,16 @@ def update_token():
 def delay(second):
 	URL = 'https://httpbin.org/delay/' + str(second)
 	requests.get(URL)
+
+
+def re_login(userIndex):
+	item = user[userIndex]
+	logout(item['token'], item['userName'])
+	for i in range(3):
+		delay(1)
+		resp = login(item["chromosome"], item["body"], item['userName'])
+		if resp == -1:
+			log.log_error.insert(0, item["userName"] + "用户信息有错误: " + str(i + 1))
+		else:
+			item['token'] = resp
+			break
