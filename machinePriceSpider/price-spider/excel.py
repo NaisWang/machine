@@ -19,6 +19,10 @@ import log
 import sellPrice
 import numpy as np
 
+
+# 当前正在询价的用户数量
+current_query_user_cnt = 0
+
 # 当前处理表格的行数
 count = 1
 # 用来存储已经查询了的机器，每次查一个机器时，会先看起其是否有相同的机器已查询过
@@ -203,6 +207,13 @@ def get_use_paiji_and_excel_field(pai_desc):
 
 @app.route("/price_excel/import", methods=['POST', 'GET'])
 def import_excel():
+	global current_query_user_cnt
+
+	if current_query_user_cnt == 1:
+		return "当前已有用户正在询价"
+
+	current_query_user_cnt = 1
+
 	init()
 
 	global use_contrast
@@ -236,6 +247,7 @@ def import_excel():
 	# 询价
 	ans = traverse_excel(oldws, newWs)
 	if ans != 1:
+		current_query_user_cnt = 0
 		return "出现错误!!!"
 
 	output = io.BytesIO()
@@ -252,6 +264,8 @@ def import_excel():
 
 	access.delay(1)
 	access.logout_all()
+
+	current_query_user_cnt = 0
 	return response
 
 
