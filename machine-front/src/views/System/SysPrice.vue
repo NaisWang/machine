@@ -82,6 +82,7 @@
             <el-progress :text-inside="true" :stroke-width="26" :percentage="completePercent"/>
           </div>
         </template>
+        <span>{{log.completeRows}} / {{log.allRows}}</span>
       </div>
     </div>
 
