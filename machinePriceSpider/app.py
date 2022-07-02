@@ -16,6 +16,7 @@ import io
 excel = {}
 access = {}
 log = {}
+is_get_excel_flag = 0;
 
 app = Flask(__name__)
 
@@ -25,11 +26,13 @@ def import_excel():
 	global excel
 	global access
 	global log
+	global is_get_excel_flag
 
 	log = Log.Log()
 	access = Access.Access(log)
 	paijiContrast = PaijiContrast.PaijiContrast()
 	excel = Excel.Excel(log, access, paijiContrast)
+	is_get_excel_flag = 1
 
 	# 获取对照表
 	files = request.files.getlist("files")
@@ -183,7 +186,7 @@ def update_desc():
 
 @app.route("/log", methods=['POST', 'GET'])
 def get_log():
-	if "allRows" in excel:
+	if is_get_excel_flag == 1:
 		response = make_response(jsonify({"log_success": log.log_success, "log_error": log.log_error, "authCode": log.authCode, "allRows": excel.allRows, "completeRows": excel.completeRows}))
 	else:
 		response = make_response(jsonify({"log_success": log.log_success, "log_error": log.log_error, "authCode": log.authCode}))
