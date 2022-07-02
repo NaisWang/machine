@@ -199,26 +199,28 @@ export default {
             $http.post("http://120.79.195.87:5000/log", {}, {timeout: 1000 * 60 * 5}).then(resp => {
               //       $http.get("http://127.0.0.1:5000/log").then(resp => {
               that.log = resp.data
-              if (that.log.autoCode === 1) {
+              if (that.log.authCode === 1) {
                 player.play()
               }
               setTimeout(fn, 1000);
             }).catch((e) => {
-              console.log("捕获了异常1")
               setTimeout(fn, 1000);
             })
           } catch (e) {
-            console.log("捕获了异常2")
             setTimeout(fn, 1000);
-            console.log(e)
           }
         }
       }, 1000)
     },
     stopSearchPrice() {
-      paijiApi.stopSearchPrice().then(resp => {
-        this.$message.success("暂停成功")
-      })
+      let that = this;
+      setTimeout(function fn() {
+        paijiApi.stopSearchPrice().then(resp => {
+          that.$message.success("暂停成功")
+        }).catch((e) => {
+          setTimeout(fn, 1000)
+        })
+      }, 1000)
     }
   }
 }
