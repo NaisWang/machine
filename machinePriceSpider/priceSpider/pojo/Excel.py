@@ -343,8 +343,6 @@ class Excel:
 		else:
 			cnt = 0
 			res = 0
-			if category_name == "屏幕显示":
-				print(paiji_category_desc)
 			for item in paiji_category_desc:
 				if self.remove_space(str(item['value'])).lower() not in self.use_contrast.keys():
 					break
@@ -353,9 +351,6 @@ class Excel:
 					if detectionFields != None:
 						for detectionFiled in detectionFields:
 							if detectionFiled != '' and self.remove_space(str(detectionFiled)).lower() in self.remove_space(sku_desc).split("、"):
-								if category_name == "屏幕显示":
-									print("excel对照表中： " + str(detectionFiled))
-									print("属性中： " + item['value'])
 								cnt += 1
 								select_log[category_name] = item['value']
 								res = int(item['id'])
