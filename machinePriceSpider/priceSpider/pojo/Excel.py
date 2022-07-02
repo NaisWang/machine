@@ -344,12 +344,18 @@ class Excel:
 			cnt = 0
 			res = 0
 			for item in paiji_category_desc:
+				if category_name == "屏幕显示":
+					print(item)
 				if self.remove_space(str(item['value'])).lower() not in self.use_contrast.keys():
 					break
 				else:
 					detectionFields = str(self.use_contrast.get(item['value'])).split('、')
+					if category_name == "屏幕显示":
+						print(detectionFields)
 					if detectionFields != None:
 						for detectionFiled in detectionFields:
+							if category_name == "屏幕显示":
+								print(detectionFiled)
 							if detectionFiled != '' and self.remove_space(str(detectionFiled)).lower() in self.remove_space(sku_desc).split("、"):
 								cnt += 1
 								select_log[category_name] = item['value']
@@ -821,7 +827,7 @@ class Excel:
 								show_default["机身颜色"] = default_colors_desc
 							self.already_search[sku + desc + quality]["show_default"] = show_default
 							self.already_search[sku + desc + quality]["skuId"] = skuId
-							#self.deal_sell_price(skuId, xlwt_worksheet, number - 1)
+							# self.deal_sell_price(skuId, xlwt_worksheet, number - 1)
 							self.excel_fill(xlwt_worksheet, number - 1, 2, price, show_default, index)
 						# time.sleep(1)
 						else:
@@ -854,7 +860,8 @@ class Excel:
 				else:
 					self.log.log_success.insert(0, "用户：" + str(self.access.user[userIndex]['userName'] + "查出了" + str(number) + "行的价格为" + str(price) + "元"))
 					self.excel_fill(xlwt_worksheet, number - 1, 2, price, show_default, index)
-			#self.deal_sell_price(self.already_search[sku + desc + quality]["skuId"], xlwt_worksheet, number - 1)
+
+	# self.deal_sell_price(self.already_search[sku + desc + quality]["skuId"], xlwt_worksheet, number - 1)
 
 	def init_first_row(self, xlwt_worksheet):
 		"""
