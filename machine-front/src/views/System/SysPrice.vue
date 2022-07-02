@@ -71,6 +71,9 @@
       <div>- 单元格背景色为绿色, 表示excel表的机况描述字段在对照表中没有</div>
       <div>- 单元格背景色为灰色, 表示缺少拍机堂中的某个字段描述</div>
     </div>
+    <div>
+      <audio id="player" controls src="http://www.rr78.com/music-player/test-music.mp3"></audio>
+    </div>
 
     <el-row>
       <el-col :span="12">
@@ -162,7 +165,7 @@ export default {
       };
       this.get_log()
       $http.post('http://120.79.195.87:5000/price_excel/import', param, config)
-      //    $http.post('http://127.0.0.1:5000/price_excel/import', param, config)
+          //    $http.post('http://127.0.0.1:5000/price_excel/import', param, config)
           .then(resp => {
             this.onSuccess()
             let data = resp.data;
@@ -192,9 +195,12 @@ export default {
       setTimeout(function fn() {
         if (that.stopTimer) {
           try {
-       $http.post("http://120.79.195.87:5000/log", {}, {timeout: 1000 * 60 * 5}).then(resp => {
-       //       $http.get("http://127.0.0.1:5000/log").then(resp => {
+            $http.post("http://120.79.195.87:5000/log", {}, {timeout: 1000 * 60 * 5}).then(resp => {
+              //       $http.get("http://127.0.0.1:5000/log").then(resp => {
               that.log = resp.data
+              //if (that.log.autoCode === 1) {
+                $("#player").play()
+              //}
               setTimeout(fn, 1000);
             }).catch((e) => {
               console.log("捕获了异常1")

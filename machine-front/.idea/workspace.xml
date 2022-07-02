@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ac611d6d-50dc-403b-8f58-265aaa2b41fe" name="Default Changelist" comment="" />
+    <list default="true" id="ac611d6d-50dc-403b-8f58-265aaa2b41fe" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/assets/music.mp3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/views/System/SysPrice.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/views/System/SysPrice.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/Access.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/Access.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/Log.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/Log.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -47,7 +54,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/assets" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
@@ -61,6 +68,9 @@
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/assets" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="M:\project\machine-system\machine-front\src\views" />
       <recent name="M:\project\machine-system\machine-front\src\components\Purchase\purchaseOrder" />
@@ -124,7 +134,7 @@
       <workItem from="1649306270676" duration="3616000" />
       <workItem from="1649859656844" duration="3793000" />
       <workItem from="1655716270102" duration="10047000" />
-      <workItem from="1655969732597" duration="32669000" />
+      <workItem from="1655969732597" duration="33619000" />
     </task>
     <servers />
   </component>

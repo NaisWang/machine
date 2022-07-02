@@ -39,6 +39,7 @@ class Access:
 
 	def authCode(self, resp):
 		if '验证码' in resp:
+			self.log.authCode = 1
 			return 1
 		return 0
 
