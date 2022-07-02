@@ -131,27 +131,13 @@ def update_desc():
 	print("brands")
 	print(brands)
 
+	machines = [{"categoryId": 1, "brand": 52, "num": -1}, {"categoryId": 1, "brand": 9, "num": 50}, {"categoryId": 1, "brand": 7, "num": 10}, {"categoryId": 6, "brand": 52, "num": -1}, {"categoryId": 1, "brand": 9, "num": 50}, {"categoryId": 1, "brand": 7, "num": 10}]
+
 	desc = {}
 	count = 0
-	for brand in brands:
-		if count == 3:
-			break
-		products = []
-		if str(brand['brandName']).strip() == '苹果':
-			count += 1
-			products = productApi.get_all_machine(categoryId, brand["brandId"], -1)
-			print("a")
-			print(products)
-		if str(brand['brandName']).strip() == '华为':
-			count += 1
-			products = productApi.get_all_machine(categoryId, brand["brandId"], 50)
-			print("b")
-			print(products)
-		if str(brand['brandName']).strip() == '三星':
-			count += 1
-		# products = get_all_machine(categoryId, brand["brandId"], 50)
-		# print("c")
-		# print(products)
+
+	for item in machines:
+		products = productApi.get_all_machine(item.categoryId, item.brand, item.num)
 		if count != 0:
 			if products != -1:
 				for product in products:
@@ -180,6 +166,57 @@ def update_desc():
 												"value": str(pricePropertyValue['value']).strip() if isinstance(pricePropertyValue['value'], str) else pricePropertyValue['value'],
 												"name": descKey,
 											})
+
+	# desc = {}
+	# count = 0
+	# for brand in brands:
+	#	if count == 3:
+	#		break
+	#	products = []
+	#	if str(brand['brandName']).strip() == '苹果':
+	#		count += 1
+	#		products = productApi.get_all_machine(categoryId, brand["brandId"], -1)
+	#		print("a")
+	#		print(products)
+	#	if str(brand['brandName']).strip() == '华为':
+	#		count += 1
+	#		products = productApi.get_all_machine(categoryId, brand["brandId"], 50)
+	#		print("b")
+	#		print(products)
+	#	if str(brand['brandName']).strip() == '三星':
+	#		count += 1
+	#	# products = get_all_machine(categoryId, brand["brandId"], 50)
+	#	# print("c")
+	#	# print(products)
+	#	if count != 0:
+	#		if products != -1:
+	#			for product in products:
+	#				productDesc = productApi.get_desc(str(product['productId']), 0)
+	#				print("product")
+	#				print(productDesc)
+	#				for key in productDesc.keys():
+	#					for item in productDesc[key]:
+	#						if 'pricePropertyValueVos' in item:
+	#							print("--------------------------")
+	#							for pricePropertyValue in item['pricePropertyValueVos']:
+	#								print("--------------------------")
+	#								descKey = str(item['name']).strip()
+	#								if descKey not in desc:
+	#									desc[descKey] = []
+	#								flag = 0
+	#								for subItem in desc[descKey]:
+	#									if pricePropertyValue['id'] == subItem['id']:
+	#										flag = 1
+	#										break
+	#								if flag == 0:
+	#									if descKey != "小型号" or (descKey == "小型号" and '其他' not in pricePropertyValue['value']):
+	#										desc[descKey].append({
+	#											"id": pricePropertyValue['id'],
+	#											"parentValue": key,
+	#											"value": str(pricePropertyValue['value']).strip() if isinstance(pricePropertyValue['value'], str) else pricePropertyValue['value'],
+	#											"name": descKey,
+	#										})
+
 	res = []
 	for key in desc.keys():
 		res.extend(desc[key])
