@@ -161,8 +161,8 @@ export default {
         responseType: 'blob'
       };
       this.get_log()
-      //$http.post('http://120.79.195.87:5000/price_excel/import', param, config)
-          $http.post('http://127.0.0.1:5000/price_excel/import', param, config)
+      $http.post('http://120.79.195.87:5000/price_excel/import', param, config)
+      //    $http.post('http://127.0.0.1:5000/price_excel/import', param, config)
           .then(resp => {
             this.onSuccess()
             let data = resp.data;
@@ -192,8 +192,8 @@ export default {
       setTimeout(function fn() {
         if (that.stopTimer) {
           try {
-            //$http.post("http://120.79.195.87:5000/log", {}, {timeout: 1000 * 60 * 5}).then(resp => {
-              $http.get("http://127.0.0.1:5000/log").then(resp => {
+       $http.post("http://120.79.195.87:5000/log", {}, {timeout: 1000 * 60 * 5}).then(resp => {
+       //       $http.get("http://127.0.0.1:5000/log").then(resp => {
               that.log = resp.data
               setTimeout(fn, 1000);
             }).catch((e) => {

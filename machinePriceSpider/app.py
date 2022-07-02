@@ -197,4 +197,5 @@ if __name__ == '__main__':
 	#server = WSGIServer(('127.0.0.1', 5002), app)
 	#server.serve_forever()
 	#app.run()
-	app.run()
+	app.run(host="0.0.0.0", port=5000)
+	#app.run()
