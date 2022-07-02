@@ -193,16 +193,15 @@ export default {
       this.log = []
       let that = this;
       let player = document.getElementById("player")
-      //$("#player").play()
       setTimeout(function fn() {
         if (that.stopTimer) {
           try {
             $http.post("http://120.79.195.87:5000/log", {}, {timeout: 1000 * 60 * 5}).then(resp => {
               //       $http.get("http://127.0.0.1:5000/log").then(resp => {
               that.log = resp.data
-              //if (that.log.autoCode === 1) {
-              player.play()
-              //}
+              if (that.log.autoCode === 1) {
+                player.play()
+              }
               setTimeout(fn, 1000);
             }).catch((e) => {
               console.log("捕获了异常1")
