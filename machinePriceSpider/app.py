@@ -13,7 +13,7 @@ from xlwt import *
 from xlutils.copy import copy
 import io
 
-excel = {"allRows": 0, "completeRows": 0}
+excel = {}
 access = {}
 log = {}
 
