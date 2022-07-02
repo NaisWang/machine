@@ -1,9 +1,9 @@
 from flask import Flask, request
 from flask_cors import *
-#import gevent
-#from gevent.pywsgi import WSGIServer
-#from gevent import monkey
-#monkey.patch_all()
+import gevent
+from gevent.pywsgi import WSGIServer
+from gevent import monkey
+monkey.patch_all()
 from priceSpider.pojo import Excel, Log, UserThread, PaijiContrast, Access
 from flask import request, Response, make_response, jsonify
 import threading
@@ -194,8 +194,7 @@ def get_log():
 if __name__ == '__main__':
 	app.config['JSON_AS_ASCII'] = False
 	CORS(app, resources=r'/*')
-	#server = WSGIServer(('127.0.0.1', 5002), app)
-	#server.serve_forever()
+	server = WSGIServer(('0.0.0.0', 5000), app)
+	server.serve_forever()
 	#app.run()
-	app.run(host="0.0.0.0", port=5000)
-	#app.run()
+	#app.run(host="127.0.0.1", port=5002)

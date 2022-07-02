@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ac611d6d-50dc-403b-8f58-265aaa2b41fe" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/views/System/SysPrice.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/views/System/SysPrice.vue" afterDir="false" />
-    </list>
+    <list default="true" id="ac611d6d-50dc-403b-8f58-265aaa2b41fe" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -126,7 +124,7 @@
       <workItem from="1649306270676" duration="3616000" />
       <workItem from="1649859656844" duration="3793000" />
       <workItem from="1655716270102" duration="10047000" />
-      <workItem from="1655969732597" duration="32305000" />
+      <workItem from="1655969732597" duration="32669000" />
     </task>
     <servers />
   </component>

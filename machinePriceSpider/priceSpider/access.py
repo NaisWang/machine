@@ -65,8 +65,6 @@ def init_user():
 def logout_all():
 	for item in user:
 		logout(item['token'], item["userName"])
-		delay(1)
-
 
 def update_token():
 	# get_user()
