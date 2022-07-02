@@ -71,8 +71,18 @@
       <div>- 单元格背景色为绿色, 表示excel表的机况描述字段在对照表中没有</div>
       <div>- 单元格背景色为灰色, 表示缺少拍机堂中的某个字段描述</div>
     </div>
-    <div>
-      <audio id="player" controls loop="loop" src="http://120.79.195.87:8081/empImg/test-music.mp3"></audio>
+
+    <div style="display: flex; justify-content: space-between">
+      <div style="margin-top:12px">
+        <audio id="player" controls loop="loop" src="http://120.79.195.87:8081/empImg/test-music.mp3"></audio>
+      </div>
+      <div style="width: 50%; margin: auto">
+        <template>
+          <div class="demo-progress">
+            <el-progress :text-inside="true" :stroke-width="26" :percentage="completePercent"/>
+          </div>
+        </template>
+      </div>
     </div>
 
     <el-row>
@@ -110,7 +120,8 @@ export default {
       uploadFiles: {},
       fileList1: [],
       fileList2: [],
-      searchPriceMethod: 1
+      searchPriceMethod: 1,
+      completePercent: 0,
     }
   },
   methods: {
@@ -202,6 +213,7 @@ export default {
               if (that.log.authCode === 1) {
                 player.play()
               }
+              that.completePercent = that.log.completeRows / that.log.allRows * 100;
               setTimeout(fn, 1000);
             }).catch((e) => {
               setTimeout(fn, 1000);

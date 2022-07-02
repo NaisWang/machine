@@ -55,6 +55,8 @@ def import_excel():
 	newWb = copy(oldWb)
 	newWs = newWb.get_sheet(0)
 
+	excel.allRows = oldws.nrows
+
 	# 询价
 	ans = traverse_excel(oldws, newWs)
 	if ans != 1:
@@ -78,7 +80,7 @@ def import_excel():
 	return response
 
 
-# @app.route("/stop-search-price", methods=['POST', 'GET'])
+@app.route("/stop-search-price", methods=['POST', 'GET'])
 def stop_search_price():
 	access.logout_all()
 	excel.search_price_flag = 0
@@ -104,7 +106,7 @@ def traverse_excel(xlrd_worksheet, xlwt_worksheet):
 	return 1
 
 
-# @app.route('/update')
+@app.route('/update')
 def update_desc():
 	productApi = ProductApi()
 
@@ -181,7 +183,7 @@ def update_desc():
 
 @app.route("/log", methods=['POST', 'GET'])
 def get_log():
-	response = make_response(jsonify({"log_success": log.log_success, "log_error": log.log_error, "authCode": log.authCode}))
+	response = make_response(jsonify({"log_success": log.log_success, "log_error": log.log_error, "authCode": log.authCode, "allRows": excel.allRows, "completeRows": excel.completeRows}))
 	log.authCode = 0
 
 	response.headers["Access-Control-Allow-Origin"] = '*'  # 允许使用响应数据的域。也可以利用请求header中的host字段做一个过滤器。

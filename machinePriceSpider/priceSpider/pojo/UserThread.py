@@ -18,6 +18,7 @@ class UserThread(threading.Thread):
 			temp = 0
 			if self.excel.count < self.xlrd_worksheet.nrows and self.excel.search_price_flag == 1:
 				temp = self.excel.count
+				self.excel.completeRows += 1
 				self.excel.count += 1
 			self.threadLock.release()
 			self.excel.get_price(temp, self.xlrd_worksheet, self.xlwt_worksheet, self.userIndex)

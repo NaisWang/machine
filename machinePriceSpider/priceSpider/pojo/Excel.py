@@ -26,6 +26,8 @@ class Excel:
 		self.already_search = {}
 		# 当前对照表中没有包含的描述
 		self.exclude_desc = []
+		self.allRows = 0
+		self.completeRows = 0
 
 		'''
 		存储对照表中的价格
