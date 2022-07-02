@@ -28,6 +28,11 @@ def import_excel():
 	global log
 	global is_get_excel_flag
 
+	excel = {}
+	access = {}
+	log = {}
+	is_get_excel_flag = 0;
+
 	log = Log.Log()
 	access = Access.Access(log)
 	paijiContrast = PaijiContrast.PaijiContrast()
