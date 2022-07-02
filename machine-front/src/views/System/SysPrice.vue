@@ -199,7 +199,7 @@ export default {
               //       $http.get("http://127.0.0.1:5000/log").then(resp => {
               that.log = resp.data
               //if (that.log.autoCode === 1) {
-                $("#player").play()
+                $("#player")[0].play()
               //}
               setTimeout(fn, 1000);
             }).catch((e) => {
