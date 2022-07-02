@@ -218,7 +218,7 @@ export default {
               if (that.log.authCode === 1) {
                 player.play()
               }
-              that.completePercent = parseInt(that.log.completeRows / that.log.allRows * 100);
+              that.completePercent = parseInt(that.log.completeRows / (that.log.allRows - 1) * 100);
               setTimeout(fn, 1000);
             }).catch((e) => {
               setTimeout(fn, 1000);
