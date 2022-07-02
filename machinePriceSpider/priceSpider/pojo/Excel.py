@@ -343,9 +343,8 @@ class Excel:
 		else:
 			cnt = 0
 			res = 0
+			print(paiji_category_desc)
 			for item in paiji_category_desc:
-				if category_name == "屏幕显示":
-					print("sku_desc" + str(sku_desc))
 				if self.remove_space(str(item['value'])).lower() not in self.use_contrast.keys():
 					break
 				else:
@@ -645,7 +644,6 @@ class Excel:
 		for item in desc.split('、'):
 			item = self.remove_space(item)
 
-			print("abc" +str(use_excel_field))
 			if item != "" and item not in use_excel_field:
 				if item not in self.exclude_desc:
 					self.log.log_error.insert(0, "当前对照表描述中没有:" + item)
