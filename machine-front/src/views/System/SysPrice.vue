@@ -72,7 +72,7 @@
       <div>- 单元格背景色为灰色, 表示缺少拍机堂中的某个字段描述</div>
     </div>
     <div>
-      <audio id="player" controls src="http://www.rr78.com/music-player/test-music.mp3"></audio>
+      <audio id="player" controls loop="loop" src="http://120.79.195.87:8081/empImg/test-music.mp3"></audio>
     </div>
 
     <el-row>
