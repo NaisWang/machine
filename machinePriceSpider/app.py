@@ -14,7 +14,7 @@ from xlutils.copy import copy
 import io
 
 excel = {}
-access = {}
+access = Log.Log()
 log = {}
 is_get_excel_flag = 0;
 
