@@ -553,7 +553,7 @@ class Excel:
 		style0 = XFStyle()
 		pattern0 = Pattern()
 		pattern0.pattern = Pattern.SOLID_PATTERN
-		# 设置单元格背景色为紫色, 表示当前用户查此行价格时出错
+		# 设置单元格背景色为紫色, 表示当前用户没有越过反爬机制
 		pattern0.pattern_fore_colour = Style.colour_map['dark_purple']
 
 		style1 = XFStyle()

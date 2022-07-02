@@ -70,11 +70,15 @@
       <div>- 单元格背景色为蓝色, 表示没有对应的保修或电池效率</div>
       <div>- 单元格背景色为绿色, 表示excel表的机况描述字段在对照表中没有</div>
       <div>- 单元格背景色为灰色, 表示缺少拍机堂中的某个字段描述</div>
+      <div>- 单元格背景色为紫色, 表示当前用户没有越过反爬机制</div>
+      <div>- 单元格背景色为粉色，表示出现不选查改机器价格的关键词</div>
+      <div>- 单元格背景色为棕色，表示机况描述中存在多个对同一属性组的描述</div>
     </div>
 
     <div style="display: flex; justify-content: space-between">
       <div style="margin-top:12px">
-        <audio id="player" controls loop="loop" src="http://120.79.195.87:8081/empImg/test-music.mp3"></audio>
+        <audio style="height: 47px" id="player" controls loop="loop"
+               src="http://120.79.195.87:8081/empImg/test-music.mp3"></audio>
       </div>
       <div style="width: 50%; margin: auto">
         <template>
@@ -82,7 +86,7 @@
             <el-progress :text-inside="true" :stroke-width="26" :percentage="completePercent"/>
           </div>
         </template>
-        <span>{{log.completeRows}} / {{log.allRows}}</span>
+        <span style="float: right">{{ log.completeRows }} / {{ log.allRows - 1 }}</span>
       </div>
     </div>
 
@@ -214,7 +218,7 @@ export default {
               if (that.log.authCode === 1) {
                 player.play()
               }
-              that.completePercent = that.log.completeRows / that.log.allRows * 100;
+              that.completePercent = parseInt(that.log.completeRows / that.log.allRows * 100);
               setTimeout(fn, 1000);
             }).catch((e) => {
               setTimeout(fn, 1000);
