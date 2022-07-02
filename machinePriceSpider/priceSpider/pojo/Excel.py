@@ -351,7 +351,6 @@ class Excel:
 					detectionFields = str(self.use_contrast.get(item['value'])).split('、')
 					if detectionFields != None:
 						for detectionFiled in detectionFields:
-							print("detetionF" + str(detectionFiled))
 							if detectionFiled != '' and self.remove_space(str(detectionFiled)).lower() in self.remove_space(sku_desc).split("、"):
 								if category_name == "屏幕显示":
 									print("excel对照表中： " + str(detectionFiled))
