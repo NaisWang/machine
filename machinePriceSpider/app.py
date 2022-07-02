@@ -183,7 +183,10 @@ def update_desc():
 
 @app.route("/log", methods=['POST', 'GET'])
 def get_log():
-	response = make_response(jsonify({"log_success": log.log_success, "log_error": log.log_error, "authCode": log.authCode, "allRows": excel.allRows, "completeRows": excel.completeRows}))
+	if "allRows" in excel:
+		response = make_response(jsonify({"log_success": log.log_success, "log_error": log.log_error, "authCode": log.authCode, "allRows": excel.allRows, "completeRows": excel.completeRows}))
+	else:
+		response = make_response(jsonify({"log_success": log.log_success, "log_error": log.log_error, "authCode": log.authCode}))
 	log.authCode = 0
 
 	response.headers["Access-Control-Allow-Origin"] = '*'  # 允许使用响应数据的域。也可以利用请求header中的host字段做一个过滤器。
