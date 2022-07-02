@@ -644,6 +644,8 @@ class Excel:
 		ans = ""
 		for item in desc.split('、'):
 			item = self.remove_space(item)
+
+			print("abc" +str(use_excel_field))
 			if item != "" and item not in use_excel_field:
 				if item not in self.exclude_desc:
 					self.log.log_error.insert(0, "当前对照表描述中没有:" + item)
