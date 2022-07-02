@@ -207,7 +207,7 @@ export default {
     get_log() {
       this.stopTimer = true;
       this.log = []
-      that.completePercent = 0
+      this.completePercent = 0
       let that = this;
       let player = document.getElementById("player")
       setTimeout(function fn() {
