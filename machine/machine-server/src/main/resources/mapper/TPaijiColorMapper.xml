@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.TPaijiColorMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.server.pojo.TPaijiColor">
+        <id column="id" property="id" />
+        <result column="machine_name" property="machineName" />
+        <result column="excel_color" property="excelColor" />
+        <result column="paiji_color" property="paijiColor" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, machine_name, excel_color, paiji_color
+    </sql>
+
+</mapper>

@@ -4,7 +4,74 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ac611d6d-50dc-403b-8f58-265aaa2b41fe" name="Default Changelist" comment="" />
+    <list default="true" id="ac611d6d-50dc-403b-8f58-265aaa2b41fe" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/components/System/paiji/Color.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/System/paiji/Memory.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/java/com/example/server/controller/TPaijiColorController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/java/com/example/server/controller/TPaijiMemoryController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/java/com/example/server/mapper/TPaijiColorMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/java/com/example/server/mapper/TPaijiMemoryMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/java/com/example/server/pojo/TPaijiColor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/java/com/example/server/pojo/TPaijiMemory.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/java/com/example/server/service/ITPaijiColorService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/java/com/example/server/service/ITPaijiMemoryService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/java/com/example/server/service/impl/TPaijiColorServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/java/com/example/server/service/impl/TPaijiMemoryServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/resources/mapper/TPaijiColorMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machine/machine-server/src/main/resources/mapper/TPaijiMemoryMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/api/LoginApi.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/api/PaijiContrastApi.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/api/ProductApi.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/api/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/controller/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/controller/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/Access.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/Excel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/Log.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/PaijiContrast.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/Product.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/UserThread.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/pojo/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/utils/Global.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/utils/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/utils/getChromsome.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/utils/getChromsome.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/machine.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/machine.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/paijiApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/paijiApi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/global.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/global.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/views/System/SysPaiJi.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/views/System/SysPaiJi.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/views/System/SysPrice.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/views/System/SysPrice.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/src/main/resources/config/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/machine-generator/src/main/resources/config/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/src/main/resources/mapper/SentenceMapper.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/target/classes/config/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../machine/machine-generator/target/classes/config/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machine/machine-generator/target/classes/mapper/SentenceMapper.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/.idea/price-spider.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/.idea/price-spider.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/access.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/access.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/app.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/excel.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/excel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/getChromsome.js" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/getChromsome.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/getChromsome.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/getChromsome.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/log.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/log.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/login.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/login.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/manage.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/manage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/paijiContrast.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/paijiContrast.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/product.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/product.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../machinePriceSpider/price-spider/sellPrice.py" beforeDir="false" afterPath="$PROJECT_DIR$/../machinePriceSpider/priceSpider/sellPrice.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,8 +81,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="HTML File" />
-        <option value="Vue Single File Component" />
         <option value="JavaScript File" />
+        <option value="Vue Single File Component" />
       </list>
     </option>
   </component>
@@ -124,7 +191,7 @@
       <workItem from="1649306270676" duration="3616000" />
       <workItem from="1649859656844" duration="3793000" />
       <workItem from="1655716270102" duration="10047000" />
-      <workItem from="1655969732597" duration="23511000" />
+      <workItem from="1655969732597" duration="31695000" />
     </task>
     <servers />
   </component>

@@ -22,6 +22,20 @@ export function getModelContrast() {
   })
 }
 
+export function getColorContrast() {
+  return myAxios({
+    url: "/paiji/color/",
+    method: 'get'
+  })
+}
+
+export function getMemoryContrast() {
+  return myAxios({
+    url: "/paiji/memory/",
+    method: 'get'
+  })
+}
+
 export function updatePaijiField() {
   return myAxios({
     url: '/system/paiji/updateField',
@@ -42,6 +56,22 @@ export function updateModelContrast(modelsContrast) {
     url: "/machine/price/model-contrast/",
     method: 'post',
     data: modelsContrast
+  })
+}
+
+export function updateColorContrast(colorContrast) {
+  return myAxios({
+    url: "/paiji/color/",
+    method: 'post',
+    data: colorContrast
+  })
+}
+
+export function updateMemoryContrast(memoryContrast) {
+  return myAxios({
+    url: "/paiji/memory/",
+    method: 'post',
+    data: memoryContrast
   })
 }
 

@@ -53,7 +53,7 @@
         """自定义代理是否支持https校验函数"""
         proxies = {"https": "https://{proxy}".format(proxy=proxy)}
         try:
-            r = requests.get("https://www.baidu.com/", headers=HEADER, proxies=proxies, timeout=5, verify=False)
+            r = requests.get("https://www.baidu.com/", headers=HEADER, proxies=proxies, timeout=5)
             return True if r.status_code == 200 and len(r.content) > 200 else False
         except Exception as e:
             return False
