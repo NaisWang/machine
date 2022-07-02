@@ -120,7 +120,7 @@ def update_desc():
 
 	productApi = ProductApi.ProductApi(access, log)
 
-	access = Access()
+	access = Access.Access(log)
 
 	times = 1
 
