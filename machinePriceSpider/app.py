@@ -116,7 +116,7 @@ def traverse_excel(xlrd_worksheet, xlwt_worksheet):
 
 @app.route('/update')
 def update_desc():
-	productApi = ProductApi.ProductApi()
+	productApi = ProductApi.ProductApi(access, log)
 
 	access = Access()
 
