@@ -343,7 +343,8 @@ class Excel:
 		else:
 			cnt = 0
 			res = 0
-			print(paiji_category_desc)
+			if category_name == "屏幕显示":
+				print(paiji_category_desc)
 			for item in paiji_category_desc:
 				if self.remove_space(str(item['value'])).lower() not in self.use_contrast.keys():
 					break
