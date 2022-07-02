@@ -192,6 +192,8 @@ export default {
       this.stopTimer = true;
       this.log = []
       let that = this;
+      document.getElementById("player").play()
+      $("#player").play()
       setTimeout(function fn() {
         if (that.stopTimer) {
           try {
@@ -199,8 +201,6 @@ export default {
               //       $http.get("http://127.0.0.1:5000/log").then(resp => {
               that.log = resp.data
               //if (that.log.autoCode === 1) {
-              $("#player").play()
-              document.getElementById("player").play()
               //}
               setTimeout(fn, 1000);
             }).catch((e) => {
