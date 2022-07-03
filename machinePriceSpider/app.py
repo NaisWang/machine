@@ -138,8 +138,7 @@ def update_desc():
 	count = 0
 
 	for item in machines:
-		print(item.categoryId)
-		products = productApi.get_all_machine(item.categoryId, item.brand, item.num)
+		products = productApi.get_all_machine(item["categoryId"], item["brand"], item["num"])
 		if count != 0:
 			if products != -1:
 				for product in products:
