@@ -14,9 +14,9 @@ from xlutils.copy import copy
 import io
 
 excel = {}
-access = Log.Log()
-log = {}
-is_get_excel_flag = 0;
+access = {}
+log = Log.Log()
+is_get_excel_flag = 0
 
 app = Flask(__name__)
 
@@ -122,16 +122,16 @@ def update_desc():
 
 	access = Access.Access(log)
 
-	#times = 1
+	# times = 1
 
-	#categoryId = 1
+	# categoryId = 1
 	# while categoryId == -1 and times < 5:
 	#	categoryId = get_category_id()
 	#	times += 1
 
-	#brands = productApi.get_brand(categoryId)
-	#print("brands")
-	#print(brands)
+	# brands = productApi.get_brand(categoryId)
+	# print("brands")
+	# print(brands)
 
 	machines = [{"categoryId": 1, "brand": 52, "num": -1}, {"categoryId": 1, "brand": 9, "num": 50}, {"categoryId": 1, "brand": 7, "num": 10}, {"categoryId": 6, "brand": 52, "num": -1}, {"categoryId": 1, "brand": 9, "num": 50}, {"categoryId": 1, "brand": 7, "num": 10}]
 
