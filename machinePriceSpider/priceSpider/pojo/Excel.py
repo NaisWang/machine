@@ -431,6 +431,7 @@ class Excel:
 			return -1
 		if category_name in self.paijiContrast.default_choice.keys():
 			for item in self.paijiContrast.default_choice[category_name]:
+				print(self.use_paiji_field)
 				if item['id'] in self.use_paiji_field:
 					# show_default[category_name] = item['value']
 					select_log[category_name] = item['value']
