@@ -161,7 +161,6 @@ def update_desc():
 										flag = 1
 										break
 								if flag == 0:
-									notAdd = ["小型号(iphone 13)", "颜色"]
 									if descKey != "小型号" or (descKey == "小型号" and '其他' not in pricePropertyValue['value']):
 										desc[descKey].append({
 											"id": pricePropertyValue['id'],
