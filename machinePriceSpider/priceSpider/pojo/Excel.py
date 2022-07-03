@@ -174,7 +174,7 @@ class Excel:
 						self.log.log_error.insert(0, "缺少拍机堂中:" + property_name + "字段")
 						return property_name
 
-					if self.use_contrast[property_id] != "" and self.use_contrast[property_id] != None:
+					if self.use_contrast[property_id] != "" and self.id[property_id] != None:
 						item2 = self.use_contrast[property_id]
 						if item2 != "" and item2 != None:
 							for item3 in item2.split("、"):
@@ -341,7 +341,8 @@ class Excel:
 				if self.remove_space(str(item['id'])).lower() not in self.use_contrast.keys():
 					break
 				else:
-					detectionFields = str(self.use_contrast.get(self.remove_space(item['id']))).split('、')
+					detectionFields = str(self.use_contrast.get(self.remove_space(str(item['id'])))).split('、')
+					print(detectionFields)
 					if detectionFields != None:
 						for detectionFiled in detectionFields:
 							if detectionFiled != '' and self.remove_space(str(detectionFiled)).lower() in self.remove_space(sku_desc).split("、"):
