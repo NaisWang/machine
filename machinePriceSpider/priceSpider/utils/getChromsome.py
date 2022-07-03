@@ -1,6 +1,6 @@
 import execjs
 
-with open('priceSpider/getChromsome.js', 'r', encoding='UTF-8') as f:
+with open('priceSpider/utils/getChromsome.js', 'r', encoding='UTF-8') as f:
 	js_code = f.read()
 
 context = execjs.compile(js_code)
