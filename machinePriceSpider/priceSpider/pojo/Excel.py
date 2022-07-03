@@ -116,7 +116,7 @@ class Excel:
 		获取excel文件中列号与列名的对应关系。 key为列名，value为列号
 		"""
 		column_name_number1 = {}
-		#self.maximum_column_number = len(xlrd_worksheet.row_values(0))
+		# self.maximum_column_number = len(xlrd_worksheet.row_values(0))
 		for i in range(len(xlrd_worksheet.row_values(0))):
 			column_name = self.remove_space(str(xlrd_worksheet.row_values(0)[i])).lower()
 			column_name_number1[column_name] = i
@@ -692,17 +692,12 @@ class Excel:
 		pattern1 = re.compile(r'、$')
 		desc = re.sub(pattern1, '', re.sub(pattern, '、', desc))
 
-		#priceCell = str(xlrd_worksheet.row_values(number)[self.column_name_number["单台出价1"]])
-
 		number += 1
 
 		self.fill_comparison_price(number - 1, sku + desc + quality, xlwt_worksheet)
 
 		if desc == "":
 			return
-
-		#if priceCell.replace(' ', '') != "" and priceCell.replace(' ', '')[0] != "*":
-		#	return
 
 		show_default = {"机身颜色": "", "电池健康度": "", "网络制式": "", "购买渠道": ""}
 
