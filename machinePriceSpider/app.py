@@ -116,7 +116,6 @@ def traverse_excel(xlrd_worksheet, xlwt_worksheet):
 
 @app.route('/update')
 def update_desc():
-
 	log = Log.Log()
 	access = Access.Access(log)
 	productApi = ProductApi.ProductApi(access, log)
@@ -139,35 +138,33 @@ def update_desc():
 
 	for item in machines:
 		products = productApi.get_all_machine(item["categoryId"], item["brand"], item["num"])
-		print(products)
-		if count != 0:
-			if products != -1:
-				for product in products:
-					productDesc = productApi.get_desc(str(product['productId']), 0)
-					print("product")
-					print(productDesc)
-					for key in productDesc.keys():
-						for item in productDesc[key]:
-							if 'pricePropertyValueVos' in item:
+		if products != -1:
+			for product in products:
+				productDesc = productApi.get_desc(str(product['productId']), 0)
+				print("product")
+				print(productDesc)
+				for key in productDesc.keys():
+					for item in productDesc[key]:
+						if 'pricePropertyValueVos' in item:
+							print("--------------------------")
+							for pricePropertyValue in item['pricePropertyValueVos']:
 								print("--------------------------")
-								for pricePropertyValue in item['pricePropertyValueVos']:
-									print("--------------------------")
-									descKey = str(item['name']).strip()
-									if descKey not in desc:
-										desc[descKey] = []
-									flag = 0
-									for subItem in desc[descKey]:
-										if pricePropertyValue['id'] == subItem['id']:
-											flag = 1
-											break
-									if flag == 0:
-										if descKey != "小型号" or (descKey == "小型号" and '其他' not in pricePropertyValue['value']):
-											desc[descKey].append({
-												"id": pricePropertyValue['id'],
-												"parentValue": key,
-												"value": str(pricePropertyValue['value']).strip() if isinstance(pricePropertyValue['value'], str) else pricePropertyValue['value'],
-												"name": descKey,
-											})
+								descKey = str(item['name']).strip()
+								if descKey not in desc:
+									desc[descKey] = []
+								flag = 0
+								for subItem in desc[descKey]:
+									if pricePropertyValue['id'] == subItem['id']:
+										flag = 1
+										break
+								if flag == 0:
+									if descKey != "小型号" or (descKey == "小型号" and '其他' not in pricePropertyValue['value']):
+										desc[descKey].append({
+											"id": pricePropertyValue['id'],
+											"parentValue": key,
+											"value": str(pricePropertyValue['value']).strip() if isinstance(pricePropertyValue['value'], str) else pricePropertyValue['value'],
+											"name": descKey,
+										})
 
 	# desc = {}
 	# count = 0
