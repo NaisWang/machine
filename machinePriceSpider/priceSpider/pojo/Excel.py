@@ -339,6 +339,9 @@ class Excel:
 			res = 0
 			for item in paiji_category_desc:
 				if self.remove_space(str(item['id'])).lower() not in self.use_contrast.keys():
+					if category_name == "边框背板":
+						print("属性" + str(item['value']))
+						print("id" + str(item['id']))
 					break
 				else:
 					detectionFields = str(self.use_contrast.get(self.remove_space(str(item['id'])))).split('、')
@@ -432,7 +435,7 @@ class Excel:
 			return -1
 		if category_name in self.paijiContrast.default_choice.keys():
 			for item in self.paijiContrast.default_choice[category_name]:
-				#print(self.use_paiji_field)
+				# print(self.use_paiji_field)
 				if item['id'] in self.use_paiji_field:
 					# show_default[category_name] = item['value']
 					select_log[category_name] = item['value']
