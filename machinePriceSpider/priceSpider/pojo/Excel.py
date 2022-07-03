@@ -692,7 +692,7 @@ class Excel:
 		pattern1 = re.compile(r'、$')
 		desc = re.sub(pattern1, '', re.sub(pattern, '、', desc))
 
-		priceCell = str(xlrd_worksheet.row_values(number)[self.column_name_number["单台出价1"]])
+		#priceCell = str(xlrd_worksheet.row_values(number)[self.column_name_number["单台出价1"]])
 
 		number += 1
 
@@ -701,8 +701,8 @@ class Excel:
 		if desc == "":
 			return
 
-		if priceCell.replace(' ', '') != "" and priceCell.replace(' ', '')[0] != "*":
-			return
+		#if priceCell.replace(' ', '') != "" and priceCell.replace(' ', '')[0] != "*":
+		#	return
 
 		show_default = {"机身颜色": "", "电池健康度": "", "网络制式": "", "购买渠道": ""}
 
