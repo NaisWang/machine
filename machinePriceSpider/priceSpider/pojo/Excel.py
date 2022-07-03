@@ -342,8 +342,6 @@ class Excel:
 					break
 				else:
 					detectionFields = str(self.use_contrast.get(item['id'])).split('、')
-					if category_name == "边框背板":
-						print(detectionFields)
 					if detectionFields != None:
 						for detectionFiled in detectionFields:
 							if detectionFiled != '' and self.remove_space(str(detectionFiled)).lower() in self.remove_space(sku_desc).split("、"):
