@@ -149,7 +149,10 @@ def update_desc():
 							print("--------------------------")
 							for pricePropertyValue in item['pricePropertyValueVos']:
 								print("--------------------------")
+								# descKey：属性组名称, 例如:保修情况
 								descKey = str(item['name']).strip()
+								if descKey in ["储存容量", "小型号(iphone 13)", "小型号（iPhone SE 3）", "屏幕尺寸", "颜色", "网络模式"]:
+									continue
 								if descKey not in desc:
 									desc[descKey] = []
 								flag = 0
@@ -158,6 +161,7 @@ def update_desc():
 										flag = 1
 										break
 								if flag == 0:
+									notAdd = ["小型号(iphone 13)", "颜色"]
 									if descKey != "小型号" or (descKey == "小型号" and '其他' not in pricePropertyValue['value']):
 										desc[descKey].append({
 											"id": pricePropertyValue['id'],
