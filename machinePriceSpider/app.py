@@ -15,7 +15,7 @@ import io
 
 excel = {}
 access = {}
-log = Log.Log()
+log = {}
 is_get_excel_flag = 0
 
 app = Flask(__name__)
@@ -116,11 +116,10 @@ def traverse_excel(xlrd_worksheet, xlwt_worksheet):
 
 @app.route('/update')
 def update_desc():
-	global access
 
-	productApi = ProductApi.ProductApi(access, log)
-
+	log = Log.Log()
 	access = Access.Access(log)
+	productApi = ProductApi.ProductApi(access, log)
 
 	# times = 1
 
