@@ -79,9 +79,9 @@ class Excel:
 		self.use_excel_field = []
 
 		'''
-		拍机堂中一个机器的所有属性
+		拍机堂中一个机器的所有属性的id
 
-		例如：use_paiji_field = ["大陆国行", "港澳机", "256G", ...]
+		例如：use_paiji_field = [1, 12, 333, ...]
 		'''
 		self.use_paiji_field = []
 
@@ -158,10 +158,8 @@ class Excel:
 
 		获取该机器所有拍机堂的属性名对应的机况描述中可能出现的描述的集合, 即设置use_excel_field对象
 		"""
-		global use_paiji_field
-		global use_excel_field
-		use_paiji_field = []
-		use_excel_field = []
+		self.use_paiji_field = []
+		self.use_excel_field = []
 		keys = ["qualityInfos", "functionInfos"]
 		for key in keys:
 			# item对应一组属性的归类，例如item为受潮情况；受潮情况下面会有很多属性对象，例如{"id": 5226,"propertyName": 1120,"value": "机身进水"}, {"id": 5227,"propertyName": 1120,"value": "进水无进水"}
@@ -170,24 +168,18 @@ class Excel:
 				for item1 in item["pricePropertyValueVos"]:
 					# property_name为机器的属性，例如机身进水
 					property_name = self.remove_space(item1['value'])
-					use_paiji_field.append(property_name)
-					if property_name not in self.use_contrast.keys():
+					property_id = item1["id"]
+					self.use_paiji_field.append(property_id)
+					if property_id not in self.use_contrast.keys():
 						self.log.log_error.insert(0, "缺少拍机堂中:" + property_name + "字段")
 						return property_name
 
-					if self.use_contrast[property_name] != "" and self.use_contrast[property_name] != None:
-						item2 = self.use_contrast[property_name]
+					if self.use_contrast[property_id] != "" and self.use_contrast[property_id] != None:
+						item2 = self.use_contrast[property_id]
 						if item2 != "" and item2 != None:
 							for item3 in item2.split("、"):
 								if item3 != "" and item3 != None:
-									use_excel_field.append(self.remove_space(item3))
-
-		if self.use_contrast["账号已注销"] != "" and self.use_contrast["账号已注销"] != None:
-			item2 = self.use_contrast["账号已注销"]
-			if item2 != "" and item2 != None:
-				for item3 in item2.split("、"):
-					if item3 != "" and item3 != None and self.remove_space(item3) not in use_excel_field:
-						use_excel_field.append(self.remove_space(item3))
+									self.use_excel_field.append(self.remove_space(item3))
 		return 1
 
 	def get_color_pricePropertyValue(self, paiji_colors, model, sku, colors):
@@ -438,7 +430,7 @@ class Excel:
 			return -1
 		if category_name in self.paijiContrast.default_choice.keys():
 			for item in self.paijiContrast.default_choice[category_name]:
-				if item['value'] in use_paiji_field:
+				if item['id'] in self.use_paiji_field:
 					# show_default[category_name] = item['value']
 					select_log[category_name] = item['value']
 					return item['id']
@@ -641,7 +633,7 @@ class Excel:
 		for item in desc.split('、'):
 			item = self.remove_space(item)
 
-			if item != "" and item not in use_excel_field:
+			if item != "" and item not in self.use_excel_field:
 				if item not in self.exclude_desc:
 					self.log.log_error.insert(0, "当前对照表描述中没有:" + item)
 				self.exclude_desc.append(item)

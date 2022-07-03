@@ -55,8 +55,8 @@ class PaijiContrast:
 
 		for item in price_field:
 			if item["name"] not in self.excludeField:
-				self.xd_contrast[item["value"]] = item["xdCheckout"]
-				self.ahs_contrast[item['value']] = item["ahsCheckout"]
+				self.xd_contrast[item["id"]] = item["xdCheckout"]
+				self.ahs_contrast[item['id']] = item["ahsCheckout"]
 			if item["name"] in self.xd_combination_price_field.keys():
 				self.paiji_combination_price_field.append(item["value"])
 				if str(item["xdCheckout"]).replace(' ', '') != "" and item["xdCheckout"] != None:
