@@ -338,13 +338,13 @@ class Excel:
 			cnt = 0
 			res = 0
 			for item in paiji_category_desc:
-				if self.remove_space(str(item['id'])).lower() not in self.use_contrast.keys():
+				if item['id'] not in self.use_contrast.keys():
 					if category_name == "边框背板":
 						print("属性" + str(item['value']))
 						print("id" + str(item['id']))
 					break
 				else:
-					detectionFields = str(self.use_contrast.get(self.remove_space(str(item['id'])))).split('、')
+					detectionFields = str(self.use_contrast.get(item['id'])).split('、')
 					if category_name == "边框背板":
 						print(detectionFields)
 					if detectionFields != None:
