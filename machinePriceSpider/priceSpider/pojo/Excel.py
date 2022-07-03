@@ -338,10 +338,10 @@ class Excel:
 			cnt = 0
 			res = 0
 			for item in paiji_category_desc:
-				if self.remove_space(str(item['value'])).lower() not in self.use_contrast.keys():
+				if self.remove_space(str(item['id'])).lower() not in self.use_contrast.keys():
 					break
 				else:
-					detectionFields = str(self.use_contrast.get(self.remove_space(item['value']))).split('、')
+					detectionFields = str(self.use_contrast.get(self.remove_space(item['id']))).split('、')
 					if detectionFields != None:
 						for detectionFiled in detectionFields:
 							if detectionFiled != '' and self.remove_space(str(detectionFiled)).lower() in self.remove_space(sku_desc).split("、"):

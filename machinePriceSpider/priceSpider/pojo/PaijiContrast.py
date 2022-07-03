@@ -8,6 +8,8 @@ class PaijiContrast:
 
 	def __init__(self):
 		self.paijiContrastApi = PaijiContrastApi.PaijiContrastApi()
+
+		# key: 拍机堂属性id。value: 对照表中改属性的所有机况描述
 		self.xd_contrast = {}
 		self.ahs_contrast = {}
 
