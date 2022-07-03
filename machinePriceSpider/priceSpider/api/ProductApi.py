@@ -87,7 +87,14 @@ class ProductApi:
 		}
 		retry_count = 5
 		while retry_count > 0:
-			resp = json.loads(requests.post(url, data=json.dumps(data), headers=headers).text)
+			res = requests.post(url, data=json.dumps(data), headers=headers)
+			resp = {}
+			try:
+				resp = json.loads(res.text)
+			except:
+				retry_count -= 1
+				print(res)
+				continue
 			if 'data' in resp and 'referencePrice' in resp['data']:
 				price = resp['data']['referencePrice']
 
