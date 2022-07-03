@@ -97,7 +97,7 @@ class Excel:
 		:param fileName: 文件名
 		:return: -1: 文件不合法; 0: 文件合法
 		"""
-		column_name = ["机型", "sku", "成色", "机况描述", "单台出价1"]
+		column_name = ["机型", "sku", "成色", "机况描述"]
 		for name in column_name:
 			if name not in column_name_number_corr.keys():
 				self.log.log_error.insert(0, fileName + "文件中没有" + name + "列")
@@ -116,9 +116,11 @@ class Excel:
 		获取excel文件中列号与列名的对应关系。 key为列名，value为列号
 		"""
 		column_name_number1 = {}
+		#self.maximum_column_number = len(xlrd_worksheet.row_values(0))
 		for i in range(len(xlrd_worksheet.row_values(0))):
 			column_name = self.remove_space(str(xlrd_worksheet.row_values(0)[i])).lower()
 			column_name_number1[column_name] = i
+		column_name_number1['单台出价1'] = len(xlrd_worksheet.row_values(0))
 		column_name_number1["第一个空白"] = len(xlrd_worksheet.row_values(0))
 		return column_name_number1
 
