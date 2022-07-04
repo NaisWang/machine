@@ -314,7 +314,7 @@ class Excel:
 			elif "华为畅享10plus" in self.remove_space(sku_desc).lower() and "赤茶橘" in self.remove_space(sku).lower():
 				sku = sku + "、橙色"
 			elif "荣耀20pro" in self.remove_space(sku_desc).lower() and "幻夜星河" in self.remove_space(sku).lower():
-				sku = sku + "、蓝色"
+				sku = sku + "、紫色"
 			elif "荣耀30pro（5g版）" in self.remove_space(sku_desc).lower() and "流光幻境" in self.remove_space(sku).lower():
 				sku = sku + "、流光幻镜"
 			elif "荣耀30（5g版）" in self.remove_space(sku_desc).lower() and "流光幻境" in self.remove_space(sku).lower():
